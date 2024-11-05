@@ -37,7 +37,7 @@ export function DashboardPage({ onSignOut }: DashboardPageProps) {
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold text-gradient">Dashboard</h1>
           <Button 
-            className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600"
+            className="bg-gradient-to-r from-black via-gray-800 to-black"
             onClick={() => setShowTimesheetForm(true)}
           >
             New Timesheet
@@ -59,7 +59,7 @@ export function DashboardPage({ onSignOut }: DashboardPageProps) {
             <CardTitle className="text-sm font-medium text-gray-600">
               Hours This Week
             </CardTitle>
-            <Clock className="h-4 w-4 text-purple-600" />
+            <Clock className="h-4 w-4 text-black" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">32.5</div>
@@ -72,7 +72,7 @@ export function DashboardPage({ onSignOut }: DashboardPageProps) {
             <CardTitle className="text-sm font-medium text-gray-600">
               Active Projects
             </CardTitle>
-            <PieChart className="h-4 w-4 text-pink-600" />
+            <PieChart className="h-4 w-4 text-black" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">4</div>
@@ -85,7 +85,7 @@ export function DashboardPage({ onSignOut }: DashboardPageProps) {
             <CardTitle className="text-sm font-medium text-gray-600">
               Team Members
             </CardTitle>
-            <Users className="h-4 w-4 text-blue-600" />
+            <Users className="h-4 w-4 text-black" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">12</div>
@@ -98,7 +98,7 @@ export function DashboardPage({ onSignOut }: DashboardPageProps) {
             <CardTitle className="text-sm font-medium text-gray-600">
               Next Review
             </CardTitle>
-            <Calendar className="h-4 w-4 text-purple-600" />
+            <Calendar className="h-4 w-4 text-black" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">2d</div>

@@ -45,7 +45,7 @@ export function RecentTimesheets() {
                   {timesheet.projects.map((project) => (
                     <span
                       key={project}
-                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
                     >
                       {project}
                     </span>
@@ -59,8 +59,8 @@ export function RecentTimesheets() {
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
                     timesheet.status === "Approved"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-yellow-100 text-yellow-800"
+                      ? "bg-gray-100 text-gray-800"
+                      : "bg-gray-200 text-gray-800"
                   }`}
                 >
                   {timesheet.status}

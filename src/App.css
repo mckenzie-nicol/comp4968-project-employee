@@ -4,9 +4,9 @@
   isolation: isolate;
   overflow: hidden;
   background: linear-gradient(135deg,
-      rgba(167, 139, 250, 0.1),
-      rgba(255, 185, 246, 0.1),
-      rgba(139, 192, 250, 0.1));
+      rgba(0, 0, 0, 0.02),
+      rgba(255, 255, 255, 0.05),
+      rgba(0, 0, 0, 0.02));
 }
 
 .auth-container::before {
@@ -17,22 +17,22 @@
   top: -50%;
   left: -50%;
   background: radial-gradient(circle at center,
-      rgba(167, 139, 250, 0.15) 0%,
-      rgba(255, 185, 246, 0.15) 25%,
-      rgba(139, 192, 250, 0.15) 50%,
-      rgba(167, 139, 250, 0.15) 75%,
-      rgba(255, 185, 246, 0.15) 100%);
+      rgba(0, 0, 0, 0.03) 0%,
+      rgba(255, 255, 255, 0.05) 25%,
+      rgba(0, 0, 0, 0.03) 50%,
+      rgba(255, 255, 255, 0.05) 75%,
+      rgba(0, 0, 0, 0.03) 100%);
   animation: rotate 60s linear infinite;
   z-index: -1;
 }
 
 .glass-effect {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow:
-    0 8px 32px 0 rgba(31, 38, 135, 0.37),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
+    0 8px 32px 0 rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .form-container {
@@ -44,7 +44,7 @@
   transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
   box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.2);
+    0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 .card-glow {
@@ -57,9 +57,9 @@
   inset: -1px;
   background: linear-gradient(60deg,
       transparent 0%,
-      rgba(167, 139, 250, 0.3) 25%,
-      rgba(255, 185, 246, 0.3) 50%,
-      rgba(139, 192, 250, 0.3) 75%,
+      rgba(255, 255, 255, 0.1) 25%,
+      rgba(0, 0, 0, 0.1) 50%,
+      rgba(255, 255, 255, 0.1) 75%,
       transparent 100%);
   filter: blur(8px);
   z-index: -1;

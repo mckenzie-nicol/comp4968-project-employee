@@ -5,18 +5,18 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --primary: 262.1 83.3% 57.8%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --accent: 191 91% 37%;
-    --accent-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 262.1 83.3% 57.8%;
+    --foreground: 0 0% 0%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
+    --destructive: 0 0% 0%;
+    --destructive-foreground: 0 0% 100%;
+    --accent: 0 0% 0%;
+    --accent-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 0% 0%;
   }
 }
 
@@ -34,10 +34,10 @@
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-600 to-black;
   }
 
   .bg-gradient-custom {
-    @apply bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10;
+    @apply bg-gradient-to-br from-black/5 via-gray-500/5 to-black/5;
   }
 }

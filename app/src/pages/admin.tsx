@@ -99,8 +99,8 @@ function Admin() {
   return (
     <div>
       <h1 className="text-3xl font-bold">{organizationName}</h1>
-      <PersonList title="Project Managers" people={projectManagers} />
-      <PersonList title="Employees" people={employees} />
+      <PersonList title="Project Managers" people={projectManagers} addMemberCallback={() => { /* callback logic here */ }} />
+      <PersonList title="Employees" people={employees} addMemberCallback={() => { /* callback logic here */ }} />
     </div>
   );
 }

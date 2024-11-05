@@ -52,7 +52,7 @@ export function ProjectsList() {
               <div className="flex items-center gap-4">
                 <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-purple-600 to-pink-600"
+                    className="h-full bg-gradient-to-r from-black to-gray-800"
                     style={{ width: `${project.progress}%` }}
                   />
                 </div>

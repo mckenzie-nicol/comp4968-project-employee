@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Clock, Calendar, Users, PieChart, LogOut } from "lucide-react"
 import { ProjectsList } from "./projects-list"
 import { RecentTimesheets } from "./recent-timesheets"
-import { TimesheetForm } from "../timesheet/timesheet-form"
+import TimesheetTable from "../timesheet/timesheet-form"
 
 interface DashboardPageProps {
   onSignOut?: () => void
@@ -26,7 +26,7 @@ export function DashboardPage({ onSignOut }: DashboardPageProps) {
           </Button>
           <h1 className="text-3xl font-bold text-gradient">New Timesheet</h1>
         </div>
-        <TimesheetForm onSubmit={() => setShowTimesheetForm(false)} />
+        <TimesheetTable/>
       </div>
     )
   }

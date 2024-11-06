@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Clock, Calendar, Users, PieChart, LogOut } from "lucide-react"
 import { ProjectsList } from "./projects-list"
 import { RecentTimesheets } from "./recent-timesheets"
-import TimesheetTable from "../timesheet/timesheet-form"
+import { TimesheetTable } from "../timesheet/timesheet-form"
 
 interface DashboardPageProps {
   onSignOut?: () => void

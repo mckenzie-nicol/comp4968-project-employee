@@ -1,5 +1,3 @@
-"use client"
-
 import React, { useState } from "react"
 import {
   Table,
@@ -42,7 +40,7 @@ const initialProjects: Project[] = [
 
 const days: (keyof DayHours)[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 
-export default function TimesheetTable() {
+export function TimesheetTable() {
   const [timesheet, setTimesheet] = useState<Project[]>(initialProjects)
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
   const [selectedCell, setSelectedCell] = useState<{ projectId: number | null; day: keyof DayHours | null }>({ projectId: null, day: null })
@@ -136,7 +134,7 @@ export default function TimesheetTable() {
           <TableRow>
             <TableHead>Project</TableHead>
             {days.map(day => (
-              <TableHead key={day}>{day}</TableHead>
+              <TableHead key={day} className="text-center">{day}</TableHead>
             ))}
             <TableHead>Total Hours</TableHead>
             <TableHead className="w-[50px]">Actions</TableHead>

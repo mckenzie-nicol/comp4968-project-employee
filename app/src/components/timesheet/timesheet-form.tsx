@@ -77,14 +77,6 @@ const addProjectToDatabase = async (entry: TimesheetEntry): Promise<void> => {
 const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
   await new Promise(resolve => setTimeout(resolve, 500));
   console.log("Added/Updated time record:", timeRecord);
-  // example
-  // await fetch(`/api/timesheet/${timeRecord.timesheet_entry_id}/time-record`, {
-  //   method: "POST",
-  //   body: JSON.stringify(timeRecord),
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //   },
-  // });
 }
 
 export function TimesheetTable({ employee_id }: TimesheetProps) {
@@ -116,8 +108,10 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const handleCellClick = (entryId: string, day: keyof DayHours) => {
     setSelectedCell({ entryId, day })
     setIsDialogOpen(true)
-    setStartTime("")
-    setEndTime("")
+    const entry = timesheet.find(e => e.id === entryId)
+    const timeRecord = entry?.time_records.find(r => r.day === day)
+    setStartTime(timeRecord?.start_time || "")
+    setEndTime(timeRecord?.end_time || "")
   }
 
   const handleSaveTime = async () => {
@@ -134,16 +128,26 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 ...entry.hours,
                 [selectedCell.day!]: diffHours.toFixed(2)
               },
-              time_records: [
-                ...entry.time_records.filter(record => record.day !== selectedCell.day),
-                {
-                  id: `${entry.id}-${selectedCell.day}-${Date.now()}`,
-                  timesheet_entry_id: entry.id,
-                  day: selectedCell.day!,
-                  start_time: startTime,
-                  end_time: endTime,
-                }
-              ]
+              time_records: entry.time_records.some(record => record.day === selectedCell.day)
+                ? entry.time_records.map(record =>
+                    record.day === selectedCell.day
+                      ? {
+                          ...record,
+                          start_time: startTime,
+                          end_time: endTime,
+                        }
+                      : record
+                  )
+                : [
+                    ...entry.time_records,
+                    {
+                      id: `${entry.id}-${selectedCell.day}`,
+                      timesheet_entry_id: entry.id,
+                      day: selectedCell.day!,
+                      start_time: startTime,
+                      end_time: endTime,
+                    }
+                  ]
             }
           : entry
       )
@@ -152,10 +156,10 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
 
       const updatedEntry = updatedTimesheet.find(entry => entry.id === selectedCell.entryId)
       if (updatedEntry) {
-        const newTimeRecord = updatedEntry.time_records.find(record => record.day === selectedCell.day)
-        if (newTimeRecord) {
+        const updatedTimeRecord = updatedEntry.time_records.find(record => record.day === selectedCell.day)
+        if (updatedTimeRecord) {
           try {
-            await addOrUpdateTimeRecord(newTimeRecord)
+            await addOrUpdateTimeRecord(updatedTimeRecord)
           } catch (error) {
             console.error("Failed to add/update time record:", error)
           }

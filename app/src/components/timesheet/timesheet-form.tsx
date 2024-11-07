@@ -68,13 +68,44 @@ const initialAvailableProjects = [
 
 const days: (keyof DayHours)[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 
-const addProjectToDatabase = async (entry: TimesheetEntry): Promise<void> => {
-  await new Promise(resolve => setTimeout(resolve, 500));
-  console.log("Timesheet Entry Added to database:", entry);
+const transformToJSON = (data: TimesheetEntry): Record<string, any> => {
+  return JSON.parse(
+    JSON.stringify(data, (_, value) => (value === undefined ? null : value))
+  );
 }
 
-const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
+const transformToTimesheetEntry = (data: Record<string, any>): TimesheetEntry => {
+  return {
+    id: data.id,
+    project_id: data.project_id,
+    employee_id: data.employee_id,
+    start_date_of_the_week: data.start_date_of_the_week,
+    hours: data.hours,
+    approved: data.approved,
+    approved_by: data.approved_by,
+    submission_date: data.submission_date,
+    approved_date: data.approved_date,
+    time_records: data.time_records
+  }
+}
+
+const addProjectToDatabase = async (entry: TimesheetEntry): Promise<void> => {
   await new Promise(resolve => setTimeout(resolve, 500));
+  const data : Record<string, any> = transformToJSON(entry);
+  console.log("Timesheet Entry JSON Added to database:", data );
+}
+
+const addOrUpdateTimeRecord = async ( entry : TimesheetEntry, timeRecord: TimeRecord): Promise<void> => {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  // patch request to update timesheet entry
+  // fetch(`/api/timesheet/${entry.id}`, {
+  //   method: "PATCH",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //   },
+  //   body: JSON.stringify(entry.time_records),
+  // });
+  console.log(`Patch Change for Project ${entry.project_id}: `, entry.time_records);
   console.log("Added/Updated time record:", timeRecord);
 }
 
@@ -90,6 +121,11 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
 
   const today = new Date()
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 })
+
+  // fetch project data from database
+  useEffect(() => {
+    // TODO: fetchProjectData()
+  }, [])
 
   // fetch timesheet data from database
   useEffect(() => {
@@ -157,7 +193,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
         const updatedTimeRecord = updatedEntry.time_records.find(record => record.day === selectedCell.day)
         if (updatedTimeRecord) {
           try {
-            await addOrUpdateTimeRecord(updatedTimeRecord)
+            await addOrUpdateTimeRecord( updatedEntry, updatedTimeRecord)
           } catch (error) {
             console.error("Failed to add/update time record:", error)
           }

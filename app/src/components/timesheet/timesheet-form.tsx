@@ -39,7 +39,6 @@ type DayHours = {
 }
 
 interface TimeRecord {
-  id: string;
   timesheet_entry_id: string;
   day: keyof DayHours;
   start_time: string;
@@ -141,7 +140,6 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 : [
                     ...entry.time_records,
                     {
-                      id: `${entry.id}-${selectedCell.day}`,
                       timesheet_entry_id: entry.id,
                       day: selectedCell.day!,
                       start_time: startTime,
@@ -187,6 +185,9 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
         start_date_of_the_week: format(currentWeekStart, 'yyyy-MM-dd'),
         hours: { Monday: "", Tuesday: "", Wednesday: "", Thursday: "", Friday: "" },
         approved: false,
+        approved_by: undefined,
+        submission_date: undefined,
+        approved_date: undefined,
         time_records: []
       }
 

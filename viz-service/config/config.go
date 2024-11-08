@@ -1,25 +1,29 @@
 package config
 
-import (
-	"os"
-)
+import "os"
+
+type DBConfig struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Name     string
+}
 
 type Config struct {
 	ReactAppUrl string
-	DbHost      string
-	DbName      string
-	DbPort      string
-	DbUser      string
-	DbPassword  string
+	DB          DBConfig
 }
 
 func Load() *Config {
 	return &Config{
 		ReactAppUrl: os.Getenv("REACT_APP_URL"),
-		DbHost:      os.Getenv("DB_HOST"),
-		DbName:      os.Getenv("PG_DATABASE"),
-		DbPort:      os.Getenv("PG_PORT"),
-		DbUser:      os.Getenv("PG_USER"),
-		DbPassword:  os.Getenv("PG_PASSWORD"),
+		DB: DBConfig{
+			Host:     os.Getenv("PG_HOST"),
+			Port:     os.Getenv("PG_PORT"),
+			User:     os.Getenv("PG_USER"),
+			Password: os.Getenv("PG_PASSWORD"),
+			Name:     os.Getenv("PG_DATABASE"),
+		},
 	}
 }

@@ -77,8 +77,19 @@ const initialAvailableProjects: Project[] = [
 const days: (keyof DayHours)[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 
 const transformToJSON = (data: TimesheetEntry): Record<string, any> => {
+  const dataToStore = {
+    id: data.id,
+    project_id: data.project_id,
+    project_name: data.project_name,
+    employee_id: data.employee_id,
+    start_date_of_the_week: data.start_date_of_the_week,
+    approved: data.approved,
+    approved_by: data.approved_by,
+    submission_date: data.submission_date,
+    approved_date: data.approved_date,
+  }
   return JSON.parse(
-    JSON.stringify(data, (_, value) => (value === undefined ? null : value))
+    JSON.stringify(dataToStore, (_, value) => (value === undefined ? null : value))
   );
 }
 
@@ -127,11 +138,14 @@ const addProjectToDatabase = async (entry: TimesheetEntry): Promise<void> => {
   // }
 };
 
-const addOrUpdateTimeRecord = async (entry: TimesheetEntry, timeRecord: TimeRecord): Promise<void> => {
+const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
   await new Promise(resolve => setTimeout(resolve, 500));
-  console.log(`Patch Change for Project ${entry.project_id}: `, entry.time_records);
-  console.log(`Patch Change for Project ${entry.project_id}: `, entry.hours);
   console.log("Added/Updated time record:", timeRecord);
+}
+
+const deleteTimesheetEntry = async (entryId: string): Promise<void> => {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  console.log("Deleted entry:", entryId);
 }
 
 const fetchTimesheetData = async (employee_id: string, currentWeekStart: Date): Promise<TimesheetEntry[]> => {
@@ -238,7 +252,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
         const updatedTimeRecord = updatedEntry.time_records.find(record => record.day === selectedCell.day)
         if (updatedTimeRecord) {
           try {
-            await addOrUpdateTimeRecord(updatedEntry, updatedTimeRecord)
+            await addOrUpdateTimeRecord(updatedTimeRecord)
           } catch (error) {
             console.error("Failed to add/update time record:", error)
           }
@@ -253,6 +267,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
     if (entryToDelete) {
       setTimesheet(prevTimesheet => prevTimesheet.filter(entry => entry.id !== entryId))
       setAvailableProjects(prevAvailable => [...prevAvailable, { id: entryToDelete.project_id, name: entryToDelete.project_name }].sort((a, b) => a.id.localeCompare(b.id)))
+      deleteTimesheetEntry(entryId)
     }
   }
 

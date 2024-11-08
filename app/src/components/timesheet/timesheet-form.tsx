@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { X, Check, ChevronLeft, ChevronRight } from "lucide-react"
-import { startOfWeek, endOfWeek, addWeeks, format, isBefore } from "date-fns"
+import { startOfWeek, endOfWeek, addWeeks, addDays, format, isBefore, parseISO } from "date-fns"
 import {
   Select,
   SelectContent,
@@ -39,15 +39,18 @@ type DayHours = {
 }
 
 interface TimeRecord {
+  id: string;
   timesheet_entry_id: string;
   day: keyof DayHours;
+  date: string;
   start_time: string;
   end_time: string;
 }
 
 interface TimesheetEntry {
   id: string
-  project_id: number
+  project_id: string
+  project_name: string
   employee_id: string
   start_date_of_the_week: string
   hours: DayHours
@@ -59,16 +62,16 @@ interface TimesheetEntry {
 }
 
 interface Project {
-  id: number
+  id: string
   name: string
 }
 
 const initialAvailableProjects: Project[] = [
-  { id: 1, name: "Project 1" },
-  { id: 2, name: "Project 2" },
-  { id: 3, name: "Project 3" },
-  { id: 4, name: "Project 4" },
-  { id: 5, name: "Project 5" },
+  { id: "PROJ-001", name: "Design" },
+  { id: "PROJ-002", name: "App Development" },
+  { id: "PROJ-003", name: "Database" },
+  { id: "PROJ-004", name: "Cloud Infra" },
+  { id: "PROJ-005", name: "AI Integration" },
 ]
 
 const days: (keyof DayHours)[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
@@ -80,9 +83,11 @@ const transformToJSON = (data: TimesheetEntry): Record<string, any> => {
 }
 
 const transformToTimesheetEntry = (data: Record<string, any>): TimesheetEntry => {
+  const startDate = parseISO(data.start_date_of_the_week);
   return {
     id: data.id,
     project_id: data.project_id,
+    project_name: data.project_name,
     employee_id: data.employee_id,
     start_date_of_the_week: data.start_date_of_the_week,
     hours: data.hours,
@@ -90,43 +95,40 @@ const transformToTimesheetEntry = (data: Record<string, any>): TimesheetEntry =>
     approved_by: data.approved_by,
     submission_date: data.submission_date,
     approved_date: data.approved_date,
-    time_records: data.time_records
+    time_records: data.time_records.map((record: any) => ({
+      ...record,
+      date: record.date || format(addDays(startDate, days.indexOf(record.day)), 'yyyy-MM-dd')
+    }))
   }
 }
 
 const addProjectToDatabase = async (entry: TimesheetEntry): Promise<void> => {
   const data: Record<string, any> = transformToJSON(entry);
+  new Promise(resolve => setTimeout(resolve, 500));
+  console.log("Added project:", "pretend this is a POST request", data);
 
-  try {
-    const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+  // try {
+  //   const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet', {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify(data),
+  //   });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
+  //   if (!response.ok) {
+  //     throw new Error(`HTTP error! Status: ${response.status}`);
+  //   }
 
-    const responseData = await response.json();
-    console.log("Message:", responseData);
-  } catch (error) {
-    console.error("Error adding project to database:", error);
-  }
+  //   const responseData = await response.json();
+  //   console.log("Message:", responseData);
+  // } catch (error) {
+  //   console.error("Error adding project to database:", error);
+  // }
 };
 
 const addOrUpdateTimeRecord = async (entry: TimesheetEntry, timeRecord: TimeRecord): Promise<void> => {
   await new Promise(resolve => setTimeout(resolve, 500));
-  // patch request to update timesheet entry
-  // fetch(`/api/timesheet/${entry.id}`, {
-  //   method: "PATCH",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //   },
-  //   body: JSON.stringify(entry.time_records),
-  // });
   console.log(`Patch Change for Project ${entry.project_id}: `, entry.time_records);
   console.log(`Patch Change for Project ${entry.project_id}: `, entry.hours);
   console.log("Added/Updated time record:", timeRecord);
@@ -142,6 +144,7 @@ const fetchTimesheetData = async (employee_id: string, currentWeekStart: Date): 
     if (Array.isArray(data)) {
       return data.map((entry: Record<string, any>) => transformToTimesheetEntry(entry));
     } else {
+      // console.error("No data found");
       return []; // return empty array if no data is found
     }
   } catch (error) {
@@ -163,7 +166,6 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const today = new Date()
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 })
 
-  // fetch timesheet data from database and update available projects
   useEffect(() => {
     const fetchData = async () => {
       const data = await fetchTimesheetData(employee_id, currentWeekStart);
@@ -173,7 +175,6 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
     fetchData();
   }, [currentWeekStart, employee_id]);
 
-  // update available projects based on timesheet data
   const updateAvailableProjects = (timesheetData: TimesheetEntry[]) => {
     const usedProjectIds = new Set(timesheetData.map(entry => entry.project_id));
     const updatedAvailableProjects = initialAvailableProjects.filter(
@@ -218,8 +219,10 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 : [
                     ...entry.time_records,
                     {
+                      id: `${entry.id}-${selectedCell.day}-${Date.now()}`,
                       timesheet_entry_id: entry.id,
                       day: selectedCell.day!,
+                      date: format(addDays(parseISO(entry.start_date_of_the_week), days.indexOf(selectedCell.day!)), 'yyyy-MM-dd'),
                       start_time: startTime,
                       end_time: endTime,
                     }
@@ -249,16 +252,17 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
     const entryToDelete = timesheet.find(entry => entry.id === entryId)
     if (entryToDelete) {
       setTimesheet(prevTimesheet => prevTimesheet.filter(entry => entry.id !== entryId))
-      setAvailableProjects(prevAvailable => [...prevAvailable, { id: entryToDelete.project_id, name: `Project ${entryToDelete.project_id}` }].sort((a, b) => a.id - b.id))
+      setAvailableProjects(prevAvailable => [...prevAvailable, { id: entryToDelete.project_id, name: entryToDelete.project_name }].sort((a, b) => a.id.localeCompare(b.id)))
     }
   }
 
   const handleAddProject = async () => {
-    const projectToAdd = availableProjects.find(p => p.id.toString() === selectedProjectId)
+    const projectToAdd = availableProjects.find(p => p.id === selectedProjectId)
     if (projectToAdd) {
       const newEntry: TimesheetEntry = {
         id: `${employee_id}-${projectToAdd.id}-${format(currentWeekStart, 'yyyy-MM-dd')}`,
         project_id: projectToAdd.id,
+        project_name: projectToAdd.name,
         employee_id: employee_id,
         start_date_of_the_week: format(currentWeekStart, 'yyyy-MM-dd'),
         hours: { Monday: "", Tuesday: "", Wednesday: "", Thursday: "", Friday: "" },
@@ -345,7 +349,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
         <TableBody>
           {timesheet.map((entry) => (
             <TableRow key={entry.id}>
-              <TableCell>{`Project ${entry.project_id}`}</TableCell>
+              <TableCell>{entry.project_name}</TableCell>
               {days.map(day => (
                 <TableCell key={day}>
                   <Button
@@ -363,7 +367,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => handleDeleteRow(entry.id)}
-                  aria-label={`Delete Project ${entry.project_id}`}
+                  aria-label={`Delete ${entry.project_name}`}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -393,7 +397,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
             </SelectTrigger>
             <SelectContent>
               {availableProjects.map((project) => (
-                <SelectItem key={project.id} value={project.id.toString()}>
+                <SelectItem key={project.id} value={project.id}>
                   {project.name}
                 </SelectItem>
               ))}

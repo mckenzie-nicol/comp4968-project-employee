@@ -6,9 +6,8 @@ import (
 
 type Config struct {
 	ReactAppUrl string
-	DbEndpoint  string
+	DbHost      string
 	DbName      string
-	DbARN       string
 	DbPort      string
 	DbUser      string
 	DbPassword  string
@@ -17,11 +16,10 @@ type Config struct {
 func Load() *Config {
 	return &Config{
 		ReactAppUrl: os.Getenv("REACT_APP_URL"),
-		DbEndpoint:  os.Getenv("DB_ENDPOINT"),
-		DbName:      os.Getenv("DB_NAME"),
-		DbARN:       os.Getenv("DB_ARN"),
-		DbPort:      os.Getenv("DB_PORT"),
-		DbUser:      os.Getenv("DB_USER"),
-		DbPassword:  os.Getenv("DbPassword"),
+		DbHost:      os.Getenv("DB_HOST"),
+		DbName:      os.Getenv("PG_DATABASE"),
+		DbPort:      os.Getenv("PG_PORT"),
+		DbUser:      os.Getenv("PG_USER"),
+		DbPassword:  os.Getenv("PG_PASSWORD"),
 	}
 }

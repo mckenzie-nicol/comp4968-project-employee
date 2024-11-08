@@ -58,7 +58,12 @@ interface TimesheetEntry {
   time_records: TimeRecord[]
 }
 
-const initialAvailableProjects = [
+interface Project {
+  id: number
+  name: string
+}
+
+const initialAvailableProjects: Project[] = [
   { id: 1, name: "Project 1" },
   { id: 2, name: "Project 2" },
   { id: 3, name: "Project 3" },
@@ -90,12 +95,29 @@ const transformToTimesheetEntry = (data: Record<string, any>): TimesheetEntry =>
 }
 
 const addProjectToDatabase = async (entry: TimesheetEntry): Promise<void> => {
-  await new Promise(resolve => setTimeout(resolve, 500));
-  const data : Record<string, any> = transformToJSON(entry);
-  console.log("Timesheet Entry JSON Added to database:", data );
-}
+  const data: Record<string, any> = transformToJSON(entry);
 
-const addOrUpdateTimeRecord = async ( entry : TimesheetEntry, timeRecord: TimeRecord): Promise<void> => {
+  try {
+    const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    console.log("Message:", responseData);
+  } catch (error) {
+    console.error("Error adding project to database:", error);
+  }
+};
+
+const addOrUpdateTimeRecord = async (entry: TimesheetEntry, timeRecord: TimeRecord): Promise<void> => {
   await new Promise(resolve => setTimeout(resolve, 500));
   // patch request to update timesheet entry
   // fetch(`/api/timesheet/${entry.id}`, {
@@ -106,12 +128,31 @@ const addOrUpdateTimeRecord = async ( entry : TimesheetEntry, timeRecord: TimeRe
   //   body: JSON.stringify(entry.time_records),
   // });
   console.log(`Patch Change for Project ${entry.project_id}: `, entry.time_records);
+  console.log(`Patch Change for Project ${entry.project_id}: `, entry.hours);
   console.log("Added/Updated time record:", timeRecord);
 }
 
+const fetchTimesheetData = async (employee_id: string, currentWeekStart: Date): Promise<TimesheetEntry[]> => {
+  try {
+    const response = await fetch(
+      `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet?employee_id=${employee_id}&start_date_of_the_week=${format(currentWeekStart, 'yyyy-MM-dd')}`
+    );
+    const data = await response.json();
+    
+    if (Array.isArray(data)) {
+      return data.map((entry: Record<string, any>) => transformToTimesheetEntry(entry));
+    } else {
+      return []; // return empty array if no data is found
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    return [];
+  }
+};
+
 export function TimesheetTable({ employee_id }: TimesheetProps) {
   const [timesheet, setTimesheet] = useState<TimesheetEntry[]>([])
-  const [availableProjects, setAvailableProjects] = useState(initialAvailableProjects)
+  const [availableProjects, setAvailableProjects] = useState<Project[]>(initialAvailableProjects)
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
   const [selectedCell, setSelectedCell] = useState<{ entryId: string | null; day: keyof DayHours | null }>({ entryId: null, day: null })
   const [startTime, setStartTime] = useState<string>("")
@@ -122,23 +163,24 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const today = new Date()
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 })
 
-  // fetch project data from database
+  // fetch timesheet data from database and update available projects
   useEffect(() => {
-    // TODO: fetchProjectData()
-  }, [])
+    const fetchData = async () => {
+      const data = await fetchTimesheetData(employee_id, currentWeekStart);
+      setTimesheet(data);
+      updateAvailableProjects(data);
+    };
+    fetchData();
+  }, [currentWeekStart, employee_id]);
 
-  // fetch timesheet data from database
-  useEffect(() => {
-    setTimesheet([])
-    // TODO: fetchTimesheetData(employee_id, currentWeekStart)
-    setAvailableProjects(initialAvailableProjects)
-  }, [currentWeekStart])
-
-  // update database when the timesheet state changes
-  useEffect(() => {
-    console.log("Timesheet updated:", timesheet)
-    // TODO: updateDatabase(timesheet)
-  }, [timesheet])
+  // update available projects based on timesheet data
+  const updateAvailableProjects = (timesheetData: TimesheetEntry[]) => {
+    const usedProjectIds = new Set(timesheetData.map(entry => entry.project_id));
+    const updatedAvailableProjects = initialAvailableProjects.filter(
+      project => !usedProjectIds.has(project.id)
+    );
+    setAvailableProjects(updatedAvailableProjects);
+  };
 
   const handleCellClick = (entryId: string, day: keyof DayHours) => {
     setSelectedCell({ entryId, day })
@@ -193,7 +235,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
         const updatedTimeRecord = updatedEntry.time_records.find(record => record.day === selectedCell.day)
         if (updatedTimeRecord) {
           try {
-            await addOrUpdateTimeRecord( updatedEntry, updatedTimeRecord)
+            await addOrUpdateTimeRecord(updatedEntry, updatedTimeRecord)
           } catch (error) {
             console.error("Failed to add/update time record:", error)
           }

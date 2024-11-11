@@ -66,31 +66,16 @@ interface Project {
   name: string
 }
 
-const initialAvailableProjects: Project[] = [
-  { id: "PROJ-001", name: "Design" },
-  { id: "PROJ-002", name: "App Development" },
-  { id: "PROJ-003", name: "Database" },
-  { id: "PROJ-004", name: "Cloud Infra" },
-  { id: "PROJ-005", name: "AI Integration" },
-]
-
 const days: (keyof DayHours)[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 
-const transformToJSON = (data: TimesheetEntry): Record<string, any> => {
+const transformTSToJSON = (data: TimesheetEntry): Record<string, any> => {
   const dataToStore = {
     id: data.id,
     project_id: data.project_id,
-    project_name: data.project_name,
     employee_id: data.employee_id,
     start_date_of_the_week: data.start_date_of_the_week,
-    approved: data.approved,
-    approved_by: data.approved_by,
-    submission_date: data.submission_date,
-    approved_date: data.approved_date,
-  }
-  return JSON.parse(
-    JSON.stringify(dataToStore, (_, value) => (value === undefined ? null : value))
-  );
+  };
+  return dataToStore;
 }
 
 const transformToTimesheetEntry = (data: Record<string, any>): TimesheetEntry => {
@@ -101,41 +86,82 @@ const transformToTimesheetEntry = (data: Record<string, any>): TimesheetEntry =>
     project_name: data.project_name,
     employee_id: data.employee_id,
     start_date_of_the_week: data.start_date_of_the_week,
-    hours: data.hours,
+    hours: data.hours ? data.hours : { Monday: "", Tuesday: "", Wednesday: "", Thursday: "", Friday: "" },
     approved: data.approved,
     approved_by: data.approved_by,
     submission_date: data.submission_date,
     approved_date: data.approved_date,
-    time_records: data.time_records.map((record: any) => ({
+    time_records: data.time_records ? data.time_records.map((record: any) => ({
       ...record,
       date: record.date || format(addDays(startDate, days.indexOf(record.day)), 'yyyy-MM-dd')
-    }))
+    })) : []
   }
 }
 
 const addProjectToDatabase = async (entry: TimesheetEntry): Promise<void> => {
-  const data: Record<string, any> = transformToJSON(entry);
-  new Promise(resolve => setTimeout(resolve, 500));
-  console.log("Added project:", "pretend this is a POST request", data);
+  const data: Record<string, any> = transformTSToJSON(entry);
+  console.log("Added project:", data);
 
-  // try {
-  //   const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet', {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify(data),
-  //   });
+  try {
+    const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
 
-  //   if (!response.ok) {
-  //     throw new Error(`HTTP error! Status: ${response.status}`);
-  //   }
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
 
-  //   const responseData = await response.json();
-  //   console.log("Message:", responseData);
-  // } catch (error) {
-  //   console.error("Error adding project to database:", error);
-  // }
+    const responseData = await response.json();
+    console.log("Message:", responseData);
+  } catch (error) {
+    console.error("Error adding project to database:", error);
+  }
+};
+
+const fetchProjectData = async (): Promise<Project[]> => {
+  try {
+    const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/project');
+    const data = await response.json();
+    // console.log("Fetched data:", data);
+
+    if (Array.isArray(data)) {
+      return data.map((project: Record<string, any>) => ({
+        id: project.id,
+        name: project.name,
+      }));
+    } else {
+      console.error("No data found");
+      return [];
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    return [];
+  }
+}
+
+
+const fetchTimesheetData = async (employee_id: string, currentWeekStart: Date): Promise<TimesheetEntry[]> => {
+  try {
+    const response = await fetch(
+      `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet?employee_id=${employee_id}&start_date_of_the_week=${format(currentWeekStart, 'yyyy-MM-dd')}`
+    );
+    const data = await response.json();
+    // console.log("Fetched data:", data);
+    
+    if (Array.isArray(data)) {
+      return data.map((entry: Record<string, any>) => transformToTimesheetEntry(entry));
+    } else {
+      console.error("No data found");
+      return []; // return empty array if no data is found
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    return [];
+  }
 };
 
 const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
@@ -148,28 +174,9 @@ const deleteTimesheetEntry = async (entryId: string): Promise<void> => {
   console.log("Deleted entry:", entryId);
 }
 
-const fetchTimesheetData = async (employee_id: string, currentWeekStart: Date): Promise<TimesheetEntry[]> => {
-  try {
-    const response = await fetch(
-      `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet?employee_id=${employee_id}&start_date_of_the_week=${format(currentWeekStart, 'yyyy-MM-dd')}`
-    );
-    const data = await response.json();
-    
-    if (Array.isArray(data)) {
-      return data.map((entry: Record<string, any>) => transformToTimesheetEntry(entry));
-    } else {
-      // console.error("No data found");
-      return []; // return empty array if no data is found
-    }
-  } catch (error) {
-    console.error("Error:", error);
-    return [];
-  }
-};
-
 export function TimesheetTable({ employee_id }: TimesheetProps) {
   const [timesheet, setTimesheet] = useState<TimesheetEntry[]>([])
-  const [availableProjects, setAvailableProjects] = useState<Project[]>(initialAvailableProjects)
+  const [availableProjects, setAvailableProjects] = useState<Project[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
   const [selectedCell, setSelectedCell] = useState<{ entryId: string | null; day: keyof DayHours | null }>({ entryId: null, day: null })
   const [startTime, setStartTime] = useState<string>("")
@@ -183,15 +190,17 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   useEffect(() => {
     const fetchData = async () => {
       const data = await fetchTimesheetData(employee_id, currentWeekStart);
+      const projectData = await fetchProjectData();
       setTimesheet(data);
-      updateAvailableProjects(data);
+      setAvailableProjects(projectData);
+      updateAvailableProjects(data, projectData);
     };
     fetchData();
   }, [currentWeekStart, employee_id]);
 
-  const updateAvailableProjects = (timesheetData: TimesheetEntry[]) => {
+  const updateAvailableProjects = (timesheetData: TimesheetEntry[], projectData : Project[]) => {
     const usedProjectIds = new Set(timesheetData.map(entry => entry.project_id));
-    const updatedAvailableProjects = initialAvailableProjects.filter(
+    const updatedAvailableProjects = projectData.filter(
       project => !usedProjectIds.has(project.id)
     );
     setAvailableProjects(updatedAvailableProjects);

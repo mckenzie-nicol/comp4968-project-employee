@@ -6,7 +6,7 @@ export default function Timesheet() {
         <div className="flex items-center gap-4 mb-6">
           <h1 className="text-3xl font-bold">Timesheet</h1>
         </div>
-        <TimesheetTable employee_id="A01343012"/>
+        <TimesheetTable employee_id="emp001"/>
       </div>
   );
 }

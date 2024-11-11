@@ -175,8 +175,32 @@ const fetchTimesheetData = async (employee_id: string, currentWeekStart: Date): 
 };
 
 const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
-  await new Promise(resolve => setTimeout(resolve, 500));
-  console.log("Added/Updated time record:", timeRecord);
+  const data = {
+    id: timeRecord.id,
+    timesheet_id: timeRecord.timesheet_id,
+    day: timeRecord.day,
+    date: timeRecord.date,
+    start_time: timeRecord.start_time,
+    end_time: timeRecord.end_time,
+  };
+  try {
+    const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet/timerecord', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    console.log("Message:", responseData);
+  } catch (error) {
+    console.error("Error adding/updating time record:", error);
+  };
 }
 
 const deleteTimesheetEntry = async (entryId: string): Promise<void> => {

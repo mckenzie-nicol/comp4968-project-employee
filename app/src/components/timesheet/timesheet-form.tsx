@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { X, Check, ChevronLeft, ChevronRight } from "lucide-react"
-import { startOfWeek, endOfWeek, addWeeks, addDays, format, isBefore, parseISO } from "date-fns"
+import { startOfWeek, endOfWeek, addWeeks, addDays, format, isBefore, parseISO, differenceInMinutes } from "date-fns"
 import {
   Select,
   SelectContent,
@@ -40,7 +40,7 @@ type DayHours = {
 
 interface TimeRecord {
   id: string;
-  timesheet_entry_id: string;
+  timesheet_id: string;
   day: keyof DayHours;
   date: string;
   start_time: string;
@@ -80,6 +80,16 @@ const transformTSToJSON = (data: TimesheetEntry): Record<string, any> => {
 
 const transformToTimesheetEntry = (data: Record<string, any>): TimesheetEntry => {
   const startDate = parseISO(data.start_date_of_the_week);
+
+  // Calculate hours based on time records
+  data.hours = data.time_records.reduce((acc: DayHours, record: TimeRecord) => {
+    const start = new Date(`2024-01-01T${record.start_time}:00`);
+    const end = new Date(`2024-01-01T${record.end_time}:00`);
+    const diffHours = differenceInMinutes(end, start) / 60;
+    acc[record.day] = diffHours.toFixed(2);
+    return acc;
+  }, { Monday: "", Tuesday: "", Wednesday: "", Thursday: "", Friday: "" });
+
   return {
     id: data.id,
     project_id: data.project_id,
@@ -150,7 +160,7 @@ const fetchTimesheetData = async (employee_id: string, currentWeekStart: Date): 
       `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet?employee_id=${employee_id}&start_date_of_the_week=${format(currentWeekStart, 'yyyy-MM-dd')}`
     );
     const data = await response.json();
-    // console.log("Fetched data:", data);
+    console.log("Fetched data:", data);
     
     if (Array.isArray(data)) {
       return data.map((entry: Record<string, any>) => transformToTimesheetEntry(entry));
@@ -243,7 +253,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                     ...entry.time_records,
                     {
                       id: `${entry.id}-${selectedCell.day}-${Date.now()}`,
-                      timesheet_entry_id: entry.id,
+                      timesheet_id: entry.id,
                       day: selectedCell.day!,
                       date: format(addDays(parseISO(entry.start_date_of_the_week), days.indexOf(selectedCell.day!)), 'yyyy-MM-dd'),
                       start_time: startTime,

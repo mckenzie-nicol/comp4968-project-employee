@@ -203,6 +203,36 @@ const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
   };
 }
 
+const submitTimesheet = async (timesheet: TimesheetEntry[]): Promise<void> => {
+  const data = timesheet.map(entry => {
+    return {
+      id: entry.id,
+      submission_date: format(new Date(), 'yyyy-MM-dd')
+    }
+  });
+  data.forEach(async (entry) => {
+    try {
+      const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet', {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(entry),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      console.log("Message:", responseData);
+    } catch (error) {
+      console.error("Error submitting timesheet:", error);
+    }
+  });
+  console.log("Submitted timesheet:", data);
+};
+
 const deleteTimesheetEntry = async (entryId: string): Promise<void> => {
   await new Promise(resolve => setTimeout(resolve, 500));
   console.log("Deleted entry:", entryId);
@@ -343,7 +373,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   }
 
   const handleSubmitForApproval = () => {
-    console.log("Timesheet submitted for approval")
+    submitTimesheet(timesheet);
   }
 
   const calculateTotalHours = (hours: DayHours): number => {

@@ -212,7 +212,7 @@ const submitTimesheet = async (timesheet: TimesheetEntry[]): Promise<void> => {
   });
   data.forEach(async (entry) => {
     try {
-      const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet', {
+      const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet/submit', {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

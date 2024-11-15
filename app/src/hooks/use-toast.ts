@@ -1,3 +1,5 @@
+"use client"
+
 // Inspired by react-hot-toast library
 import * as React from "react"
 
@@ -150,28 +152,17 @@ function toast({ ...props }: Toast) {
     })
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
-  interface ToastOnOpenChange {
-    (open: boolean): void;
-  }
-
-  interface AddToastAction {
-    type: ActionType["ADD_TOAST"];
-    toast: ToasterToast & { open: boolean; onOpenChange: ToastOnOpenChange };
-  }
-
-  const addToastAction: AddToastAction = {
+  dispatch({
     type: "ADD_TOAST",
     toast: {
       ...props,
       id,
       open: true,
-      onOpenChange: (open: boolean) => {
-        if (!open) dismiss();
+      onOpenChange: (open) => {
+        if (!open) dismiss()
       },
     },
-  };
-
-  dispatch(addToastAction);
+  })
 
   return {
     id: id,

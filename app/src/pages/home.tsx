@@ -19,9 +19,9 @@ function Home() {
     setIsAuthenticated(false);
   };
 
-  if (isAuthenticated) {
+  // if (isAuthenticated) {
     return <DashboardPage onSignOut={handleSignOut} />;
-  }
+  // }
 
   return (
     <div className="min-h-screen auth-container">

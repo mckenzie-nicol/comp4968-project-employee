@@ -19,9 +19,33 @@ export function SignUpForm() {
   const [password, setPassword] = useState("");
   const [isSettingAdmin, setIsSettingAdmin] = useState<boolean>(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle sign up logic here
+  const handleOrganizationSubmit = async (
+    organizationName: string,
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string
+  ) => {
+    const response = await fetch(
+      `API_ENDPOINT_ADD_ORGANIZATION/${
+        organizationName + firstName + lastName + email + password
+      }`
+    );
+    return response;
+  };
+
+  const handleEmployeeSubmit = async (
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string
+  ) => {
+    const response = await fetch(
+      `API_ENDPOINT_ADD_ORGANIZATION/${
+        organizationName + firstName + lastName + email + password
+      }`
+    );
+    return response;
   };
 
   return (
@@ -55,32 +79,30 @@ export function SignUpForm() {
           </div>
           {isOrganization && !isSettingAdmin && (
             <div className="">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-gray-700">
-                    Organization Name
-                  </Label>
-                  <Input
-                    id="organizationName"
-                    placeholder="Company Name..."
-                    value={organizationName}
-                    onChange={(e) => setOrganizationName(e.target.value)}
-                    required
-                    className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
-                  />
-                  <div className="space-y-6">
-                    <div className="flex justify-between">
-                      <Button>Check Availability</Button>
-                      <div id="availabilityResponse"></div>
-                    </div>
-                    <div className="flex justify-center">
-                      <Button onClick={() => setIsSettingAdmin(true)}>
-                        Continue
-                      </Button>
-                    </div>
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-gray-700">
+                  Organization Name
+                </Label>
+                <Input
+                  id="organizationName"
+                  placeholder="Company Name..."
+                  value={organizationName}
+                  onChange={(e) => setOrganizationName(e.target.value)}
+                  required
+                  className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
+                />
+                <div className="space-y-6">
+                  <div className="flex justify-between">
+                    <Button>Check Availability</Button>
+                    <div id="availabilityResponse"></div>
+                  </div>
+                  <div className="flex justify-center">
+                    <Button onClick={() => setIsSettingAdmin(true)}>
+                      Continue
+                    </Button>
                   </div>
                 </div>
-              </form>
+              </div>
             </div>
           )}
           {isOrganization && isSettingAdmin && (
@@ -145,6 +167,9 @@ export function SignUpForm() {
               <Button
                 type="submit"
                 className="bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity mt-4"
+                onClick={() => {
+                  handleOrganizationSubmit(organizationName, firstName, lastName, email, password)
+                }}
               >
                 Create account
               </Button>
@@ -209,6 +234,9 @@ export function SignUpForm() {
               <Button
                 type="submit"
                 className="bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity mt-4"
+                onClick={() => {
+                  handleEmployeeSubmit(firstName, lastName, email, password);
+                }}
               >
                 Create account
               </Button>

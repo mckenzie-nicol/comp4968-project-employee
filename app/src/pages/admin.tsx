@@ -202,7 +202,7 @@ function Admin() {
                       <label>Role</label>
                       <Select>
                         <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Select a fruit" />
+                          <SelectValue placeholder="Select a role..." />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>

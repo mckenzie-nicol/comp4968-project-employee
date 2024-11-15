@@ -245,7 +245,7 @@ function Admin() {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="flex justify-center space-x-6">
+      <div className="xl:flex xl:justify-center xl:space-x-2">
         <div className="w-full">
           {projectManagers && <PersonList title="Project Managers" employees={projectManagers.employees} />}
         </div>

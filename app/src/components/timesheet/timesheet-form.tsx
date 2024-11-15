@@ -235,7 +235,12 @@ const submitTimesheet = async (timesheet: TimesheetEntry[]): Promise<void> => {
 };
 
 const deleteTimesheetEntry = async (entryId: string): Promise<void> => {
-  await new Promise(resolve => setTimeout(resolve, 500));
+  const response = await fetch(`https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet?id=${entryId}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
   console.log("Deleted entry:", entryId);
 }
 

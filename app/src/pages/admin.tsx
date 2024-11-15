@@ -171,10 +171,11 @@ function Admin() {
                         id="firstName"
                         type="firstName"
                         value={firstName}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
                         placeholder="First name..."
                         required
                         className="backdrop-blur-sm bg-white/50 border-gray-200"
-                      />
+                        />
                     </div>
                     <div className="flex-col space-y-3">
                       <label>Last Name</label>
@@ -182,10 +183,11 @@ function Admin() {
                         id="lastName"
                         type="lastName"
                         value={lastName}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
                         placeholder="Last name..."
                         required
                         className="backdrop-blur-sm bg-white/50 border-gray-200"
-                      />
+                        />
                     </div>
                     <div className="flex-col space-y-3">
                       <label>Email</label>
@@ -193,6 +195,7 @@ function Admin() {
                         id="email"
                         type="email"
                         value={email}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                         placeholder="Email..."
                         required
                         className="backdrop-blur-sm bg-white/50 border-gray-200"

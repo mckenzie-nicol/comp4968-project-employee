@@ -8,6 +8,7 @@ import { useState } from "react";
 function Home() {
   const [isSignIn, setIsSignIn] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+ 
 
   const handleLogin = (email: string, password: string) => {
     if (email === "admin@admin.com" && password === "123456") {
@@ -47,7 +48,7 @@ function Home() {
             <Button
               variant="outline"
               onClick={() => setIsSignIn(!isSignIn)}
-              className="min-w-[200px] bg-white/50 hover:bg-white/80 transition-all duration-300"
+              className="min-w-[200px] bg-white/50 hover:bg-slate-800 transition-all duration-300"
             >
               {isSignIn ? "Create account" : "Sign in"}
             </Button>

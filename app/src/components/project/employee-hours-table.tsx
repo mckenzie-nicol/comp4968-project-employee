@@ -19,87 +19,44 @@ import {
   parseISO,
   differenceInMinutes,
 } from "date-fns";
+import { Timesheet } from "@/components/project/manager-approval-layout";
 
-const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
+const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-// Fetch timesheet hours data for the project page that manager is on
-const fetchTimesheetData = async (pid, currentWeekStart) => {
-  try {
-    const response = await fetch(
-      `${API_URL}/test/timesheet/manager/${pid}?start_date=${format(
-        currentWeekStart,
-        "yyyy-MM-dd"
-      )}`
-    );
-    console.log(response);
-    const data = await response.json();
-    console.log(data);
-    return data.data;
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-};
-
-type Project = {
-  id: number;
-  name: string;
-  progress: number;
-  hours: number;
-  status: string;
-};
-
-function EmployeeHoursTable({ pid, currentWeekStart }) {
-  const [timesheets, setTimesheets] = useState<Project[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchTimesheetData(pid, currentWeekStart);
-      const timesheetsData = data.map((project: Project) => ({
-        id: project.id,
-        name: project.name,
-        // TODO: Replace the mock data
-        progress: 89,
-        hours: 42.0,
-        status: "In Progress",
-      }));
-      setTimesheets(timesheetsData);
-    };
-    fetchData();
-  }, [currentWeekStart]);
-
+function EmployeeHoursTable({ timesheets }: { timesheets: Timesheet[] }) {
   return (
     <Table>
       <TableCaption>Weekly Timesheet</TableCaption>
       <TableHeader>
-        {/* <TableRow>
-          <TableHead>Project</TableHead>
+        <TableRow>
+          <TableHead>Name</TableHead>
           {days.map((day) => (
             <TableHead key={day} className="text-center">
               {day}
             </TableHead>
           ))}
           <TableHead>Total Hours</TableHead>
-          <TableHead className="w-[50px]">Actions</TableHead>
-        </TableRow> */}
+        </TableRow>
       </TableHeader>
       <TableBody>
-        {/* {timesheet.map((entry) => (
+        {timesheets.map((entry) => (
           <TableRow key={entry.id}>
-            <TableCell>{entry.project_name}</TableCell>
+            <TableCell>{`${entry.first_name} ${entry.last_name}`}</TableCell>
             {days.map((day) => (
               <TableCell key={day}>
-                <Button
+                {/* <Button
                   variant="outline"
                   className="w-full h-full"
                   onClick={() => handleCellClick(entry.id, day)}
                 >
                   {entry.hours[day] || "0.00"}
-                </Button>
+                </Button> */}
+                test
               </TableCell>
             ))}
-            <TableCell>{calculateTotalHours(entry.hours).toFixed(2)}</TableCell>
-            <TableCell>
+            <TableCell>test</TableCell>
+            {/* <TableCell>{calculateTotalHours(entry.hours).toFixed(2)}</TableCell> */}
+            {/* <TableCell>
               <Button
                 variant="ghost"
                 size="icon"
@@ -108,13 +65,13 @@ function EmployeeHoursTable({ pid, currentWeekStart }) {
               >
                 <X className="h-4 w-4" />
               </Button>
-            </TableCell>
+            </TableCell> */}
           </TableRow>
-        ))} */}
+        ))}
       </TableBody>
-      <TableFooter>
+      {/* <TableFooter>
         <TableRow>
-          {/* <TableCell>Daily Total</TableCell>
+          <TableCell>Daily Total</TableCell>
           {days.map((day) => (
             <TableCell key={day} className="text-center">
               {calculateDayTotal(day).toFixed(2)}
@@ -125,9 +82,9 @@ function EmployeeHoursTable({ pid, currentWeekStart }) {
               .reduce((sum, entry) => sum + calculateTotalHours(entry.hours), 0)
               .toFixed(2)}
           </TableCell>
-          <TableCell /> */}
+          <TableCell />
         </TableRow>
-      </TableFooter>
+      </TableFooter> */}
     </Table>
   );
 }

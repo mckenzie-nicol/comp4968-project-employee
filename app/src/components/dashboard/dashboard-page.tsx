@@ -26,7 +26,7 @@ export function DashboardPage({ onSignOut }: DashboardPageProps) {
           </Button>
           <h1 className="text-3xl font-bold text-gradient">New Timesheet</h1>
         </div>
-        <TimesheetTable employee_id="emp001"/>
+        <TimesheetTable employee_id="emp003"/>
       </div>
     )
   }

@@ -138,36 +138,38 @@ func (d *DB) GetRecentTimesheets() ([]models.RecentTimesheetResponse, error) {
 
 func (d *DB) GetProjectAllocations() ([]models.ProjectAllocationResponse, error) {
 	query := `
-        WITH current_allocations AS (
+        WITH latest_week AS (
+            SELECT start_date_of_the_week
+            FROM timesheet
+            ORDER BY submission_date DESC
+            LIMIT 1
+        ),
+        current_allocations AS (
             SELECT 
                 p.id as project_id,
                 p.name as project_name,
                 p.estimated_hours,
-                e.id as employee_id,
-                e.first_name,
-                e.last_name,
-                e.role,
-                COUNT(tr.id) as total_records,
-                COUNT(tr.end_time) as completed_records
+                u.id as employee_id,
+                u.first_name,
+                u.last_name,
+                ou.role,
+                COUNT(DISTINCT tr.id) as total_records,
+                COUNT(DISTINCT CASE WHEN tr.end_time IS NOT NULL THEN tr.id END) as completed_records
             FROM project p
-            JOIN timesheet t ON p.id = t.project_id
-            JOIN employee e ON t.employee_id = e.id
+            LEFT JOIN timesheet t ON p.id = t.project_id AND t.start_date_of_the_week = (SELECT start_date_of_the_week FROM latest_week)
+            LEFT JOIN "user" u ON t.employee_id = u.id
+            LEFT JOIN organization_user ou ON u.id = ou.id 
             LEFT JOIN time_record tr ON t.id = tr.timesheet_id
-            WHERE t.start_date_of_the_week = (
-                SELECT start_date_of_the_week 
-                FROM timesheet 
-                ORDER BY submission_date DESC 
-                LIMIT 1
-            )
             GROUP BY 
                 p.id, p.name, p.estimated_hours,
-                e.id, e.first_name, e.last_name, e.role
+                u.id, u.first_name, u.last_name, ou.role
+            HAVING u.id IS NOT NULL
         )
         SELECT * FROM current_allocations`
 
 	rows, err := d.db.Query(query)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query failed: %v", err)
 	}
 	defer rows.Close()
 
@@ -192,7 +194,7 @@ func (d *DB) GetProjectAllocations() ([]models.ProjectAllocationResponse, error)
 			&completedRecords,
 		)
 		if err != nil {
-			continue
+			return nil, fmt.Errorf("scan failed: %v", err)
 		}
 
 		if _, exists := projects[projectID]; !exists {
@@ -209,7 +211,6 @@ func (d *DB) GetProjectAllocations() ([]models.ProjectAllocationResponse, error)
 		}
 
 		actualHours := float64(completedRecords) * 8
-
 		member := models.TeamMemberResponse{
 			ID:             employeeID,
 			Name:           firstName + " " + lastName,
@@ -224,6 +225,10 @@ func (d *DB) GetProjectAllocations() ([]models.ProjectAllocationResponse, error)
 	allocations := make([]models.ProjectAllocationResponse, 0, len(projects))
 	for _, p := range projects {
 		allocations = append(allocations, *p)
+	}
+
+	if len(allocations) == 0 {
+		return nil, fmt.Errorf("no allocations found")
 	}
 
 	return allocations, nil

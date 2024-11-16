@@ -149,6 +149,7 @@ function EmployeeHoursTable({
                     variant="outline"
                     className="w-full h-full"
                     onClick={() => handleCellClick(entry.id, day)}
+                    disabled={entry.approved}
                   >
                     {entry.hours[day] || "0.00"}
                   </Button>

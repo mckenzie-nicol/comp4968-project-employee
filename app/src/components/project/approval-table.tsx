@@ -69,7 +69,7 @@ function ApprovalTable({
         {timesheets.map((entry, index) => (
           <TableRow key={entry.id}>
             <TableCell>{`${entry.first_name} ${entry.last_name}`}</TableCell>
-            <TableCell>{trackedHours[index].toFixed(2)}</TableCell>
+            <TableCell>{trackedHours[index]?.toFixed(2) ?? ""}</TableCell>
             <TableCell>{entry.approved ? "Approved" : "Open"}</TableCell>
             <TableCell>
               <Button

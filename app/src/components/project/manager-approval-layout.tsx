@@ -103,7 +103,7 @@ const fetchTrackedHoursData = async (
     if (promise.status === "fulfilled") {
       return promise.value;
     } else {
-      return 0;
+      return null;
     }
   });
   return hoursData;
@@ -175,7 +175,7 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
-  const [trackedHours, setTrackedHours] = useState<number[]>([]);
+  const [trackedHours, setTrackedHours] = useState<(number | null)[]>([]);
   const [refetch, setRefetch] = useState(false);
 
   /* Week selector functions and constants */

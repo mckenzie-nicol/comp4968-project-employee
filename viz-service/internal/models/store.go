@@ -23,6 +23,7 @@ type Payment struct {
 
 type Project struct {
 	ID               string     `json:"id" db:"id"`
+	OrganizationID   string     `json:"organization_id" db:"organization_id"`
 	Name             string     `json:"name" db:"name"`
 	ProjectManagerID *string    `json:"project_manager_id" db:"project_manager_id"`
 	StartDate        *time.Time `json:"start_date" db:"start_date"`
@@ -47,6 +48,23 @@ type Timesheet struct {
 	Approved        *bool      `json:"approved" db:"approved"`
 	ApprovedBy      *string    `json:"approved_by" db:"approved_by"`
 	ApprovedDate    *time.Time `json:"approved_date" db:"approved_date"`
+}
+
+type Organization struct {
+	ID        string    `json:"id" db:"id"`
+	Name      string    `json:"name" db:"name"`
+	OwnerID   string    `json:"owner_id" db:"owner_id"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+}
+
+type OrganizationUser struct {
+	ID             string    `json:"id" db:"id"`
+	OrganizationID string    `json:"organization_id" db:"organization_id"`
+	UserID         string    `json:"user_id" db:"user_id"`
+	Role           string    `json:"role" db:"role"`
+	CreatedAt      time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at" db:"updated_at"`
 }
 
 const (

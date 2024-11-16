@@ -16,7 +16,7 @@ const functionToGetOrganizationName = async (organizationId: number) => {
   return { organizationId, organizationName: "Org Name" };
 };
 
-const functionToGetProjectManagers = async (organizationId: number) : Promise<PersonProps[]> => {
+const functionToGetProjectManagers = async () : Promise<PersonProps[]> => {
   return [
     {
       id: 2,
@@ -45,7 +45,7 @@ const functionToGetProjectManagers = async (organizationId: number) : Promise<Pe
   ];
 };
 
-const functionToGetEmployees = async (organizationId: number) : Promise<PersonProps[]> => {
+const functionToGetEmployees = async () : Promise<PersonProps[]> => {
   return [
     {
       id: 6,

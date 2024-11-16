@@ -25,6 +25,8 @@ import {
   TimeRecord,
 } from "@/components/project/manager-approval-layout";
 
+const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
+
 const days: (keyof DayHours)[] = [
   "Monday",
   "Tuesday",
@@ -33,12 +35,33 @@ const days: (keyof DayHours)[] = [
   "Friday",
 ];
 
+const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
+  try {
+    const response = await fetch(`${API_URL}/test/timesheet/timerecord`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(timeRecord),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    console.log("Message:", responseData);
+  } catch (error) {
+    console.error("Error adding/updating time record:", error);
+  }
+};
+
 function EmployeeHoursTable({
   timesheets,
-  fetchData,
+  refetchData,
 }: {
   timesheets: Timesheet[];
-  fetchData: () => void;
+  refetchData: () => void;
 }) {
   const [startTime, setStartTime] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
@@ -50,37 +73,9 @@ function EmployeeHoursTable({
     useState<keyof DayHours>("Monday");
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
-  const addOrUpdateTimeRecord = async (
-    timeRecord: TimeRecord
-  ): Promise<void> => {
-    try {
-      const response = await fetch(
-        "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet/timerecord",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(timeRecord),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const responseData = await response.json();
-      console.log("Message:", responseData);
-    } catch (error) {
-      console.error("Error adding/updating time record:", error);
-    } finally {
-      fetchData();
-    }
-  };
-
   const handleSaveTime = async () => {
     setIsSaving(true);
-    if (startTime && endTime && selectedTimesheetId) {
+    if (startTime && endTime && selectedTimesheetId && selectedTimeRecord) {
       const entry = timesheets.find((e) => e.id === selectedTimesheetId);
 
       const updatedTimeRecord = selectedTimeRecord
@@ -104,14 +99,11 @@ function EmployeeHoursTable({
             end_time: endTime,
           };
 
-      try {
-        await addOrUpdateTimeRecord(updatedTimeRecord);
-      } catch (error) {
-        console.error("Failed to add/update time record:", error);
-      }
+      await addOrUpdateTimeRecord(updatedTimeRecord);
+      refetchData();
     }
-    setIsDialogOpen(false);
     setIsSaving(false);
+    setIsDialogOpen(false);
   };
 
   const handleCellClick = (entryId: string, day: keyof DayHours) => {
@@ -202,7 +194,9 @@ function EmployeeHoursTable({
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSaveTime} disabled={isSaving}>Save</Button>
+            <Button onClick={handleSaveTime} disabled={isSaving}>
+              Save
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

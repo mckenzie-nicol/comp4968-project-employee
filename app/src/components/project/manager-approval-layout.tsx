@@ -38,9 +38,7 @@ const fetchTimesheetData = async (pid: string, currentWeekStart: Date) => {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    console.log(response);
     const data = await response.json();
-    console.log(data);
     return data.data;
   } catch (error) {
     console.error(error);
@@ -48,6 +46,7 @@ const fetchTimesheetData = async (pid: string, currentWeekStart: Date) => {
   }
 };
 
+// TODO: change lambda to throw error
 const fetchTimeRecordData = async (
   timesheetsData: Record<string, unknown>[]
 ) => {
@@ -61,40 +60,34 @@ const fetchTimeRecordData = async (
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      console.log(response);
       const data = await response.json();
-      console.log(data);
       return {
         ...timesheetData,
         time_records: Array.isArray(data) ? data : [],
       };
     })
   );
-  console.log(promisesArray);
   const timesheetAndRecordsData = promisesArray
     .filter((promise) => promise.status === "fulfilled")
     .map((promise) => promise.value);
-  console.log(timesheetAndRecordsData);
   return timesheetAndRecordsData;
 };
 
-const fetchHoursData = async (
+const fetchTrackedHoursData = async (
   timesheetAndRecordsData: Record<string, unknown>[]
 ) => {
   const promisesArray = await Promise.allSettled(
     timesheetAndRecordsData.map(
       async (timesheetAndRecord: Record<string, unknown>) => {
         const response = await fetch(
-          `${API_URL}/test/timesheet/timerecord/manager/${timesheetAndRecord.employee_id}`
+          `${API_URL}/test/timesheet/timerecord/manager/${timesheetAndRecord.employee_id}?pid=${timesheetAndRecord.project_id}`
         );
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        console.log(response);
         const data = await response.json();
-        console.log(data);
         const hoursWorked = data.data
           .map((timeRecord: { start_time: "string"; end_time: "string" }) => {
             const start = new Date(`2024-01-01T${timeRecord.start_time}:00`);
@@ -106,11 +99,9 @@ const fetchHoursData = async (
       }
     )
   );
-  console.log(promisesArray);
   const hoursData = promisesArray
     .filter((promise) => promise.status === "fulfilled")
     .map((promise) => promise.value);
-  console.log(hoursData);
   return hoursData;
 };
 
@@ -181,7 +172,9 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
   );
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
   const [trackedHours, setTrackedHours] = useState<number[]>([]);
+  const [refetch, setRefetch] = useState(false);
 
+  /* Week selector functions and constants */
   const today = new Date();
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 });
 
@@ -203,23 +196,27 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
 
   const isCurrentWeek = isBefore(currentWeekStart, addWeeks(currentWeek, 1));
 
-  // Fetch timesheet and records data of all employees for the current week
-  const fetchData = async () => {
-    const timesheetsData = await fetchTimesheetData(pid, currentWeekStart);
-    const timesheetAndRecordsData = await fetchTimeRecordData(timesheetsData);
-    const hoursData = await fetchHoursData(timesheetAndRecordsData);
-    if (hoursData.length !== timesheetAndRecordsData.length) {
-      console.error("Failed to fetch hours data for all employees");
-      hoursData.length = timesheetAndRecordsData.length;
-    }
-    setTrackedHours(hoursData);
-    setTimesheets(timesheetAndRecordsData.map(transformTimesheet));
+  // Refetch data when approval status or timesheet records are updated
+  const refetchData = () => {
+    setRefetch((prev) => !prev);
   };
 
   // Fetch timesheet and records data of all employees for the current week
   useEffect(() => {
+    const fetchData = async () => {
+      const timesheetsData = await fetchTimesheetData(pid, currentWeekStart);
+      const timesheetAndRecordsData = await fetchTimeRecordData(timesheetsData);
+      const hoursData = await fetchTrackedHoursData(timesheetAndRecordsData);
+      if (hoursData.length !== timesheetAndRecordsData.length) {
+        console.error("Failed to fetch hours data for all employees");
+        hoursData.length = timesheetAndRecordsData.length;
+      }
+      setTrackedHours(hoursData);
+      setTimesheets(timesheetAndRecordsData.map(transformTimesheet));
+    };
+
     fetchData();
-  }, [currentWeekStart]);
+  }, [currentWeekStart, refetch]);
 
   console.log(timesheets);
 
@@ -262,15 +259,18 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="timesheets">
-          {/* Employee hours table */}
-          <EmployeeHoursTable timesheets={timesheets} fetchData={fetchData} />
+          {/* Employee timesheet hours table */}
+          <EmployeeHoursTable
+            timesheets={timesheets}
+            refetchData={refetchData}
+          />
         </TabsContent>
         <TabsContent value="approval">
           {/* Approval table */}
           <ApprovalTable
             trackedHours={trackedHours}
             timesheets={timesheets}
-            fetchData={fetchData}
+            refetchData={refetchData}
           />
         </TabsContent>
       </Tabs>

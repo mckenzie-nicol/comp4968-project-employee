@@ -11,41 +11,48 @@ import { Timesheet } from "@/components/project/manager-approval-layout";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
+const updateApproveStatus = async (id: string, approved: boolean) => {
+  try {
+    const response = await fetch(`${API_URL}/test/timesheet`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+        project_id: null,
+        employee_id: null,
+        start_date_of_the_week: null,
+        submission_date: null,
+        approved: !approved,
+        approved_by: null,
+        approved_date: null,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 function ApprovalTable({
   trackedHours,
   timesheets,
-  fetchData,
+  refetchData,
 }: {
   trackedHours: number[];
   timesheets: Timesheet[];
-  fetchData: () => void;
+  refetchData: () => void;
 }) {
-  const updateApproveStatus = async (id: string, approved: boolean) => {
-    try {
-      const response = await fetch(`${API_URL}/test/timesheet`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id,
-          project_id: null,
-          employee_id: null,
-          start_date_of_the_week: null,
-          submission_date: null,
-          approved: !approved,
-          approved_by: null,
-          approved_date: null,
-        }),
-      });
-      console.log(response);
-      const data = await response.json();
-      console.log(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      fetchData();
-    }
+  const handleApproveClick = async (id: string, approved: boolean) => {
+    await updateApproveStatus(id, approved);
+    refetchData();
   };
 
   return (
@@ -67,9 +74,7 @@ function ApprovalTable({
             <TableCell>
               <Button
                 variant="outline"
-                onClick={() => {
-                  updateApproveStatus(entry.id, entry.approved);
-                }}
+                onClick={() => handleApproveClick(entry.id, entry.approved)}
               >
                 {entry.approved ? "Unapprove" : "Approve"}
               </Button>

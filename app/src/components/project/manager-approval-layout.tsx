@@ -99,9 +99,13 @@ const fetchTrackedHoursData = async (
       }
     )
   );
-  const hoursData = promisesArray
-    .filter((promise) => promise.status === "fulfilled")
-    .map((promise) => promise.value);
+  const hoursData = promisesArray.map((promise) => {
+    if (promise.status === "fulfilled") {
+      return promise.value;
+    } else {
+      return 0;
+    }
+  });
   return hoursData;
 };
 
@@ -207,10 +211,6 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
       const timesheetsData = await fetchTimesheetData(pid, currentWeekStart);
       const timesheetAndRecordsData = await fetchTimeRecordData(timesheetsData);
       const hoursData = await fetchTrackedHoursData(timesheetAndRecordsData);
-      if (hoursData.length !== timesheetAndRecordsData.length) {
-        console.error("Failed to fetch hours data for all employees");
-        hoursData.length = timesheetAndRecordsData.length;
-      }
       setTrackedHours(hoursData);
       setTimesheets(timesheetAndRecordsData.map(transformTimesheet));
     };

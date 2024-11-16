@@ -1,21 +1,37 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"viz-service/internal/database"
 )
 
 type Handler struct {
-	db *database.DB
+	db *sql.DB
 }
 
-func NewHandler(db *database.DB) *Handler {
+func NewHandler(db *sql.DB) *Handler {
 	return &Handler{db: db}
 }
 
+type BaseRequest struct {
+	OrganizationID string `json:"organizationId"`
+}
+
 func (h *Handler) GetProjectReports(w http.ResponseWriter, r *http.Request) {
-	reports, err := h.db.GetProjectReports()
+	var req BaseRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.OrganizationID == "" {
+		http.Error(w, "Missing organization ID", http.StatusBadRequest)
+		return
+	}
+
+	reports, err := database.GetProjectReports(h.db, req.OrganizationID)
 	if err != nil {
 		http.Error(w, "Error fetching project reports", http.StatusInternalServerError)
 		return
@@ -26,7 +42,18 @@ func (h *Handler) GetProjectReports(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetRecentTimesheets(w http.ResponseWriter, r *http.Request) {
-	timesheets, err := h.db.GetRecentTimesheets()
+	var req BaseRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.OrganizationID == "" {
+		http.Error(w, "Missing organization ID", http.StatusBadRequest)
+		return
+	}
+
+	timesheets, err := database.GetRecentTimesheets(h.db, req.OrganizationID)
 	if err != nil {
 		http.Error(w, "Error fetching recent timesheets", http.StatusInternalServerError)
 		return
@@ -37,7 +64,18 @@ func (h *Handler) GetRecentTimesheets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetProjectAllocations(w http.ResponseWriter, r *http.Request) {
-	allocations, err := h.db.GetProjectAllocations()
+	var req BaseRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.OrganizationID == "" {
+		http.Error(w, "Missing organization ID", http.StatusBadRequest)
+		return
+	}
+
+	allocations, err := database.GetProjectAllocations(h.db, req.OrganizationID)
 	if err != nil {
 		http.Error(w, "Error fetching project allocations", http.StatusInternalServerError)
 		return

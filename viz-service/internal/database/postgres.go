@@ -7,11 +7,7 @@ import (
 	"viz-service/internal/models"
 )
 
-type DB struct {
-	db *sql.DB
-}
-
-func NewDB(cfg *config.Config) (*DB, error) {
+func NewDB(cfg *config.Config) (*sql.DB, error) {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require",
 		cfg.DB.Host,
 		cfg.DB.Port,
@@ -29,10 +25,11 @@ func NewDB(cfg *config.Config) (*DB, error) {
 		return nil, fmt.Errorf("error pinging database: %w", err)
 	}
 
-	return &DB{db: db}, nil
+	return db, nil
 }
 
-func (d *DB) GetProjectReports() ([]models.ProjectReportResponse, error) {
+// Changed from method to function, takes db directly
+func GetProjectReports(db *sql.DB, orgID string) ([]models.ProjectReportResponse, error) {
 	query := `
         WITH project_hours AS (
             SELECT 
@@ -44,6 +41,7 @@ func (d *DB) GetProjectReports() ([]models.ProjectReportResponse, error) {
             FROM project p
             LEFT JOIN timesheet t ON p.id = t.project_id
             LEFT JOIN time_record tr ON t.id = tr.timesheet_id
+            WHERE p.organization_id = $1
             GROUP BY p.id, p.name, p.estimated_hours
         )
         SELECT 
@@ -54,9 +52,9 @@ func (d *DB) GetProjectReports() ([]models.ProjectReportResponse, error) {
             completed_records
         FROM project_hours`
 
-	rows, err := d.db.Query(query)
+	rows, err := db.Query(query, orgID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error querying project reports: %w", err)
 	}
 	defer rows.Close()
 
@@ -82,7 +80,7 @@ func (d *DB) GetProjectReports() ([]models.ProjectReportResponse, error) {
 	return reports, nil
 }
 
-func (d *DB) GetRecentTimesheets() ([]models.RecentTimesheetResponse, error) {
+func GetRecentTimesheets(db *sql.DB, orgID string) ([]models.RecentTimesheetResponse, error) {
 	query := `
         WITH recent_timesheets AS (
             SELECT 
@@ -95,15 +93,16 @@ func (d *DB) GetRecentTimesheets() ([]models.RecentTimesheetResponse, error) {
             FROM timesheet t
             JOIN project p ON t.project_id = p.id
             LEFT JOIN time_record tr ON t.id = tr.timesheet_id
+            WHERE p.organization_id = $1
             GROUP BY t.id, t.start_date_of_the_week, t.approved, p.name
             ORDER BY t.start_date_of_the_week DESC
             LIMIT 3
         )
         SELECT * FROM recent_timesheets`
 
-	rows, err := d.db.Query(query)
+	rows, err := db.Query(query, orgID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error querying recent timesheets: %w", err)
 	}
 	defer rows.Close()
 
@@ -136,11 +135,13 @@ func (d *DB) GetRecentTimesheets() ([]models.RecentTimesheetResponse, error) {
 	return timesheets, nil
 }
 
-func (d *DB) GetProjectAllocations() ([]models.ProjectAllocationResponse, error) {
+func GetProjectAllocations(db *sql.DB, orgID string) ([]models.ProjectAllocationResponse, error) {
 	query := `
         WITH latest_week AS (
             SELECT start_date_of_the_week
-            FROM timesheet
+            FROM timesheet t
+            JOIN project p ON t.project_id = p.id
+            WHERE p.organization_id = $1
             ORDER BY submission_date DESC
             LIMIT 1
         ),
@@ -156,10 +157,12 @@ func (d *DB) GetProjectAllocations() ([]models.ProjectAllocationResponse, error)
                 COUNT(DISTINCT tr.id) as total_records,
                 COUNT(DISTINCT CASE WHEN tr.end_time IS NOT NULL THEN tr.id END) as completed_records
             FROM project p
-            LEFT JOIN timesheet t ON p.id = t.project_id AND t.start_date_of_the_week = (SELECT start_date_of_the_week FROM latest_week)
+            LEFT JOIN timesheet t ON p.id = t.project_id 
+                AND t.start_date_of_the_week = (SELECT start_date_of_the_week FROM latest_week)
             LEFT JOIN "user" u ON t.employee_id = u.id
-            LEFT JOIN organization_user ou ON u.id = ou.id 
+            LEFT JOIN organization_user ou ON u.id = ou.user_id AND ou.organization_id = p.organization_id
             LEFT JOIN time_record tr ON t.id = tr.timesheet_id
+            WHERE p.organization_id = $1
             GROUP BY 
                 p.id, p.name, p.estimated_hours,
                 u.id, u.first_name, u.last_name, ou.role
@@ -167,9 +170,9 @@ func (d *DB) GetProjectAllocations() ([]models.ProjectAllocationResponse, error)
         )
         SELECT * FROM current_allocations`
 
-	rows, err := d.db.Query(query)
+	rows, err := db.Query(query, orgID)
 	if err != nil {
-		return nil, fmt.Errorf("query failed: %v", err)
+		return nil, fmt.Errorf("query failed: %w", err)
 	}
 	defer rows.Close()
 
@@ -228,7 +231,7 @@ func (d *DB) GetProjectAllocations() ([]models.ProjectAllocationResponse, error)
 	}
 
 	if len(allocations) == 0 {
-		return nil, fmt.Errorf("no allocations found")
+		return nil, fmt.Errorf("no allocations found for organization %s", orgID)
 	}
 
 	return allocations, nil

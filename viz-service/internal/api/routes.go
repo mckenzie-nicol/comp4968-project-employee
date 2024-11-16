@@ -7,9 +7,9 @@ import (
 func SetupRoutes(h *Handler) *mux.Router {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/viz/projects/reports", h.GetProjectReports).Methods("GET")
-	r.HandleFunc("/viz/timesheets/recent", h.GetRecentTimesheets).Methods("GET")
-	r.HandleFunc("/viz/projects/allocations", h.GetProjectAllocations).Methods("GET")
+	r.HandleFunc("/dashboard/reports", h.GetProjectReports).Methods("GET")
+	r.HandleFunc("/dashboard/timesheets", h.GetRecentTimesheets).Methods("GET")
+	r.HandleFunc("/dashboard/allocations", h.GetProjectAllocations).Methods("GET")
 
 	return r
 }

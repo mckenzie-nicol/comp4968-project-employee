@@ -10,12 +10,20 @@ import {
   differenceInMinutes,
 } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { X, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { EmployeeHoursTable } from "./employee-hours-table";
 import { ApprovalTable } from "./approval-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
+
+const days: (keyof DayHours)[] = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+];
 
 const fetchTimesheetData = async (pid: string, currentWeekStart: Date) => {
   try {
@@ -25,6 +33,11 @@ const fetchTimesheetData = async (pid: string, currentWeekStart: Date) => {
         "yyyy-MM-dd"
       )}`
     );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
     console.log(response);
     const data = await response.json();
     console.log(data);
@@ -35,12 +48,19 @@ const fetchTimesheetData = async (pid: string, currentWeekStart: Date) => {
   }
 };
 
-const fetchTimeRecordData = async (timesheetsData: Timesheet[]) => {
+const fetchTimeRecordData = async (
+  timesheetsData: Record<string, unknown>[]
+) => {
   const promisesArray = await Promise.allSettled(
-    timesheetsData.map(async (timesheetData: Timesheet) => {
+    timesheetsData.map(async (timesheetData: Record<string, unknown>) => {
       const response = await fetch(
         `${API_URL}/test/timesheet/timerecord?timesheet_id=${timesheetData.id}`
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
       console.log(response);
       const data = await response.json();
       console.log(data);
@@ -58,11 +78,80 @@ const fetchTimeRecordData = async (timesheetsData: Timesheet[]) => {
   return timesheetAndRecordsData;
 };
 
-type DayHours = {
+const fetchHoursData = async (
+  timesheetAndRecordsData: Record<string, unknown>[]
+) => {
+  const promisesArray = await Promise.allSettled(
+    timesheetAndRecordsData.map(
+      async (timesheetAndRecord: Record<string, unknown>) => {
+        const response = await fetch(
+          `${API_URL}/test/timesheet/timerecord/manager/${timesheetAndRecord.employee_id}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        console.log(response);
+        const data = await response.json();
+        console.log(data);
+        const hoursWorked = data.data
+          .map((timeRecord: { start_time: "string"; end_time: "string" }) => {
+            const start = new Date(`2024-01-01T${timeRecord.start_time}:00`);
+            const end = new Date(`2024-01-01T${timeRecord.end_time}:00`);
+            return differenceInMinutes(end, start) / 60;
+          })
+          .reduce((acc: number, curr: number) => acc + curr, 0);
+        return hoursWorked;
+      }
+    )
+  );
+  console.log(promisesArray);
+  const hoursData = promisesArray
+    .filter((promise) => promise.status === "fulfilled")
+    .map((promise) => promise.value);
+  console.log(hoursData);
+  return hoursData;
+};
+
+const transformTimesheet = (data: Record<string, any>): Timesheet => {
+  const startDate = parseISO(data.start_date_of_the_week);
+
+  // Calculate hours based on time records
+  data.hours = data.time_records.reduce(
+    (acc: DayHours, record: TimeRecord) => {
+      const start = new Date(`2024-01-01T${record.start_time}:00`);
+      const end = new Date(`2024-01-01T${record.end_time}:00`);
+      const diffHours = differenceInMinutes(end, start) / 60;
+      acc[record.day] = diffHours.toFixed(2);
+      return acc;
+    },
+    { Monday: "", Tuesday: "", Wednesday: "", Thursday: "", Friday: "" }
+  );
+
+  return {
+    ...data,
+    approved_by: data.approved_by ?? "",
+    approved_date: data.approved_date ?? "",
+    hours: data.hours
+      ? data.hours
+      : { Monday: "", Tuesday: "", Wednesday: "", Thursday: "", Friday: "" },
+    time_records: data.time_records
+      ? data.time_records.map((record: any) => ({
+          ...record,
+          date:
+            record.date ||
+            format(addDays(startDate, days.indexOf(record.day)), "yyyy-MM-dd"),
+        }))
+      : [],
+  };
+};
+
+export type DayHours = {
   [key in "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday"]: string;
 };
 
-interface TimeRecord {
+export interface TimeRecord {
   id: string;
   timesheet_id: string;
   day: keyof DayHours;
@@ -71,63 +160,27 @@ interface TimeRecord {
   end_time: string;
 }
 
-// TODO: need this below?
-// hours: DayHours
-
-// TODO: fix null types later
 export type Timesheet = {
   id: string;
   project_id: string;
   employee_id: string;
   start_date_of_the_week: string;
   submission_date: string;
+  hours: DayHours;
   approved: boolean;
-  approved_by: string | null;
-  approved_date: string | null;
+  approved_by: string;
+  approved_date: string;
   first_name: string;
   last_name: string;
   time_records: TimeRecord[];
 };
 
-// DATA FORMAT
-// {
-//   "id": "emp003-proj003-2024-11-11",
-//   "project_id": "proj003",
-//   "employee_id": "emp003",
-//   "start_date_of_the_week": "2024-11-11",
-//   "submission_date": "2024-11-15",
-//   "approved": false,
-//   "approved_by": null,
-//   "approved_date": null,
-//   "first_name": "Jess",
-//   "last_name": "Brown",
-//   "records": [
-//       {
-//           "id": "emp003-proj003-2024-11-11-Tuesday-1731683093058",
-//           "timesheet_id": "emp003-proj003-2024-11-11",
-//           "date": "2024-11-12T00:00:00.000Z",
-//           "day": "Tuesday",
-//           "start_time": "10:07",
-//           "end_time": "22:07"
-//       },
-//       {
-//           "id": "emp003-proj003-2024-11-11-Thursday-1731683118358",
-//           "timesheet_id": "emp003-proj003-2024-11-11",
-//           "date": "2024-11-14T00:00:00.000Z",
-//           "day": "Thursday",
-//           "start_time": "09:08",
-//           "end_time": "10:08"
-//       }
-//   ]
-// }
-
 function ManagerApprovalLayout({ pid }: { pid: string }) {
-  // Week selector state
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
-  // Fetched timesheet data state
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
+  const [trackedHours, setTrackedHours] = useState<number[]>([]);
 
   const today = new Date();
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 });
@@ -151,12 +204,16 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
   const isCurrentWeek = isBefore(currentWeekStart, addWeeks(currentWeek, 1));
 
   // Fetch timesheet and records data of all employees for the current week
+  const fetchData = async () => {
+    const timesheetsData = await fetchTimesheetData(pid, currentWeekStart);
+    const timesheetAndRecordsData = await fetchTimeRecordData(timesheetsData);
+    const hoursData = await fetchHoursData(timesheetAndRecordsData);
+    setTrackedHours(hoursData);
+    setTimesheets(timesheetAndRecordsData.map(transformTimesheet));
+  };
+
+  // Fetch timesheet and records data of all employees for the current week
   useEffect(() => {
-    const fetchData = async () => {
-      const timesheetsData = await fetchTimesheetData(pid, currentWeekStart);
-      const timesheetAndRecordsData = await fetchTimeRecordData(timesheetsData);
-      setTimesheets(timesheetAndRecordsData);
-    };
     fetchData();
   }, [currentWeekStart]);
 
@@ -191,18 +248,22 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="timesheets" className="w-1000px">
-        <TabsList>
-          <TabsTrigger value="timesheets">Timesheets</TabsTrigger>
-          <TabsTrigger value="approval">Approval</TabsTrigger>
+      <Tabs defaultValue="timesheets" className="w-full">
+        <TabsList className="w-full">
+          <TabsTrigger value="timesheets" className="w-1/2">
+            Timesheets
+          </TabsTrigger>
+          <TabsTrigger value="approval" className="w-1/2">
+            Approval
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="timesheets">
           {/* Employee hours table */}
-          <EmployeeHoursTable timesheets={timesheets} />
+          <EmployeeHoursTable timesheets={timesheets} fetchData={fetchData} />
         </TabsContent>
         <TabsContent value="approval">
           {/* Approval table */}
-          <ApprovalTable timesheets={timesheets} />
+          <ApprovalTable trackedHours={trackedHours} timesheets={timesheets} fetchData={fetchData} />
         </TabsContent>
       </Tabs>
     </div>

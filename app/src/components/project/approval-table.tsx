@@ -1,60 +1,82 @@
-import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { X, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { Timesheet } from "@/components/project/manager-approval-layout";
 
-function ApprovalTable({ timesheets }: { timesheets: Timesheet[] }) {
+const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
+
+function ApprovalTable({
+  trackedHours,
+  timesheets,
+  fetchData,
+}: {
+  trackedHours: number[];
+  timesheets: Timesheet[];
+  fetchData: () => void;
+}) {
+  const updateApproveStatus = async (id: string, approved: boolean) => {
+    try {
+      const response = await fetch(`${API_URL}/test/timesheet`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+          project_id: null,
+          employee_id: null,
+          start_date_of_the_week: null,
+          submission_date: null,
+          approved: !approved,
+          approved_by: null,
+          approved_date: null,
+        }),
+      });
+      console.log(response);
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      fetchData();
+    }
+  };
+
   return (
     <Table>
-      <TableCaption>Weekly Timesheet</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
-          <TableHead>Total Hours</TableHead>
+          <TableHead>Tracked Hours</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Action</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {timesheets.map((entry) => (
+        {timesheets.map((entry, index) => (
           <TableRow key={entry.id}>
             <TableCell>{`${entry.first_name} ${entry.last_name}`}</TableCell>
-            <TableCell>
-              <p>test</p>
-            </TableCell>
+            <TableCell>{trackedHours[index].toFixed(2)}</TableCell>
             <TableCell>{entry.approved ? "Approved" : "Open"}</TableCell>
             <TableCell>
-              <Button variant="ghost">Approve</Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  updateApproveStatus(entry.id, entry.approved);
+                }}
+              >
+                {entry.approved ? "Unapprove" : "Approve"}
+              </Button>
             </TableCell>
           </TableRow>
         ))}
       </TableBody>
-      {/* <TableFooter>
-        <TableRow>
-          <TableCell>Daily Total</TableCell>
-          {days.map((day) => (
-            <TableCell key={day} className="text-center">
-              {calculateDayTotal(day).toFixed(2)}
-            </TableCell>
-          ))}
-          <TableCell>
-            {timesheet
-              .reduce((sum, entry) => sum + calculateTotalHours(entry.hours), 0)
-              .toFixed(2)}
-          </TableCell>
-          <TableCell />
-        </TableRow>
-      </TableFooter> */}
     </Table>
   );
 }

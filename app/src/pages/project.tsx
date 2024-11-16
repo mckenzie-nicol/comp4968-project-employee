@@ -19,7 +19,7 @@ export default function Project() {
         </Button>
         <h1 className="text-3xl font-bold text-gradient">{name}</h1>
       </div>
-      <ManagerApprovalLayout pid={id} />
+      <ManagerApprovalLayout pid={id!} />
     </div>
   );
 }

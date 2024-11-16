@@ -11,7 +11,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/admin" element={<Admin />} />
-        <Route path="/timesheet" element={<Timesheet />}></Route>
+        {/* timesheet route */}
+        <Route path="/timesheet" element={<Timesheet/>}></Route>
+        {/* manager project route */}
         <Route path="/project/:id/:name" element={<Project />} />
       </Routes>
     </Router>

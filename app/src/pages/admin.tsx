@@ -85,8 +85,8 @@ function Admin() {
       const organization = await functionToGetOrganizationName(
         admin.organizationId
       );
-      const managers = await functionToGetProjectManagers(admin.organizationId);
-      const empList = await functionToGetEmployees(admin.organizationId);
+      const managers = await functionToGetProjectManagers();
+      const empList = await functionToGetEmployees();
 
       setOrganizationName(organization.organizationName);
       setProjectManagers(managers);

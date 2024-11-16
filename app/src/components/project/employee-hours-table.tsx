@@ -48,6 +48,7 @@ function EmployeeHoursTable({
     useState<TimeRecord | null>(null);
   const [selectedTimeRecordDay, setSelectedTimeRecordDay] =
     useState<keyof DayHours>("Monday");
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const addOrUpdateTimeRecord = async (
     timeRecord: TimeRecord
@@ -78,6 +79,7 @@ function EmployeeHoursTable({
   };
 
   const handleSaveTime = async () => {
+    setIsSaving(true);
     if (startTime && endTime && selectedTimesheetId) {
       const entry = timesheets.find((e) => e.id === selectedTimesheetId);
 
@@ -109,6 +111,7 @@ function EmployeeHoursTable({
       }
     }
     setIsDialogOpen(false);
+    setIsSaving(false);
   };
 
   const handleCellClick = (entryId: string, day: keyof DayHours) => {
@@ -198,7 +201,7 @@ function EmployeeHoursTable({
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSaveTime}>Save</Button>
+            <Button onClick={handleSaveTime} disabled={isSaving}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -208,6 +208,10 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
     const timesheetsData = await fetchTimesheetData(pid, currentWeekStart);
     const timesheetAndRecordsData = await fetchTimeRecordData(timesheetsData);
     const hoursData = await fetchHoursData(timesheetAndRecordsData);
+    if (hoursData.length !== timesheetAndRecordsData.length) {
+      console.error("Failed to fetch hours data for all employees");
+      hoursData.length = timesheetAndRecordsData.length;
+    }
     setTrackedHours(hoursData);
     setTimesheets(timesheetAndRecordsData.map(transformTimesheet));
   };
@@ -250,10 +254,10 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
       {/* Tabs */}
       <Tabs defaultValue="timesheets" className="w-full">
         <TabsList className="w-full">
-          <TabsTrigger value="timesheets" className="w-1/2">
+          <TabsTrigger value="timesheets" className="hover:bg-gray-50 w-1/2">
             Timesheets
           </TabsTrigger>
-          <TabsTrigger value="approval" className="w-1/2">
+          <TabsTrigger value="approval" className="hover:bg-gray-50 w-1/2">
             Approval
           </TabsTrigger>
         </TabsList>
@@ -263,7 +267,11 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
         </TabsContent>
         <TabsContent value="approval">
           {/* Approval table */}
-          <ApprovalTable trackedHours={trackedHours} timesheets={timesheets} fetchData={fetchData} />
+          <ApprovalTable
+            trackedHours={trackedHours}
+            timesheets={timesheets}
+            fetchData={fetchData}
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -28,7 +28,6 @@ func NewDB(cfg *config.Config) (*sql.DB, error) {
 	return db, nil
 }
 
-// Changed from method to function, takes db directly
 func GetProjectReports(db *sql.DB, orgID string) ([]models.ProjectReportResponse, error) {
 	query := `
         WITH project_hours AS (

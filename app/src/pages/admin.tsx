@@ -114,18 +114,16 @@ function Admin() {
   const [organizationName, setOrganizationName] = useState("");
   const [projectManagers, setProjectManagers] = useState<PersonProps | null>(null);
   const [employees, setEmployees] = useState<PersonProps | null>(null);
-  const [firstName, setFirstName] = useState<string>("");
-  const [lastName, setLastName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+  const [role, setRole] = useState<string>("");
   const [responseMessage, setReponseMessage] = useState<string>("");
 
   const addUserToOrganization = async (
-    firstName: string,
-    lastName: string,
-    email: string
+    email: string,
+    role: string
   ) => {
     const response = await fetch(
-      `API_ENDPOINT/firstName=${firstName}&lastName=${lastName}&email=${email}`
+      `API_ENDPOINT/email=${email}&role=${role}`
     );
     if (!response.ok) {
       throw new Error("Error, unable to add user to the organization.");
@@ -166,36 +164,14 @@ function Admin() {
                 <DialogDescription>
                   <div className="flex-col space-y-5">
                     <div className="flex-col space-y-3">
-                      <label>First Name</label>
-                      <Input
-                        id="firstName"
-                        type="firstName"
-                        value={firstName}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
-                        placeholder="First name..."
-                        required
-                        className="backdrop-blur-sm bg-white/50 border-gray-200"
-                        />
-                    </div>
-                    <div className="flex-col space-y-3">
-                      <label>Last Name</label>
-                      <Input
-                        id="lastName"
-                        type="lastName"
-                        value={lastName}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
-                        placeholder="Last name..."
-                        required
-                        className="backdrop-blur-sm bg-white/50 border-gray-200"
-                        />
-                    </div>
-                    <div className="flex-col space-y-3">
                       <label>Email</label>
                       <Input
                         id="email"
                         type="email"
                         value={email}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setEmail(e.target.value)
+                        }
                         placeholder="Email..."
                         required
                         className="backdrop-blur-sm bg-white/50 border-gray-200"
@@ -205,7 +181,12 @@ function Admin() {
                       <label>Role</label>
                       <Select>
                         <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Select a role..." />
+                          <SelectValue
+                            onChange={(
+                              e: React.ChangeEvent<HTMLInputElement>
+                            ) => setRole(e.target.value)}
+                            placeholder="Select a role..."
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
@@ -225,19 +206,14 @@ function Admin() {
               <DialogClose>
                 <Button
                   onClick={() => {
-                    setFirstName("");
-                    setLastName("");
                     setEmail("");
+                    setRole("");
                   }}
                 >
                   Cancel
                 </Button>
               </DialogClose>
-              <Button
-                onClick={() =>
-                  addUserToOrganization(firstName, lastName, email)
-                }
-              >
+              <Button onClick={() => addUserToOrganization(email, role)}>
                 Add Member
               </Button>
               <div id="responseMessage">{responseMessage}</div>
@@ -247,10 +223,17 @@ function Admin() {
       </div>
       <div className="xl:flex xl:justify-center xl:space-x-2">
         <div className="w-full">
-          {projectManagers && <PersonList title="Project Managers" employees={projectManagers.employees} />}
+          {projectManagers && (
+            <PersonList
+              title="Project Managers"
+              employees={projectManagers.employees}
+            />
+          )}
         </div>
         <div className="w-full">
-          {employees && <PersonList title="Workers" employees={employees.employees} />}
+          {employees && (
+            <PersonList title="Workers" employees={employees.employees} />
+          )}
         </div>
       </div>
     </>

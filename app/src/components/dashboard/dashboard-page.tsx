@@ -11,10 +11,10 @@ import { EmployeeProjectHours } from "./employee-project-hours"
 
 interface DashboardPageProps {
   onSignOut?: () => void
-  userRole?: 'employee' | 'manager'
+  userRole?: 'employee' | 'project-manager'
 }
 
-export function DashboardPage({ onSignOut, userRole = 'manager' }: DashboardPageProps) {
+export function DashboardPage({ onSignOut, userRole = 'employee' }: DashboardPageProps) {
   const [showTimesheetForm, setShowTimesheetForm] = useState(false)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [activeView, setActiveView] = useState<'overview' | 'allocation' | 'reports'>('overview')
@@ -42,7 +42,7 @@ export function DashboardPage({ onSignOut, userRole = 'manager' }: DashboardPage
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold text-gradient">Dashboard</h1>
-          {userRole === 'manager' && (
+          {userRole === 'project-manager' && (
             <div className="flex gap-2">
               <Button
                 variant={activeView === 'overview' ? 'default' : 'outline'}
@@ -73,7 +73,7 @@ export function DashboardPage({ onSignOut, userRole = 'manager' }: DashboardPage
 
       {userRole === 'employee' ? (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="bg-white/10 border-0">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-gray-600">
@@ -100,18 +100,6 @@ export function DashboardPage({ onSignOut, userRole = 'manager' }: DashboardPage
               </CardContent>
             </Card>
 
-            <Card className="bg-white/10 border-0">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  Next Review
-                </CardTitle>
-                <Calendar className="h-4  text-black" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">2d</div>
-                <p className="text-xs text-gray-500">Friday, 3PM</p>
-              </CardContent>
-            </Card>
           </div>
 
           <EmployeeProjectHours />

@@ -75,7 +75,7 @@ function EmployeeHoursTable({
 
   const handleSaveTime = async () => {
     setIsSaving(true);
-    if (startTime && endTime && selectedTimesheetId && selectedTimeRecord) {
+    if (startTime && endTime && selectedTimesheetId) {
       const entry = timesheets.find((e) => e.id === selectedTimesheetId);
 
       const updatedTimeRecord = selectedTimeRecord

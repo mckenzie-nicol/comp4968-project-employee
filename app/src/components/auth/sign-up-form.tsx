@@ -11,6 +11,37 @@ import {
 } from "@/components/ui/card";
 import { FaArrowLeft } from "react-icons/fa";
 
+const handleRegisterUser = async (
+  email: string,
+  password: string,
+  name: string
+) => {
+  if (!email || !password || !name) {
+    return {
+      error: "Error, missing requirements. Must have email, password and name.",
+    };
+  }
+  const body = {
+    email: email,
+    password: password,
+    name: name,
+  };
+  console.log(JSON.stringify(body));
+  const response = await fetch(
+    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/prod/auth/register`,
+    {
+      method: "POST",
+      credentials: "same-origin",
+      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  console.log(response);
+};
+
 export function SignUpForm() {
   const [isOrganization, setIsOrganization] = useState<boolean>(true);
   const [organizationName, setOrganizationName] = useState<string>("");
@@ -19,24 +50,11 @@ export function SignUpForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSettingAdmin, setIsSettingAdmin] = useState<boolean>(false);
-  const [checkAvailabilityResponse, setCheckAvailabilityResponse] = useState<string>('');
+  const [checkAvailabilityResponse, setCheckAvailabilityResponse] =
+    useState<string>("");
 
   const handleOrganizationSubmit = async (
     organizationName: string,
-    firstName: string,
-    lastName: string,
-    email: string,
-    password: string
-  ) => {
-    const response = await fetch(
-      `API_ENDPOINT_ADD_ORGANIZATION/${
-        organizationName + firstName + lastName + email + password
-      }`
-    );
-    return response;
-  };
-
-  const handleEmployeeSubmit = async (
     firstName: string,
     lastName: string,
     email: string,
@@ -54,7 +72,7 @@ export function SignUpForm() {
     const response = await fetch(`${organizationName}`);
     const result = await response.json();
     setCheckAvailabilityResponse(result);
-  }
+  };
 
   return (
     <>
@@ -101,8 +119,14 @@ export function SignUpForm() {
                 />
                 <div className="space-y-6">
                   <div className="flex justify-between">
-                    <Button onClick={() => handleCheckAvailability(organizationName)}>Check Availability</Button>
-                    <div id="availabilityResponse">{checkAvailabilityResponse}</div>
+                    <Button
+                      onClick={() => handleCheckAvailability(organizationName)}
+                    >
+                      Check Availability
+                    </Button>
+                    <div id="availabilityResponse">
+                      {checkAvailabilityResponse}
+                    </div>
                   </div>
                   <div className="flex justify-center">
                     <Button onClick={() => setIsSettingAdmin(true)}>
@@ -116,7 +140,10 @@ export function SignUpForm() {
           {isOrganization && isSettingAdmin && (
             <>
               <div className="space-y-2">
-                <Button className="bg-slate-800" onClick={() => setIsSettingAdmin(false)}>
+                <Button
+                  className="bg-slate-800"
+                  onClick={() => setIsSettingAdmin(false)}
+                >
                   <FaArrowLeft></FaArrowLeft>
                   Back
                 </Button>
@@ -253,7 +280,11 @@ export function SignUpForm() {
                 type="submit"
                 className="bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity mt-4"
                 onClick={() => {
-                  handleEmployeeSubmit(firstName, lastName, email, password);
+                  handleRegisterUser(
+                    email,
+                    password,
+                    `${firstName} ${lastName}`
+                  );
                 }}
               >
                 Create account

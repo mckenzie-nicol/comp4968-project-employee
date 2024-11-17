@@ -3,29 +3,23 @@ const { pool } = require('./db');
 // Query for finding user in DB
 const findUserQuery = `
   SELECT id 
-  FROM users 
+  FROM public.user
   WHERE LOWER(email) = LOWER($1) 
-`;
-
-// Query for checking if user is already in organization
-const checkMembershipQuery = `
-  SELECT 1 
-  FROM organization_users 
-  WHERE organization_id = $1 AND user_id = $2
 `;
 
 // Query to add user to organization
 const addToOrgQuery = `
-  INSERT INTO organization_users (
+  INSERT INTO public.organization_user (
     organization_id, 
     user_id, 
     role, 
     created_at
   )
   VALUES ($1, $2, $3, NOW())
-  RETURNING *
+  ON CONFLICT (organization_id, user_id) 
+  DO NOTHING
+  RETURNING EXISTS (SELECT 1 FROM public.organization_user WHERE organization_id = $1 AND user_id = $2) AS inserted;
 `;
-
 /**
  * Finds a user in the database by email.
  * @param {string} email - The user's email address
@@ -88,18 +82,13 @@ exports.handler = async (event) => {
     };
 
     for (const user of users) {
+      // Check if user with the same email in user table
       const userId = await findUserInDatabaseByEmail(user.email);
       if (!userId) {
         results.notFound.push(user);
         continue;
       }
-
-      const isInOrg = await isUserInOrganization(organizationId, userId);
-      if (isInOrg) {
-        results.alreadyInOrg.push(user);
-        continue;
-      }
-
+    
       const newMembership = await addUserToOrganization(
         organizationId,
         userId,
@@ -111,10 +100,16 @@ exports.handler = async (event) => {
           ...user,
           userId
         });
+      } else {
+        results.alreadyInOrg.push({
+          ...user,
+          userId
+        })
       }
     }
 
     await pool.query('COMMIT');
+    console.log(`Results: ${results}`);
 
     return {
       statusCode: 200,

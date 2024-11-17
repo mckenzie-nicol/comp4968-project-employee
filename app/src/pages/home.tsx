@@ -24,10 +24,10 @@ function Home() {
   }
 
   return (
-    <div className="min-h-screen auth-container">
+    <div className="min-h-[77vh] auth-container">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-          <h1 className="text-5xl font-bold mb-2 text-gradient">
+          <h1 className="text-5xl font-bold mb-2 mt-8 text-gradient">
             Timesheet Management
           </h1>
           <p className="text-lg text-gray-600 bg-clip-text">
@@ -35,7 +35,7 @@ function Home() {
           </p>
         </div>
 
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-16rem)]">
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-40rem)]">
           <div className="form-container glass-effect p-1 rounded-xl card-glow">
             {isSignIn ? <SignInForm onLogin={handleLogin} /> : <SignUpForm />}
           </div>

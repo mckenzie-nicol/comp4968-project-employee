@@ -14,7 +14,7 @@ function App() {
         {/* timesheet route */}
         <Route path="/timesheet" element={<Timesheet/>}></Route>
         {/* manager project route */}
-        <Route path="/project/:id/:name" element={<Project />} />
+        <Route path="/project/:id" element={<Project />} />
       </Routes>
     </Router>
   );

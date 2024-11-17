@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 
 export default function Project() {
   const navigate = useNavigate();
-  const { id, name } = useParams();
+  const { id } = useParams();
 
   return (
     <div className="p-6">
@@ -17,7 +17,6 @@ export default function Project() {
         >
           Back to Dashboard
         </Button>
-        <h1 className="text-3xl font-bold text-gradient">{name}</h1>
       </div>
       <ManagerApprovalLayout pid={id!} />
     </div>

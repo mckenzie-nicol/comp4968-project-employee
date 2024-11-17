@@ -25,6 +25,22 @@ const days: (keyof DayHours)[] = [
   "Friday",
 ];
 
+const fetchProjectName = async (pid: string) => {
+  try {
+    const response = await fetch(`${API_URL}/test/project/manager/${pid}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data[0].project_name;
+  } catch (error) {
+    console.error(error);
+    return "";
+  }
+};
+
 const fetchTimesheetData = async (pid: string, currentWeekStart: Date) => {
   try {
     const response = await fetch(
@@ -158,6 +174,7 @@ export interface TimeRecord {
 export type Timesheet = {
   id: string;
   project_id: string;
+  project_name: string;
   employee_id: string;
   start_date_of_the_week: string;
   submission_date: string;
@@ -174,6 +191,7 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
+  const [projectName, setProjectName] = useState<string>("");
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
   const [trackedHours, setTrackedHours] = useState<(number | null)[]>([]);
   const [refetch, setRefetch] = useState(false);
@@ -218,12 +236,24 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
     fetchData();
   }, [currentWeekStart, refetch]);
 
+  // Fetch project details
+  useEffect(() => {
+    const fetchProjectNameData = async () => {
+      const name = await fetchProjectName(pid);
+      setProjectName(name);
+    };
+
+    fetchProjectNameData();
+  }, []);
+
   console.log(timesheets);
 
   return (
     <div className="space-y-4">
-      {/* Week selector */}
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between mb-4">
+        <h1 className="text-3xl font-bold text-gradient">{projectName}</h1>
+
+        {/* Week selector */}
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"

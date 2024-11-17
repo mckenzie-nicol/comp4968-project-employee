@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -13,20 +14,15 @@ const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
 const updateApproveStatus = async (id: string, approved: boolean) => {
   try {
-    const response = await fetch(`${API_URL}/test/timesheet`, {
-      method: "PATCH",
+    const response = await fetch(`${API_URL}/test/timesheet/approve`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         id,
-        project_id: null,
-        employee_id: null,
-        start_date_of_the_week: null,
-        submission_date: null,
         approved: !approved,
-        approved_by: null,
-        approved_date: null,
+        approved_date: !approved ? new Date().toISOString() : null,
       }),
     });
 
@@ -46,13 +42,17 @@ function ApprovalTable({
   timesheets,
   refetchData,
 }: {
-  trackedHours: number[];
+  trackedHours: (number | null)[];
   timesheets: Timesheet[];
   refetchData: () => void;
 }) {
+  const [isApproving, setIsApproving] = useState(false);
+
   const handleApproveClick = async (id: string, approved: boolean) => {
+    setIsApproving(true);
     await updateApproveStatus(id, approved);
     refetchData();
+    setIsApproving(false);
   };
 
   return (
@@ -75,6 +75,7 @@ function ApprovalTable({
               <Button
                 variant="outline"
                 onClick={() => handleApproveClick(entry.id, entry.approved)}
+                disabled={isApproving}
               >
                 {entry.approved ? "Unapprove" : "Approve"}
               </Button>

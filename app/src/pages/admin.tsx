@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 import PersonList from "@/components/admin/person-list";
 import { Button } from "@/components/ui/button";
 import { DialogHeader, DialogFooter } from "@/components/ui/dialog";
@@ -110,28 +111,48 @@ const functionToGetEmployees = async (
   ]};
 };
 
+const handleAddUserToOrg = async (
+  organizationId: number,
+  email: string,
+  role: string
+) => {
+  if (!email || !role) {
+    return {
+      error:
+        "Error, missing requirements. Must have userId and role.",
+    };
+  }
+  const body = {
+    users: [
+      {
+        email: email,
+        role: role
+      }
+    ],
+  };
+  const response = await fetch(
+    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/prod/organizations/${organizationId}/users`,
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  console.log(response);
+};
+
 function Admin() {
   const [organizationName, setOrganizationName] = useState("");
   const [projectManagers, setProjectManagers] = useState<PersonProps | null>(null);
   const [employees, setEmployees] = useState<PersonProps | null>(null);
   const [email, setEmail] = useState<string>("");
   const [role, setRole] = useState<string>("");
-  const [responseMessage, setReponseMessage] = useState<string>("");
 
-  const addUserToOrganization = async (
-    email: string,
-    role: string
-  ) => {
-    const response = await fetch(
-      `API_ENDPOINT/email=${email}&role=${role}`
-    );
-    if (!response.ok) {
-      throw new Error("Error, unable to add user to the organization.");
-    }
-    const result = await response.json();
-    setReponseMessage(result);
-  };
-
+  const organizationId = Cookies.get('organizationId') || '';
+  
   useEffect(() => {
     const fetchData = async () => {
       const admin = await functionToGetAdmin();
@@ -213,10 +234,9 @@ function Admin() {
                   Cancel
                 </Button>
               </DialogClose>
-              <Button onClick={() => addUserToOrganization(email, role)}>
+              <Button onClick={() => handleAddUserToOrg(parseInt(organizationId), email, role)}>
                 Add Member
               </Button>
-              <div id="responseMessage">{responseMessage}</div>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -225,6 +245,7 @@ function Admin() {
         <div className="w-full">
           {projectManagers && (
             <PersonList
+              organizationId={parseInt(organizationId)}
               title="Project Managers"
               employees={projectManagers.employees}
             />
@@ -232,7 +253,7 @@ function Admin() {
         </div>
         <div className="w-full">
           {employees && (
-            <PersonList title="Workers" employees={employees.employees} />
+            <PersonList organizationId={parseInt(organizationId)} title="Workers" employees={employees.employees} />
           )}
         </div>
       </div>

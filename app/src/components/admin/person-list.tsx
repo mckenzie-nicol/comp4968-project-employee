@@ -21,25 +21,48 @@ import {
 
 interface PersonListProps {
   title: string;
+  organizationId: number,
   employees: {
     id: number;
-    organizationId: number;
     firstName: string;
     lastName: string;
     email: string;
   }[];
 }
 
-const PersonList = ({ title, employees }: PersonListProps ) => {
-
-  const removePerson = async (userEmail: string) => {
-    const response = await fetch(`API_ENDPOINT/email=${userEmail}`);
-    if (!response.ok) {
-      throw new Error("Error, unable to add user to the organization.");
-    }
-    const result = await response.json();
-    console.log(result);
+const handleRemoveUserFromOrg = async (
+  organizationId: number,
+  email: string
+) => {
+  if (!email) {
+    return {
+      error: "Error, missing requirements. Must have userId and role.",
+    };
+  }
+  const body = {
+    users: [
+      {
+        email: email,
+      },
+    ],
   };
+  const response = await fetch(
+    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/prod/organizations/${organizationId}/users`,
+    {
+      method: "DELETE",
+      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  console.log(response);
+};
+
+const PersonList = ({ organizationId, title, employees }: PersonListProps ) => {
+
+
 
   return (
     <>
@@ -81,7 +104,7 @@ const PersonList = ({ title, employees }: PersonListProps ) => {
                             <Button
                               variant="destructive"
                               onClick={() => {
-                                removePerson(employee.email);
+                                handleRemoveUserFromOrg(organizationId, employee.email);
                               }}
                             >
                               Remove

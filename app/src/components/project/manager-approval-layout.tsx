@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   startOfWeek,
   endOfWeek,
@@ -24,6 +25,18 @@ const days: (keyof DayHours)[] = [
   "Thursday",
   "Friday",
 ];
+
+const Loading = () => {
+  return (
+    <div className="flex justify-center items-center h-[500px]">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-[250px]" />
+        <Skeleton className="h-4 w-[250px]" />
+        <Skeleton className="h-4 w-[250px]" />
+      </div>
+    </div>
+  );
+};
 
 const fetchProjectName = async (pid: string) => {
   try {
@@ -195,6 +208,7 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
   const [trackedHours, setTrackedHours] = useState<(number | null)[]>([]);
   const [refetch, setRefetch] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   /* Week selector functions and constants */
   const today = new Date();
@@ -226,11 +240,13 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
   // Fetch timesheet and records data of all employees for the current week
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       const timesheetsData = await fetchTimesheetData(pid, currentWeekStart);
       const timesheetAndRecordsData = await fetchTimeRecordData(timesheetsData);
       const hoursData = await fetchTrackedHoursData(timesheetAndRecordsData);
       setTrackedHours(hoursData);
       setTimesheets(timesheetAndRecordsData.map(transformTimesheet));
+      setTimeout(() => setIsLoading(false), 500);
     };
 
     fetchData();
@@ -289,19 +305,25 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="timesheets">
+          {isLoading && <Loading />}
           {/* Employee timesheet hours table */}
-          <EmployeeHoursTable
-            timesheets={timesheets}
-            refetchData={refetchData}
-          />
+          {!isLoading && (
+            <EmployeeHoursTable
+              timesheets={timesheets}
+              refetchData={refetchData}
+            />
+          )}
         </TabsContent>
         <TabsContent value="approval">
+          {isLoading && <Loading />}
           {/* Approval table */}
-          <ApprovalTable
-            trackedHours={trackedHours}
-            timesheets={timesheets}
-            refetchData={refetchData}
-          />
+          {!isLoading && (
+            <ApprovalTable
+              trackedHours={trackedHours}
+              timesheets={timesheets}
+              refetchData={refetchData}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>

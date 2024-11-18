@@ -71,7 +71,7 @@ const days: (keyof DayHours)[] = ["Monday", "Tuesday", "Wednesday", "Thursday", 
 
 const transformTSToJSON = (data: TimesheetEntry): Record<string, any> => {
   const dataToStore = {
-    id: data.id,
+    id: data.id,  // TO REMOVE
     project_id: data.project_id,
     employee_id: data.employee_id,
     start_date_of_the_week: data.start_date_of_the_week,
@@ -128,6 +128,7 @@ const addProjectToDatabase = async (entry: TimesheetEntry): Promise<void> => {
 
     const responseData = await response.json();
     console.log("Message:", responseData);
+    // TO DO: Update the id of the entry with the one returned from the database
   } catch (error) {
     console.error("Error adding project to database:", error);
   }
@@ -137,7 +138,6 @@ const fetchProjectData = async (): Promise<Project[]> => {
   try {
     const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/project');
     const data = await response.json();
-    // console.log("Fetched data:", data);
 
     if (Array.isArray(data)) {
       return data.map((project: Record<string, any>) => ({
@@ -253,6 +253,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const [endTime, setEndTime] = useState<string>("")
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }))
   const [selectedProjectId, setSelectedProjectId] = useState<string>("")
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
 
   const today = new Date()
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 })
@@ -264,6 +265,10 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       setTimesheet(data);
       setAvailableProjects(projectData);
       updateAvailableProjects(data, projectData);
+      if (data && data.length > 0) {
+        const isSubmitted = data.every(entry => entry.submission_date !== undefined);
+        setIsSubmitted(isSubmitted);
+      }
     };
     fetchData();
   }, [currentWeekStart, employee_id]);
@@ -312,7 +317,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 : [
                     ...entry.time_records,
                     {
-                      id: `${entry.id}-${selectedCell.day}-${Date.now()}`,
+                      id: `${entry.id}-${selectedCell.day}-${Date.now()}`,  // TO CHANGE
                       timesheet_id: entry.id,
                       day: selectedCell.day!,
                       date: format(addDays(parseISO(entry.start_date_of_the_week), days.indexOf(selectedCell.day!)), 'yyyy-MM-dd'),
@@ -354,7 +359,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
     const projectToAdd = availableProjects.find(p => p.id === selectedProjectId)
     if (projectToAdd) {
       const newEntry: TimesheetEntry = {
-        id: `${employee_id}-${projectToAdd.id}-${format(currentWeekStart, 'yyyy-MM-dd')}`,
+        id: `${employee_id}-${projectToAdd.id}-${format(currentWeekStart, 'yyyy-MM-dd')}`,  //TO Change
         project_id: projectToAdd.id,
         project_name: projectToAdd.name,
         employee_id: employee_id,
@@ -369,6 +374,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
 
       try {
         await addProjectToDatabase(newEntry)
+        // Update id to the one returned from the database
         setTimesheet(prevTimesheet => [...prevTimesheet, newEntry])
         setAvailableProjects(prevAvailable => prevAvailable.filter(p => p.id !== projectToAdd.id))
         setSelectedProjectId("")
@@ -379,7 +385,11 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   }
 
   const handleSubmitForApproval = () => {
+    if (timesheet.length === 0) {
+      return;
+    }
     submitTimesheet(timesheet);
+    setIsSubmitted(true);
   }
 
   const calculateTotalHours = (hours: DayHours): number => {
@@ -501,9 +511,15 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
             Add Project
           </Button>
         </div>
-        <Button onClick={handleSubmitForApproval} variant="outline" className="border-black">
-          <Check className="mr-2 h-4 w-4" /> Submit for Approval
-        </Button>
+        { isSubmitted
+          ? <Button onClick={handleSubmitForApproval} disabled>
+              Submitted for Approval
+            </Button>
+          : <Button onClick={handleSubmitForApproval} variant="outline" className="border-black">
+              <Check className="mr-2 h-4 w-4" /> Submit for Approval
+            </Button>
+        }
+        
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

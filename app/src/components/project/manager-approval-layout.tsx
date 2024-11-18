@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   startOfWeek,
@@ -154,7 +154,15 @@ const transformTimesheet = (data: Record<string, any>): Timesheet => {
   );
 
   return {
-    ...data,
+    id: data.id,
+    project_name: data.project_name,
+    project_id: data.project_id,
+    employee_id: data.employee_id,
+    start_date_of_the_week: data.start_date_of_the_week,
+    submission_date: data.submission_date,
+    first_name: data.first_name,
+    last_name: data.last_name,
+    approved: data.approved,
     approved_by: data.approved_by ?? "",
     approved_date: data.approved_date ?? "",
     hours: data.hours
@@ -176,7 +184,7 @@ export type DayHours = {
 };
 
 export interface TimeRecord {
-  id: string;
+  id?: string;
   timesheet_id: string;
   day: keyof DayHours;
   date: string;
@@ -250,7 +258,7 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
     };
 
     fetchData();
-  }, [currentWeekStart, refetch]);
+  }, [currentWeekStart, pid, refetch]);
 
   // Fetch project details
   useEffect(() => {
@@ -260,7 +268,7 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
     };
 
     fetchProjectNameData();
-  }, []);
+  }, [pid]);
 
   console.log(timesheets);
 

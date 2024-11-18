@@ -85,7 +85,7 @@ function EmployeeHoursTable({
             end_time: endTime,
           }
         : {
-            id: `${selectedTimesheetId}-${selectedTimeRecordDay}-${Date.now()}`,
+            // id: `${selectedTimesheetId}-${selectedTimeRecordDay}-${Date.now()}`,
             timesheet_id: selectedTimesheetId,
             day: selectedTimeRecordDay,
             date: format(

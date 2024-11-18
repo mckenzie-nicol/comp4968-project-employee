@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -37,6 +37,29 @@ const updateApproveStatus = async (id: string, approved: boolean) => {
   }
 };
 
+const updateSubmissionStatus = async (id: string) => {
+  try {
+    const response = await fetch(`${API_URL}/test/timesheet/reject`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 function ApprovalTable({
   trackedHours,
   timesheets,
@@ -46,13 +69,20 @@ function ApprovalTable({
   timesheets: Timesheet[];
   refetchData: () => void;
 }) {
-  const [isApproving, setIsApproving] = useState(false);
+  const [isChangingStatus, setIsChangingStatus] = useState(false);
 
   const handleApproveClick = async (id: string, approved: boolean) => {
-    setIsApproving(true);
+    setIsChangingStatus(true);
     await updateApproveStatus(id, approved);
     refetchData();
-    setIsApproving(false);
+    setIsChangingStatus(false);
+  };
+
+  const handleRejectClick = async (id: string) => {
+    setIsChangingStatus(true);
+    await updateSubmissionStatus(id);
+    refetchData();
+    setIsChangingStatus(false);
   };
 
   return (
@@ -72,13 +102,22 @@ function ApprovalTable({
             <TableCell>{trackedHours[index]?.toFixed(2) ?? ""}</TableCell>
             <TableCell>{entry.approved ? "Approved" : "Open"}</TableCell>
             <TableCell>
-              <Button
-                variant="outline"
-                onClick={() => handleApproveClick(entry.id, entry.approved)}
-                disabled={isApproving}
-              >
-                {entry.approved ? "Unapprove" : "Approve"}
-              </Button>
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={() => handleApproveClick(entry.id, entry.approved)}
+                  disabled={isChangingStatus}
+                >
+                  {entry.approved ? "Unapprove" : "Approve"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleRejectClick(entry.id)}
+                  disabled={isChangingStatus}
+                >
+                  Reject
+                </Button>
+              </div>
             </TableCell>
           </TableRow>
         ))}

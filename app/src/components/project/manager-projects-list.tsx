@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 
@@ -34,30 +34,6 @@ type Project = {
 };
 
 export function ProjectsList() {
-  // const projects = [
-  //   {
-  //     id: 1,
-  //     name: "Website Redesign",
-  //     progress: 65,
-  //     hours: 24.5,
-  //     status: "In Progress",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Mobile App Development",
-  //     progress: 32,
-  //     hours: 12.5,
-  //     status: "In Progress",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Database Migration",
-  //     progress: 89,
-  //     hours: 42.0,
-  //     status: "Review",
-  //   },
-  // ]
-
   const [projects, setProjects] = useState<Project[]>([]);
   const navigate = useNavigate();
 

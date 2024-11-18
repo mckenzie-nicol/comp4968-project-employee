@@ -1,13 +1,30 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-export function ProjectsList() {
-  const projects = [
+export interface Project {
+  id: number
+  name: string
+  progress: number
+  hours: number
+  status: string
+  startDate: string
+  totalStoryPoints: number
+}
+
+interface ProjectsListProps {
+  onProjectSelect: (project: Project) => void
+  selectedProjectId: number | null
+}
+
+export function ProjectsList({ onProjectSelect, selectedProjectId }: ProjectsListProps) {
+  const projects: Project[] = [
     {
       id: 1,
       name: "Website Redesign",
       progress: 65,
       hours: 24.5,
       status: "In Progress",
+      startDate: "2023-11-20",
+      totalStoryPoints: 100
     },
     {
       id: 2,
@@ -15,6 +32,8 @@ export function ProjectsList() {
       progress: 32,
       hours: 12.5,
       status: "In Progress",
+      startDate: "2023-11-25",
+      totalStoryPoints: 150
     },
     {
       id: 3,
@@ -22,6 +41,8 @@ export function ProjectsList() {
       progress: 89,
       hours: 42.0,
       status: "Review",
+      startDate: "2023-11-15",
+      totalStoryPoints: 80
     },
   ]
 
@@ -37,7 +58,12 @@ export function ProjectsList() {
           {projects.map((project) => (
             <div
               key={project.id}
-              className="flex items-center justify-between p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+              className={`flex items-center justify-between p-4 rounded-lg transition-colors cursor-pointer ${
+                selectedProjectId === project.id
+                  ? "bg-black/10 hover:bg-black/15"
+                  : "bg-white/5 hover:bg-white/10"
+              }`}
+              onClick={() => onProjectSelect(project)}
             >
               <div>
                 <h3 className="font-medium text-gray-800">{project.name}</h3>

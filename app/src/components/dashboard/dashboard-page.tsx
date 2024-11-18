@@ -2,9 +2,10 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Clock, Calendar, Users, PieChart, LogOut } from "lucide-react"
-import { ProjectsList } from "./projects-list"
+import { ProjectsList, type Project } from "./projects-list"
 import { RecentTimesheets } from "./recent-timesheets"
-import TimesheetTable from "../timesheet/timesheet-form"
+import { TimesheetTable } from "../timesheet/timesheet-form"
+import { BurnDownChart } from "./burn-down-chart"
 
 interface DashboardPageProps {
   onSignOut?: () => void
@@ -12,6 +13,7 @@ interface DashboardPageProps {
 
 export function DashboardPage({ onSignOut }: DashboardPageProps) {
   const [showTimesheetForm, setShowTimesheetForm] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   if (showTimesheetForm) {
     return (
@@ -26,7 +28,7 @@ export function DashboardPage({ onSignOut }: DashboardPageProps) {
           </Button>
           <h1 className="text-3xl font-bold text-gradient">New Timesheet</h1>
         </div>
-        <TimesheetTable/>
+        <TimesheetTable employee_id="emp003"/>
       </div>
     )
   }
@@ -98,7 +100,7 @@ export function DashboardPage({ onSignOut }: DashboardPageProps) {
             <CardTitle className="text-sm font-medium text-gray-600">
               Next Review
             </CardTitle>
-            <Calendar className="h-4 w-4 text-black" />
+            <Calendar className="h-4 text-black" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">2d</div>
@@ -108,9 +110,14 @@ export function DashboardPage({ onSignOut }: DashboardPageProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ProjectsList />
-        <RecentTimesheets />
+        <ProjectsList 
+          onProjectSelect={setSelectedProject}
+          selectedProjectId={selectedProject?.id ?? null}
+        />
+        <BurnDownChart project={selectedProject} />
       </div>
+
+      <RecentTimesheets />
     </div>
   )
 }

@@ -8,12 +8,7 @@ import { useState } from "react";
 function Home() {
   const [isSignIn, setIsSignIn] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  const handleLogin = (email: string, password: string) => {
-    if (email === "admin@admin.com" && password === "123456") {
-      setIsAuthenticated(true);
-    }
-  };
+ 
 
   const handleSignOut = () => {
     setIsAuthenticated(false);
@@ -37,7 +32,7 @@ function Home() {
 
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-40rem)]">
           <div className="form-container glass-effect p-1 rounded-xl card-glow">
-            {isSignIn ? <SignInForm onLogin={handleLogin} /> : <SignUpForm />}
+            {isSignIn ? <SignInForm /> : <SignUpForm />}
           </div>
 
           <div className="mt-8 text-center">
@@ -47,7 +42,7 @@ function Home() {
             <Button
               variant="outline"
               onClick={() => setIsSignIn(!isSignIn)}
-              className="min-w-[200px] bg-white/50 hover:bg-white/80 transition-all duration-300"
+              className="min-w-[200px] bg-white/50 hover:bg-slate-800 transition-all duration-300"
             >
               {isSignIn ? "Create account" : "Sign in"}
             </Button>

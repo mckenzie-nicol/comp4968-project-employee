@@ -31,25 +31,25 @@ func NewDB(cfg *config.Config) (*sql.DB, error) {
 func GetProjectReports(db *sql.DB, orgID string) ([]models.ProjectReportResponse, error) {
 	query := `
         WITH project_hours AS (
-            SELECT 
-                p.id,
-                p.name,
-                p.estimated_hours,
-                COUNT(DISTINCT tr.id) as total_records,
-                COUNT(DISTINCT tr.id) FILTER (WHERE tr.end_time IS NOT NULL) as completed_records
-            FROM project p
-            LEFT JOIN timesheet t ON p.id = t.project_id
-            LEFT JOIN time_record tr ON t.id = tr.timesheet_id
-            WHERE p.organization_id = $1
-            GROUP BY p.id, p.name, p.estimated_hours
-        )
-        SELECT 
-            id,
-            name,
-            COALESCE(estimated_hours, 0) as estimated_hours,
-            total_records,
-            completed_records
-        FROM project_hours`
+    SELECT 
+        p.id,
+        p.name,
+        p.estimated_hours,
+        COUNT(DISTINCT tr.id) as total_records,
+        COUNT(DISTINCT tr.id) FILTER (WHERE tr.end_time IS NOT NULL) as completed_records
+    FROM project p
+    JOIN organization_user ou ON ou.user_id = p.project_manager_id AND ou.organization_id = $1
+    LEFT JOIN timesheet t ON p.id = t.project_id
+    LEFT JOIN time_record tr ON t.id = tr.timesheet_id
+    GROUP BY p.id, p.name, p.estimated_hours
+		)
+	SELECT 
+    	id,
+    	name,
+    	COALESCE(estimated_hours, 0) as estimated_hours,
+    	total_records,
+    	completed_records
+	FROM project_hours;`
 
 	rows, err := db.Query(query, orgID)
 	if err != nil {
@@ -82,22 +82,22 @@ func GetProjectReports(db *sql.DB, orgID string) ([]models.ProjectReportResponse
 func GetRecentTimesheets(db *sql.DB, orgID string) ([]models.RecentTimesheetResponse, error) {
 	query := `
         WITH recent_timesheets AS (
-            SELECT 
-                t.id,
-                t.start_date_of_the_week,
-                t.approved,
-                p.name as project_name,
-                COUNT(tr.id) as record_count,
-                COUNT(tr.end_time) as completed_count
-            FROM timesheet t
-            JOIN project p ON t.project_id = p.id
-            LEFT JOIN time_record tr ON t.id = tr.timesheet_id
-            WHERE p.organization_id = $1
-            GROUP BY t.id, t.start_date_of_the_week, t.approved, p.name
-            ORDER BY t.start_date_of_the_week DESC
-            LIMIT 3
-        )
-        SELECT * FROM recent_timesheets`
+   SELECT 
+       t.id,
+       t.start_date_of_the_week,
+       t.approved,
+       p.name as project_name, 
+       COUNT(tr.id) as record_count,
+       COUNT(tr.end_time) as completed_count
+   FROM timesheet t
+   JOIN project p ON t.project_id = p.id
+   JOIN organization_user ou ON p.project_manager_id = ou.user_id AND ou.organization_id = $1
+   LEFT JOIN time_record tr ON t.id = tr.timesheet_id
+   GROUP BY t.id, t.start_date_of_the_week, t.approved, p.name
+   ORDER BY t.start_date_of_the_week DESC
+   LIMIT 3
+	)
+	SELECT * FROM recent_timesheets`
 
 	rows, err := db.Query(query, orgID)
 	if err != nil {
@@ -137,37 +137,39 @@ func GetRecentTimesheets(db *sql.DB, orgID string) ([]models.RecentTimesheetResp
 func GetProjectAllocations(db *sql.DB, orgID string) ([]models.ProjectAllocationResponse, error) {
 	query := `
         WITH latest_week AS (
-            SELECT start_date_of_the_week
-            FROM timesheet t
-            JOIN project p ON t.project_id = p.id
-            WHERE p.organization_id = $1
-            ORDER BY submission_date DESC
-            LIMIT 1
-        ),
-        current_allocations AS (
-            SELECT 
-                p.id as project_id,
-                p.name as project_name,
-                p.estimated_hours,
-                u.id as employee_id,
-                u.first_name,
-                u.last_name,
-                ou.role,
-                COUNT(DISTINCT tr.id) as total_records,
-                COUNT(DISTINCT CASE WHEN tr.end_time IS NOT NULL THEN tr.id END) as completed_records
-            FROM project p
-            LEFT JOIN timesheet t ON p.id = t.project_id 
-                AND t.start_date_of_the_week = (SELECT start_date_of_the_week FROM latest_week)
-            LEFT JOIN "user" u ON t.employee_id = u.id
-            LEFT JOIN organization_user ou ON u.id = ou.user_id AND ou.organization_id = p.organization_id
-            LEFT JOIN time_record tr ON t.id = tr.timesheet_id
-            WHERE p.organization_id = $1
-            GROUP BY 
-                p.id, p.name, p.estimated_hours,
-                u.id, u.first_name, u.last_name, ou.role
-            HAVING u.id IS NOT NULL
-        )
-        SELECT * FROM current_allocations`
+    SELECT DISTINCT t.start_date_of_the_week
+    FROM timesheet t
+    JOIN project p ON t.project_id = p.id
+    JOIN organization_user ou ON p.project_manager_id = ou.user_id 
+    WHERE ou.organization_id = $1
+    ORDER BY t.start_date_of_the_week DESC
+    LIMIT 1
+),
+current_allocations AS (
+    SELECT 
+        p.id as project_id,
+        p.name as project_name,
+        p.estimated_hours,
+        COALESCE(t.employee_id, 'N/A') as employee_id,
+        COALESCE(u.first_name, 'Not Assigned') as first_name,
+        COALESCE(u.last_name, '') as last_name,
+        COALESCE(emp_ou.role, 'No Role') as role,
+        COUNT(DISTINCT tr.id) as total_records,
+        COUNT(DISTINCT CASE WHEN tr.end_time IS NOT NULL THEN tr.id END) as completed_records
+    FROM project p
+    JOIN organization_user pm_ou ON pm_ou.user_id = p.project_manager_id 
+        AND pm_ou.organization_id = $1
+    LEFT JOIN timesheet t ON p.id = t.project_id 
+        AND t.start_date_of_the_week = (SELECT start_date_of_the_week FROM latest_week)
+    LEFT JOIN "user" u ON t.employee_id = u.id
+    LEFT JOIN organization_user emp_ou ON t.employee_id = emp_ou.user_id 
+        AND emp_ou.organization_id = $1
+    LEFT JOIN time_record tr ON t.id = tr.timesheet_id
+    GROUP BY 
+        p.id, p.name, p.estimated_hours,
+        t.employee_id, u.first_name, u.last_name, emp_ou.role
+)
+SELECT * FROM current_allocations`
 
 	rows, err := db.Query(query, orgID)
 	if err != nil {

@@ -32,6 +32,7 @@ func init() {
 
 	handler := api.NewHandler(db)
 	router := api.SetupRoutes(handler)
+	router.Use(api.CORSMiddleware)
 
 	muxLambda = gorillamux.New(router)
 }

@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
 import Admin from "./pages/admin";
 import Timesheet from "./pages/timesheet";
-
+import Project from "./pages/project";
 
 function App() {
   return (
@@ -13,6 +13,8 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         {/* timesheet route */}
         <Route path="/timesheet" element={<Timesheet/>}></Route>
+        {/* manager project route */}
+        <Route path="/project/:id" element={<Project />} />
       </Routes>
     </Router>
   );

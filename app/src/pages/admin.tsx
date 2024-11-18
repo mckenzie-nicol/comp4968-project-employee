@@ -20,12 +20,17 @@ import {
   SelectGroup,
   SelectItem,
 } from "@/components/ui/select";
-
+import { useNavigate } from "react-router-dom";
 
 export interface PersonProps {
   organizationId: number;
-  employees: 
-    { id: number; organizationId: number; firstName: string; lastName: string; email: string; }[];
+  employees: {
+    id: number;
+    organizationId: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+  }[];
 }
 
 const functionToGetAdmin = async () => {
@@ -36,9 +41,7 @@ const functionToGetOrganizationName = async (organizationId: number) => {
   return { organizationId, organizationName: "Example Organization Name" };
 };
 
-const functionToGetProjectManagers = async (
-  organizationId: number
-) => {
+const functionToGetProjectManagers = async (organizationId: number) => {
   return {
     organizationId: organizationId,
     employees: [
@@ -74,41 +77,40 @@ const functionToGetProjectManagers = async (
   };
 };
 
-const functionToGetEmployees = async (
-  organizationId: number
-) => {
+const functionToGetEmployees = async (organizationId: number) => {
   return {
     organizationId: organizationId,
     employees: [
-    {
-      id: 6,
-      organizationId: 1,
-      firstName: "Tim",
-      lastName: "Jones",
-      email: "timjones@exampleOrg.com",
-    },
-    {
-      id: 7,
-      organizationId: 1,
-      firstName: "Rob",
-      lastName: "Jones",
-      email: "robjones@exampleOrg.com",
-    },
-    {
-      id: 8,
-      organizationId: 1,
-      firstName: "Rick",
-      lastName: "Jones",
-      email: "rickjones@exampleOrg.com",
-    },
-    {
-      id: 9,
-      organizationId: 1,
-      firstName: "Ted",
-      lastName: "Jones",
-      email: "tedjones@exampleOrg.com",
-    },
-  ]};
+      {
+        id: 6,
+        organizationId: 1,
+        firstName: "Tim",
+        lastName: "Jones",
+        email: "timjones@exampleOrg.com",
+      },
+      {
+        id: 7,
+        organizationId: 1,
+        firstName: "Rob",
+        lastName: "Jones",
+        email: "robjones@exampleOrg.com",
+      },
+      {
+        id: 8,
+        organizationId: 1,
+        firstName: "Rick",
+        lastName: "Jones",
+        email: "rickjones@exampleOrg.com",
+      },
+      {
+        id: 9,
+        organizationId: 1,
+        firstName: "Ted",
+        lastName: "Jones",
+        email: "tedjones@exampleOrg.com",
+      },
+    ],
+  };
 };
 
 const handleAddUserToOrg = async (
@@ -118,16 +120,15 @@ const handleAddUserToOrg = async (
 ) => {
   if (!email || !role) {
     return {
-      error:
-        "Error, missing requirements. Must have userId and role.",
+      error: "Error, missing requirements. Must have userId and role.",
     };
   }
   const body = {
     users: [
       {
         email: email,
-        role: role
-      }
+        role: role,
+      },
     ],
   };
   const response = await fetch(
@@ -140,19 +141,55 @@ const handleAddUserToOrg = async (
       },
     }
   );
-
-  console.log(response);
+  try {
+    const data = await response.json();
+    if (response.ok) {
+      console.log("Login successful:", data);
+      return { success: true, data };
+    } else {
+      console.error("Login failed:", data);
+      return { success: false, error: data.message || "Failed to sign in." };
+    }
+  } catch (error) {
+    console.error("Error during sign-in:", error);
+    return { success: false, error: "An error occurred. Please try again." };
+  }
 };
 
 function Admin() {
   const [organizationName, setOrganizationName] = useState("");
-  const [projectManagers, setProjectManagers] = useState<PersonProps | null>(null);
+  const [projectManagers, setProjectManagers] = useState<PersonProps | null>(
+    null
+  );
   const [employees, setEmployees] = useState<PersonProps | null>(null);
   const [email, setEmail] = useState<string>("");
   const [role, setRole] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
-  const organizationId = Cookies.get('organizationId') || '';
-  
+  const navigate = useNavigate();
+
+  const organizationId = Cookies.get("organizationId") || "";
+
+  if (!organizationId) {
+    navigate('/');
+  }
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault(); // Prevent default form submission behavior
+    const result = await handleAddUserToOrg(
+      parseInt(organizationId),
+      email,
+      role
+    );
+
+    if (result.success) {
+      setError(""); // Clear error on success
+      navigate("/admin");
+    } else {
+      setError(result.error); // Show error message
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const admin = await functionToGetAdmin();
@@ -183,43 +220,45 @@ function Admin() {
               <div className="flex-col space-y-10">
                 <DialogTitle>Add a member to your organization...</DialogTitle>
                 <DialogDescription>
-                  <div className="flex-col space-y-5">
-                    <div className="flex-col space-y-3">
-                      <label>Email</label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          setEmail(e.target.value)
-                        }
-                        placeholder="Email..."
-                        required
-                        className="backdrop-blur-sm bg-white/50 border-gray-200"
-                      />
+                  <form onSubmit={onSubmit}>
+                    <div className="flex-col space-y-5">
+                      <div className="flex-col space-y-3">
+                        <label>Email</label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setEmail(e.target.value)
+                          }
+                          placeholder="Email..."
+                          required
+                          className="backdrop-blur-sm bg-white/50 border-gray-200"
+                        />
+                      </div>
+                      <div className="flex-col space-y-3">
+                        <label>Role</label>
+                        <Select>
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => setRole(e.target.value)}
+                              placeholder="Select a role..."
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectItem value="projectManager">
+                                Project Manager
+                              </SelectItem>
+                              <SelectItem value="worker">Worker</SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <div className="flex-col space-y-3">
-                      <label>Role</label>
-                      <Select>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) => setRole(e.target.value)}
-                            placeholder="Select a role..."
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectItem value="projectManager">
-                              Project Manager
-                            </SelectItem>
-                            <SelectItem value="worker">Worker</SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+                  </form>
                 </DialogDescription>
               </div>
             </DialogHeader>
@@ -234,9 +273,15 @@ function Admin() {
                   Cancel
                 </Button>
               </DialogClose>
-              <Button onClick={() => handleAddUserToOrg(parseInt(organizationId), email, role)}>
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity"
+              >
                 Add Member
               </Button>
+              {error && (
+                <div>{error}</div>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -253,7 +298,11 @@ function Admin() {
         </div>
         <div className="w-full">
           {employees && (
-            <PersonList organizationId={parseInt(organizationId)} title="Workers" employees={employees.employees} />
+            <PersonList
+              organizationId={parseInt(organizationId)}
+              title="Workers"
+              employees={employees.employees}
+            />
           )}
         </div>
       </div>

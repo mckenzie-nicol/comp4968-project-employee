@@ -477,6 +477,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                   size="icon"
                   onClick={() => handleDeleteRow(entry.id!)}
                   aria-label={`Delete ${entry.project_name}`}
+                  disabled={isSubmitted}
                 >
                   <X className="h-4 w-4" />
                 </Button>

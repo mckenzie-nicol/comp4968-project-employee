@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"viz-service/internal/database"
 )
@@ -27,6 +28,7 @@ func (h *Handler) GetProjectReports(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.OrganizationID == "" {
+		log.Println("Missing organization ID")
 		http.Error(w, "Missing organization ID", http.StatusBadRequest)
 		return
 	}

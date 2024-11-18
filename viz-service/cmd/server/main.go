@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"database/sql"
+
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
 	_ "github.com/lib/pq"
@@ -12,14 +14,20 @@ import (
 	"viz-service/internal/database"
 )
 
-var muxLambda *gorillamux.GorillaMuxAdapter
+var (
+	muxLambda *gorillamux.GorillaMuxAdapter
+	db        *sql.DB
+	initErr   error
+)
 
 func init() {
 	cfg := config.Load()
 
-	db, err := database.NewDB(cfg)
-	if err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
+	db, initErr = database.NewDB(cfg)
+	if initErr != nil {
+		log.Printf("Failed to initialize database: %v", initErr)
+	} else {
+		log.Println("Database initialized successfully.")
 	}
 
 	handler := api.NewHandler(db)

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"viz-service/config"
 	"viz-service/internal/models"
+
+	_ "github.com/lib/pq"
 )
 
 func NewDB(cfg *config.Config) (*sql.DB, error) {
@@ -137,39 +139,39 @@ func GetRecentTimesheets(db *sql.DB, orgID string) ([]models.RecentTimesheetResp
 func GetProjectAllocations(db *sql.DB, orgID string) ([]models.ProjectAllocationResponse, error) {
 	query := `
         WITH latest_week AS (
-    SELECT DISTINCT t.start_date_of_the_week
-    FROM timesheet t
-    JOIN project p ON t.project_id = p.id
-    JOIN organization_user ou ON p.project_manager_id = ou.user_id 
-    WHERE ou.organization_id = $1
-    ORDER BY t.start_date_of_the_week DESC
-    LIMIT 1
-),
-current_allocations AS (
-    SELECT 
-        p.id as project_id,
-        p.name as project_name,
-        p.estimated_hours,
-        COALESCE(t.employee_id, 'N/A') as employee_id,
-        COALESCE(u.first_name, 'Not Assigned') as first_name,
-        COALESCE(u.last_name, '') as last_name,
-        COALESCE(emp_ou.role, 'No Role') as role,
-        COUNT(DISTINCT tr.id) as total_records,
-        COUNT(DISTINCT CASE WHEN tr.end_time IS NOT NULL THEN tr.id END) as completed_records
-    FROM project p
-    JOIN organization_user pm_ou ON pm_ou.user_id = p.project_manager_id 
-        AND pm_ou.organization_id = $1
-    LEFT JOIN timesheet t ON p.id = t.project_id 
-        AND t.start_date_of_the_week = (SELECT start_date_of_the_week FROM latest_week)
-    LEFT JOIN "user" u ON t.employee_id = u.id
-    LEFT JOIN organization_user emp_ou ON t.employee_id = emp_ou.user_id 
-        AND emp_ou.organization_id = $1
-    LEFT JOIN time_record tr ON t.id = tr.timesheet_id
-    GROUP BY 
-        p.id, p.name, p.estimated_hours,
-        t.employee_id, u.first_name, u.last_name, emp_ou.role
-)
-SELECT * FROM current_allocations`
+            SELECT DISTINCT t.start_date_of_the_week
+            FROM timesheet t
+            JOIN project p ON t.project_id = p.id
+            JOIN organization_user ou ON p.project_manager_id = ou.user_id 
+            WHERE ou.organization_id = $1
+            ORDER BY t.start_date_of_the_week DESC
+            LIMIT 1
+        ),
+        current_allocations AS (
+            SELECT 
+                p.id as project_id,
+                p.name as project_name,
+                p.estimated_hours,
+                COALESCE(t.employee_id, 'N/A') as employee_id,
+                COALESCE(u.first_name, 'Not Assigned') as first_name,
+                COALESCE(u.last_name, '') as last_name,
+                COALESCE(emp_ou.role, 'No Role') as role,
+                COUNT(DISTINCT tr.id) as total_records,
+                COUNT(DISTINCT CASE WHEN tr.end_time IS NOT NULL THEN tr.id END) as completed_records
+            FROM project p
+            JOIN organization_user pm_ou ON pm_ou.user_id = p.project_manager_id 
+                AND pm_ou.organization_id = $1
+            LEFT JOIN timesheet t ON p.id = t.project_id 
+                AND t.start_date_of_the_week = (SELECT start_date_of_the_week FROM latest_week)
+            LEFT JOIN "user" u ON t.employee_id = u.id
+            LEFT JOIN organization_user emp_ou ON t.employee_id = emp_ou.user_id 
+                AND emp_ou.organization_id = $1
+            LEFT JOIN time_record tr ON t.id = tr.timesheet_id
+            GROUP BY 
+                p.id, p.name, p.estimated_hours,
+                t.employee_id, u.first_name, u.last_name, emp_ou.role
+        )
+        SELECT * FROM current_allocations`
 
 	rows, err := db.Query(query, orgID)
 	if err != nil {
@@ -219,7 +221,6 @@ SELECT * FROM current_allocations`
 			ID:             employeeID,
 			Name:           firstName + " " + lastName,
 			Role:           role,
-			Avatar:         string(firstName[0]) + string(lastName[0]),
 			EstimatedHours: actualHours,
 		}
 

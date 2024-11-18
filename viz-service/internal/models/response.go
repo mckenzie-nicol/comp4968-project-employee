@@ -4,7 +4,6 @@ type TeamMemberResponse struct {
 	ID             string  `json:"id"`
 	Name           string  `json:"name"`
 	Role           string  `json:"role"`
-	Avatar         string  `json:"avatar"`
 	EstimatedHours float64 `json:"estimatedHours"`
 }
 

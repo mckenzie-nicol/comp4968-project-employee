@@ -8,7 +8,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Timesheet } from "@/components/project/manager-approval-layout";
+import {
+  Timesheet,
+  HoursRecord,
+} from "@/components/project/manager-approval-layout";
+import { differenceInMinutes } from "date-fns";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
@@ -65,7 +69,7 @@ function ApprovalTable({
   timesheets,
   refetchData,
 }: {
-  trackedHours: (number | null)[];
+  trackedHours: (HoursRecord[] | null)[];
   timesheets: Timesheet[];
   refetchData: () => void;
 }) {
@@ -85,12 +89,16 @@ function ApprovalTable({
     setIsChangingStatus(false);
   };
 
+  console.log(trackedHours);
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
           <TableHead>Tracked Hours</TableHead>
+          <TableHead>Regular Hours</TableHead>
+          <TableHead>Overtime Hours</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Action</TableHead>
         </TableRow>
@@ -99,7 +107,47 @@ function ApprovalTable({
         {timesheets.map((entry, index) => (
           <TableRow key={entry.id}>
             <TableCell>{`${entry.first_name} ${entry.last_name}`}</TableCell>
-            <TableCell>{trackedHours[index]?.toFixed(2) ?? ""}</TableCell>
+            <TableCell>
+              {trackedHours[index]
+                ?.map((timeRecord: HoursRecord) => {
+                  const start = new Date(
+                    `2024-01-01T${timeRecord.start_time}:00`
+                  );
+                  const end = new Date(`2024-01-01T${timeRecord.end_time}:00`);
+                  return differenceInMinutes(end, start) / 60;
+                })
+                .reduce((acc: number, curr: number) => acc + curr, 0)
+                .toFixed(2) ?? ""}
+            </TableCell>
+            <TableCell>
+              {trackedHours[index]
+                ?.map((timeRecord: HoursRecord) => {
+                  const start = new Date(
+                    `2024-01-01T${timeRecord.start_time}:00`
+                  );
+                  let end = new Date(`2024-01-01T${timeRecord.end_time}:00`);
+                  if (end >= new Date(`2024-01-01T17:00:00`)) {
+                    end = new Date(`2024-01-01T17:00:00`);
+                  }
+                  return differenceInMinutes(end, start) / 60;
+                })
+                .reduce((acc: number, curr: number) => acc + curr, 0)
+                .toFixed(2) ?? ""}
+            </TableCell>
+            <TableCell>
+              {trackedHours[index]
+                ?.filter((timeRecord: HoursRecord) => {
+                  const end = new Date(`2024-01-01T${timeRecord.end_time}:00`);
+                  return end >= new Date(`2024-01-01T17:00:00`);
+                })
+                .map((timeRecord: HoursRecord) => {
+                  const start = new Date(`2024-01-01T17:00:00`);
+                  const end = new Date(`2024-01-01T${timeRecord.end_time}:00`);
+                  return differenceInMinutes(end, start) / 60;
+                })
+                .reduce((acc: number, curr: number) => acc + curr, 0)
+                .toFixed(2) ?? ""}
+            </TableCell>
             <TableCell>{entry.approved ? "Approved" : "Open"}</TableCell>
             <TableCell>
               <div className="flex items-center space-x-3">

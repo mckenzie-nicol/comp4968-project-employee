@@ -117,14 +117,7 @@ const fetchTrackedHoursData = async (
         }
 
         const data = await response.json();
-        const hoursWorked = data.data
-          .map((timeRecord: { start_time: "string"; end_time: "string" }) => {
-            const start = new Date(`2024-01-01T${timeRecord.start_time}:00`);
-            const end = new Date(`2024-01-01T${timeRecord.end_time}:00`);
-            return differenceInMinutes(end, start) / 60;
-          })
-          .reduce((acc: number, curr: number) => acc + curr, 0);
-        return hoursWorked;
+        return data.data
       }
     )
   );
@@ -183,6 +176,11 @@ export type DayHours = {
   [key in "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday"]: string;
 };
 
+export type HoursRecord = {
+  start_time: string;
+  end_time: string;
+};
+
 export interface TimeRecord {
   id?: string;
   timesheet_id: string;
@@ -214,7 +212,7 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
   );
   const [projectName, setProjectName] = useState<string>("");
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
-  const [trackedHours, setTrackedHours] = useState<(number | null)[]>([]);
+  const [trackedHours, setTrackedHours] = useState<(HoursRecord[] | null)[]>([]);
   const [refetch, setRefetch] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 

@@ -270,12 +270,12 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       updateAvailableProjects(data, projectData);
       if (data && data.length > 0) {
         const isSubmitted = data.every(entry => entry.submission_date !== null);
+        console.log("isSubmitted:", isSubmitted);
         setIsSubmitted(isSubmitted);
       } else {
         setIsSubmitted(false);
       }
     };
-    console.log('IsSubmitted:', isSubmitted);
     fetchData();
   }, [currentWeekStart, employee_id]);
 

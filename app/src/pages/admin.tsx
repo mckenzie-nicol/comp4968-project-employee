@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
 import PersonList from "@/components/admin/person-list";
 import { Button } from "@/components/ui/button";
 import { DialogHeader, DialogFooter } from "@/components/ui/dialog";
@@ -43,35 +42,21 @@ const functionToGetOrganizationName = async (organizationId: number) => {
 
 const functionToGetProjectManagers = async (organizationId: number) => {
   return {
-    organizationId: organizationId,
+    organizationId,
     employees: [
       {
         id: 2,
-        organizationId: 1,
+        organizationId,
         firstName: "Tim",
         lastName: "Jones",
         email: "timjones@exampleOrg.com",
       },
       {
         id: 3,
-        organizationId: 1,
+        organizationId,
         firstName: "Rob",
         lastName: "Jones",
         email: "robjones@exampleOrg.com",
-      },
-      {
-        id: 4,
-        organizationId: 1,
-        firstName: "Rick",
-        lastName: "Jones",
-        email: "rickjones@exampleOrg.com",
-      },
-      {
-        id: 5,
-        organizationId: 1,
-        firstName: "Ted",
-        lastName: "Jones",
-        email: "tedjones@exampleOrg.com",
       },
     ],
   };
@@ -79,80 +64,54 @@ const functionToGetProjectManagers = async (organizationId: number) => {
 
 const functionToGetEmployees = async (organizationId: number) => {
   return {
-    organizationId: organizationId,
+    organizationId,
     employees: [
       {
         id: 6,
-        organizationId: 1,
-        firstName: "Tim",
-        lastName: "Jones",
-        email: "timjones@exampleOrg.com",
-      },
-      {
-        id: 7,
-        organizationId: 1,
-        firstName: "Rob",
-        lastName: "Jones",
-        email: "robjones@exampleOrg.com",
-      },
-      {
-        id: 8,
-        organizationId: 1,
+        organizationId,
         firstName: "Rick",
-        lastName: "Jones",
-        email: "rickjones@exampleOrg.com",
-      },
-      {
-        id: 9,
-        organizationId: 1,
-        firstName: "Ted",
-        lastName: "Jones",
-        email: "tedjones@exampleOrg.com",
+        lastName: "Smith",
+        email: "ricksmith@exampleOrg.com",
       },
     ],
   };
 };
 
 const handleAddUserToOrg = async (
-  organizationId: number,
+  organizationId: string,
   email: string,
   role: string
 ) => {
   if (!email || !role) {
-    return {
-      error: "Error, missing requirements. Must have userId and role.",
-    };
+    return { error: "Error, missing requirements. Must have email and role." };
   }
   const body = {
     users: [
       {
-        email: email,
-        role: role,
+        email,
+        role,
       },
     ],
   };
-  const response = await fetch(
-    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/prod/organizations/${organizationId}/users`,
-    {
-      method: "POST",
-      body: JSON.stringify(body),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
   try {
+    const response = await fetch(
+      `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/organizations/${organizationId}/users`,
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     const data = await response.json();
     if (response.ok) {
-      console.log("Login successful:", data);
       return { success: true, data };
     } else {
-      console.error("Login failed:", data);
-      return { success: false, error: data.message || "Failed to sign in." };
+      return { success: false, error: data.message || "Failed to add user." };
     }
   } catch (error) {
-    console.error("Error during sign-in:", error);
-    return { success: false, error: "An error occurred. Please try again." };
+    return { success: false, error: `An error occurred - ${error}. Please try again.` };
   }
 };
 
@@ -162,35 +121,19 @@ function Admin() {
     null
   );
   const [employees, setEmployees] = useState<PersonProps | null>(null);
-  const [email, setEmail] = useState<string>("");
-  const [role, setRole] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
-
-  const organizationId = Cookies.get("organizationId") || "";
-
-  if (!organizationId) {
-    navigate('/');
-  }
-
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); // Prevent default form submission behavior
-    const result = await handleAddUserToOrg(
-      parseInt(organizationId),
-      email,
-      role
-    );
-
-    if (result.success) {
-      setError(""); // Clear error on success
-      navigate("/admin");
-    } else {
-      setError(result.error); // Show error message
-    }
-  };
+  const organizationId = sessionStorage.getItem("organizationId") || "";
 
   useEffect(() => {
+    if (!organizationId) {
+      navigate("/");
+      return;
+    }
+
     const fetchData = async () => {
       const admin = await functionToGetAdmin();
       const organization = await functionToGetOrganizationName(
@@ -205,84 +148,93 @@ function Admin() {
     };
 
     fetchData();
-  }, []);
+  }, [organizationId, navigate]);
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const result = await handleAddUserToOrg(organizationId, email, role);
+
+    if (result.success) {
+      setError("");
+      navigate("/admin");
+    } else {
+      setError(result.error);
+    }
+  };
 
   return (
-    <>
+    <div>
       <div className="flex justify-between mx-20 my-10">
         <h1 className="text-3xl font-bold">{organizationName}</h1>
+
         <Dialog>
-          <DialogTrigger>
-            <Button variant={"default"}>Add Member</Button>
+          <DialogTrigger asChild>
+            <Button variant="default">Add Member</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <div className="flex-col space-y-10">
-                <DialogTitle>Add a member to your organization...</DialogTitle>
-                <DialogDescription>
-                  <form onSubmit={onSubmit}>
-                    <div className="flex-col space-y-5">
-                      <div className="flex-col space-y-3">
-                        <label>Email</label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={email}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            setEmail(e.target.value)
-                          }
-                          placeholder="Email..."
-                          required
-                          className="backdrop-blur-sm bg-white/50 border-gray-200"
-                        />
-                      </div>
-                      <div className="flex-col space-y-3">
-                        <label>Role</label>
-                        <Select>
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue
-                              onChange={(
-                                e: React.ChangeEvent<HTMLInputElement>
-                              ) => setRole(e.target.value)}
-                              placeholder="Select a role..."
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectItem value="projectManager">
-                                Project Manager
-                              </SelectItem>
-                              <SelectItem value="worker">Worker</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </form>
-                </DialogDescription>
-              </div>
+              <DialogTitle>Add a member to your organization...</DialogTitle>
+              <DialogDescription>
+                Fill out the details below to invite a member.
+              </DialogDescription>
             </DialogHeader>
-            <DialogFooter className="mt-6">
-              <DialogClose>
-                <Button
-                  onClick={() => {
-                    setEmail("");
-                    setRole("");
-                  }}
-                >
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity"
-              >
-                Add Member
-              </Button>
-              {error && (
-                <div>{error}</div>
-              )}
-            </DialogFooter>
+            <form onSubmit={onSubmit}>
+              <div className="flex-col space-y-5">
+                <div className="flex-col space-y-3">
+                  <label>Email</label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email..."
+                    required
+                    className="backdrop-blur-sm bg-white/50 border-gray-200"
+                  />
+                </div>
+                <div className="flex-col space-y-3">
+                  <label>Role</label>
+                  <Select
+                    onValueChange={(value) => setRole(value)}
+                    value={role}
+                    required
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select a role..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="projectManager">
+                          Project Manager
+                        </SelectItem>
+                        <SelectItem value="worker">Worker</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="mt-4">
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    className="bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity"
+                  >
+                    Add Member
+                  </Button>
+                  <DialogClose asChild>
+                    <Button
+                      onClick={() => {
+                        setEmail("");
+                        setRole("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </div>
+            </form>
+            {error && <div className="text-red-600 mt-4">{error}</div>}
           </DialogContent>
         </Dialog>
       </div>
@@ -306,7 +258,7 @@ function Admin() {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

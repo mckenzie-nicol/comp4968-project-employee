@@ -79,14 +79,13 @@ const PersonList = ({ organizationId, title, employees }: PersonListProps ) => {
             </TableHeader>
             <TableBody>
               {employees.map((employee) => (
-                <>
                   <TableRow key={employee.id}>
                     <TableCell>{employee.firstName}</TableCell>
                     <TableCell>{employee.lastName}</TableCell>
                     <TableCell>{employee.email}</TableCell>
                     <TableCell className="text-right">
                       <Dialog>
-                        <DialogTrigger>
+                        <DialogTrigger asChild>
                           <Button variant="destructive">Remove</Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -117,7 +116,6 @@ const PersonList = ({ organizationId, title, employees }: PersonListProps ) => {
                       </Dialog>
                     </TableCell>
                   </TableRow>
-                </>
               ))}
             </TableBody>
           </Table>

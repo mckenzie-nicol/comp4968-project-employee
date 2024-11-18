@@ -250,7 +250,7 @@ function Admin() {
         <div className="w-full">
           {projectManagers && (
             <PersonList
-              organizationId={parseInt(organizationId)}
+              organizationId={organizationId}
               title="Project Managers"
               employees={projectManagers.employees}
             />
@@ -259,7 +259,7 @@ function Admin() {
         <div className="w-full">
           {employees && (
             <PersonList
-              organizationId={parseInt(organizationId)}
+              organizationId={organizationId}
               title="Workers"
               employees={employees.employees}
             />

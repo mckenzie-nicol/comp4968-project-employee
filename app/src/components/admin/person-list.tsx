@@ -21,7 +21,7 @@ import {
 
 interface PersonListProps {
   title: string;
-  organizationId: number,
+  organizationId: string,
   employees: {
     id: number;
     firstName: string;
@@ -31,7 +31,7 @@ interface PersonListProps {
 }
 
 const handleRemoveUserFromOrg = async (
-  organizationId: number,
+  organizationId: string,
   email: string
 ) => {
   if (!email) {
@@ -47,7 +47,7 @@ const handleRemoveUserFromOrg = async (
     ],
   };
   const response = await fetch(
-    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/prod/organizations/${organizationId}/users`,
+    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/organizations/${organizationId}/users`,
     {
       method: "DELETE",
       body: JSON.stringify(body),

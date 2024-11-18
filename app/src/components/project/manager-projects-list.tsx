@@ -13,8 +13,13 @@ const fetchProjectData = async () => {
         "Content-Type": "application/json",
       },
       // TODO: Replace with the email of the logged in user
-      body: JSON.stringify({ email: "collinc812@gmail.com" }),
+      body: JSON.stringify({ email: "bradley.mills@lambert.com" }),
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
     console.log(response);
     const data = await response.json();
     console.log(data);
@@ -33,7 +38,7 @@ type Project = {
   status: string;
 };
 
-export function ProjectsList() {
+export function ManagerProjectsList() {
   const [projects, setProjects] = useState<Project[]>([]);
   const navigate = useNavigate();
 
@@ -53,6 +58,8 @@ export function ProjectsList() {
     fetchData();
   }, []);
 
+  console.log(projects);
+
   return (
     <Card className="bg-white/10 border-0">
       <CardHeader>
@@ -67,7 +74,7 @@ export function ProjectsList() {
               key={project.id}
               className="flex items-center justify-between p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
               onClick={() => {
-                navigate(`/project/${project.id}/${project.name}`);
+                navigate(`/project/${project.id}`);
               }}
             >
               <div>

@@ -257,6 +257,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }))
   const [selectedProjectId, setSelectedProjectId] = useState<string>("")
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   const today = new Date()
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 })
@@ -298,6 +299,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
 
   const handleSaveTime = async () => {
     if (startTime && endTime && selectedCell.entryId && selectedCell.day) {
+      setIsSubmitting(true)
       const start = new Date(`2024-01-01T${startTime}:00`)
       const end = new Date(`2024-01-01T${endTime}:00`)
       const diffHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60)
@@ -347,6 +349,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
 
       setTimesheet(updatedTimesheet)
     }
+    setIsSubmitting(false)
     setIsDialogOpen(false)
   }
 
@@ -564,7 +567,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSaveTime} disabled={isSubmitted}>Save</Button>
+            <Button onClick={handleSaveTime} disabled={isSubmitting || isSubmitted}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

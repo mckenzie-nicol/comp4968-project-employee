@@ -18,23 +18,26 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "../ui/dialog";
+import { PersonProps } from "@/pages/admin";
 
 interface PersonListProps {
   title: string;
   organizationId: string,
   employees: {
-    id: number;
-    firstName: string;
-    lastName: string;
+    id: string;
+    first_name: string;
+    last_name: string;
     email: string;
+    role: string;
   }[];
+  setEmployees: (employees: PersonProps[]) => void;
 }
 
 const handleRemoveUserFromOrg = async (
   organizationId: string,
-  email: string
+  userName: string
 ) => {
-  if (!email) {
+  if (!userName) {
     return {
       error: "Error, missing requirements. Must have userId and role.",
     };
@@ -42,7 +45,7 @@ const handleRemoveUserFromOrg = async (
   const body = {
     users: [
       {
-        email: email,
+        user_name: userName,
       },
     ],
   };
@@ -60,8 +63,7 @@ const handleRemoveUserFromOrg = async (
   console.log(response);
 };
 
-const PersonList = ({ organizationId, title, employees }: PersonListProps ) => {
-
+const PersonList = ({ organizationId, title, employees, setEmployees }: PersonListProps ) => {
 
 
   return (
@@ -80,8 +82,8 @@ const PersonList = ({ organizationId, title, employees }: PersonListProps ) => {
             <TableBody>
               {employees.map((employee) => (
                   <TableRow key={employee.id}>
-                    <TableCell>{employee.firstName}</TableCell>
-                    <TableCell>{employee.lastName}</TableCell>
+                    <TableCell>{employee.first_name}</TableCell>
+                    <TableCell>{employee.last_name}</TableCell>
                     <TableCell>{employee.email}</TableCell>
                     <TableCell className="text-right">
                       <Dialog>
@@ -95,7 +97,7 @@ const PersonList = ({ organizationId, title, employees }: PersonListProps ) => {
                           <DialogDescription>
                             Are you sure you want to remove{" "}
                             <strong>
-                              {employee.firstName} {employee.lastName}
+                              {employee.first_name} {employee.last_name}
                             </strong>{" "}
                             from your organization?
                           </DialogDescription>
@@ -103,7 +105,9 @@ const PersonList = ({ organizationId, title, employees }: PersonListProps ) => {
                             <Button
                               variant="destructive"
                               onClick={() => {
-                                handleRemoveUserFromOrg(organizationId, employee.email);
+                                handleRemoveUserFromOrg(organizationId, employee.id);
+                                setEmployees(employees.filter((emp) => emp.id !== employee.id)
+                                );
                               }}
                             >
                               Remove

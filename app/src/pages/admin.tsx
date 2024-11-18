@@ -22,14 +22,11 @@ import {
 import { useNavigate } from "react-router-dom";
 
 export interface PersonProps {
-  organizationId: number;
-  employees: {
-    id: number;
-    organizationId: number;
-    firstName: string;
-    lastName: string;
+    id: string;
+    first_name: string;
+    last_name: string;
     email: string;
-  }[];
+    role: string;
 }
 
 const functionToGetAdmin = async () => {
@@ -40,41 +37,29 @@ const functionToGetOrganizationName = async (organizationId: number) => {
   return { organizationId, organizationName: "Example Organization Name" };
 };
 
-const functionToGetProjectManagers = async (organizationId: number) => {
-  return {
-    organizationId,
-    employees: [
+const getUsersForOrganization = async (organizationId: string) => {
+  try {
+    const response = await fetch(
+      `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/organizations/${organizationId}/users`,
       {
-        id: 2,
-        organizationId,
-        firstName: "Tim",
-        lastName: "Jones",
-        email: "timjones@exampleOrg.com",
-      },
-      {
-        id: 3,
-        organizationId,
-        firstName: "Rob",
-        lastName: "Jones",
-        email: "robjones@exampleOrg.com",
-      },
-    ],
-  };
-};
-
-const functionToGetEmployees = async (organizationId: number) => {
-  return {
-    organizationId,
-    employees: [
-      {
-        id: 6,
-        organizationId,
-        firstName: "Rick",
-        lastName: "Smith",
-        email: "ricksmith@exampleOrg.com",
-      },
-    ],
-  };
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await response.json();
+    if (response.ok) {
+      return { success: true, data };
+    } else {
+      return { success: false, error: data.message || "Failed to add user." };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: `An error occurred - ${error}. Please try again.`,
+    };
+  }
 };
 
 const handleAddUserToOrg = async (
@@ -117,10 +102,10 @@ const handleAddUserToOrg = async (
 
 function Admin() {
   const [organizationName, setOrganizationName] = useState("");
-  const [projectManagers, setProjectManagers] = useState<PersonProps | null>(
+  const [projectManagers, setProjectManagers] = useState<PersonProps[] | null>(
     null
   );
-  const [employees, setEmployees] = useState<PersonProps | null>(null);
+  const [employees, setEmployees] = useState<PersonProps[] | null>(null);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [response, setResponse] = useState("");
@@ -139,12 +124,23 @@ function Admin() {
       const organization = await functionToGetOrganizationName(
         admin.organizationId
       );
-      const managers = await functionToGetProjectManagers(admin.organizationId);
-      const empList = await functionToGetEmployees(admin.organizationId);
+
+      const employees = await getUsersForOrganization(organizationId);
+
+      const workers: PersonProps[] = [];
+      const projectManagers: PersonProps[] = [];
+
+      employees.data.results.forEach((employee: PersonProps) => {
+        if (employee.role === "worker") {
+          workers.push(employee);
+        } else if (employee.role === "project_manager") {
+          projectManagers.push(employee);
+        }
+      });
 
       setOrganizationName(organization.organizationName);
-      setProjectManagers(managers);
-      setEmployees(empList);
+      setProjectManagers(projectManagers);
+      setEmployees(workers);
     };
 
     fetchData();
@@ -226,6 +222,8 @@ function Admin() {
                   <Button
                     type="submit"
                     className="bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity"
+                    onClick={() => {
+                    }}
                   >
                     Add Member
                   </Button>
@@ -252,7 +250,8 @@ function Admin() {
             <PersonList
               organizationId={organizationId}
               title="Project Managers"
-              employees={projectManagers.employees}
+              employees={projectManagers}
+              setEmployees={setProjectManagers}
             />
           )}
         </div>
@@ -261,7 +260,8 @@ function Admin() {
             <PersonList
               organizationId={organizationId}
               title="Workers"
-              employees={employees.employees}
+              employees={employees}
+              setEmployees={setEmployees}
             />
           )}
         </div>

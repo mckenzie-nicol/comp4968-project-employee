@@ -567,7 +567,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSaveTime} disabled={isSubmitted}>Save</Button>
+            <Button onClick={handleSaveTime} disabled={isSubmitting || isSubmitted}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

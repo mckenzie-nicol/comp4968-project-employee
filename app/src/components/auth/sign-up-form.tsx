@@ -22,16 +22,17 @@ const handleRegisterUser = async (
     };
   }
   const body = {
+    body: {
     email: email,
     password: password,
     name: name,
+    }
   };
   console.log(JSON.stringify(body));
   const response = await fetch(
-    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/prod/auth/register`,
+    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/auth/register`,
     {
       method: "POST",
-      credentials: "same-origin",
       body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json",

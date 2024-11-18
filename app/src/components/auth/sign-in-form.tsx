@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { redirect } from "react-router-dom";
 
 const handleSignIn = async (email: string, password: string) => {
   if (!email || !password) {
@@ -58,7 +59,7 @@ export function SignInForm() {
 
     if (result.success) {
       setError(""); // Clear error on success
-      console.log("Redirect or perform further actions.");
+      redirect('/admin');
     } else {
       setError(result.error); // Show error message
     }

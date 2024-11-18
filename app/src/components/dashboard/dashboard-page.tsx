@@ -100,7 +100,7 @@ export function DashboardPage({ onSignOut }: DashboardPageProps) {
             <CardTitle className="text-sm font-medium text-gray-600">
               Next Review
             </CardTitle>
-            <Calendar className="h-4 h-4 text-black" />
+            <Calendar className="h-4 text-black" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">2d</div>

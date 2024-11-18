@@ -10,12 +10,6 @@ function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
  
 
-  const handleLogin = (email: string, password: string) => {
-    if (email === "admin@admin.com" && password === "123456") {
-      setIsAuthenticated(true);
-    }
-  };
-
   const handleSignOut = () => {
     setIsAuthenticated(false);
   };
@@ -38,7 +32,7 @@ function Home() {
 
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-16rem)]">
           <div className="form-container glass-effect p-1 rounded-xl card-glow">
-            {isSignIn ? <SignInForm onLogin={handleLogin} /> : <SignUpForm />}
+            {isSignIn ? <SignInForm /> : <SignUpForm />}
           </div>
 
           <div className="mt-8 text-center">

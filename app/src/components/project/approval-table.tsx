@@ -113,7 +113,7 @@ function ApprovalTable({
                 <Button
                   variant="outline"
                   onClick={() => handleRejectClick(entry.id)}
-                  disabled={isChangingStatus}
+                  disabled={isChangingStatus || entry.approved}
                 >
                   Reject
                 </Button>

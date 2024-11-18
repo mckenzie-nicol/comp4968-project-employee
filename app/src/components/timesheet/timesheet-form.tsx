@@ -176,12 +176,14 @@ const fetchTimesheetData = async (employee_id: string, currentWeekStart: Date): 
 
 const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<string | undefined> => {
   const data = {
+    ...(timeRecord.id && { id: timeRecord.id }),
     timesheet_id: timeRecord.timesheet_id,
     day: timeRecord.day,
     date: timeRecord.date,
     start_time: timeRecord.start_time,
     end_time: timeRecord.end_time,
   };
+  
   try {
     const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet/timerecord', {
       method: "POST",

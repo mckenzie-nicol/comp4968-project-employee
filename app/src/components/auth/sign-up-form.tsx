@@ -29,19 +29,20 @@ const handleRegisterUser = async (
       name: name,
     },
   };
+  const response = await fetch(
+    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/auth/register`,
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
   try {
-    const response = await fetch(
-      `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/auth/register`,
-      {
-        method: "POST",
-        body: JSON.stringify(body),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
     const data = await response.json();
+    const body = JSON.parse(data.body);
+    sessionStorage.setItem("userId", body.userId);
     if (response.ok) {
       console.log("Sign Up successful:", data);
       return { success: true, data };
@@ -86,6 +87,9 @@ const handleOrganizationSubmit = async (
   );
   try {
     const data = await response.json();
+    const body = JSON.parse(data.body);
+    sessionStorage.setItem("organizationId", body.organizationId);
+    sessionStorage.setItem("userId", body.userId);
     if (response.ok) {
       console.log("Sign Up successful:", data);
       return { success: true, data };

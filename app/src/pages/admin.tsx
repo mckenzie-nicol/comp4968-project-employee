@@ -123,7 +123,7 @@ function Admin() {
   const [employees, setEmployees] = useState<PersonProps | null>(null);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
-  const [error, setError] = useState("");
+  const [response, setResponse] = useState("");
 
   const navigate = useNavigate();
   const organizationId = sessionStorage.getItem("organizationId") || "";
@@ -154,11 +154,19 @@ function Admin() {
     event.preventDefault();
     const result = await handleAddUserToOrg(organizationId, email, role);
 
-    if (result.success) {
-      setError("");
+    console.log(result.data.results.notFound);
+    
+    if (result.success && result.data.results.notFound === 0) {
+      setResponse("Successfully Added User to Organization!");
+      setEmail("");
+      setRole("");
       navigate("/admin");
+    } else if (result.data.results.notFound > 0) {
+      setResponse(
+        "User not found, please verify user is signed up and correctness of submitted email."
+      );
     } else {
-      setError(result.error);
+      setResponse(result.error);
     }
   };
 
@@ -204,7 +212,7 @@ function Admin() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectItem value="projectManager">
+                        <SelectItem value="project_manager">
                           Project Manager
                         </SelectItem>
                         <SelectItem value="worker">Worker</SelectItem>
@@ -234,7 +242,7 @@ function Admin() {
                 </DialogFooter>
               </div>
             </form>
-            {error && <div className="text-red-600 mt-4">{error}</div>}
+            {response && <div className="mt-4">{response}</div>}
           </DialogContent>
         </Dialog>
       </div>

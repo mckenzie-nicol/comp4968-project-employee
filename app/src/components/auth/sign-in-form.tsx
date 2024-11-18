@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { redirect } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const handleSignIn = async (email: string, password: string) => {
   if (!email || !password) {
@@ -18,8 +18,10 @@ const handleSignIn = async (email: string, password: string) => {
     };
   }
   const body = {
+    body: {
     username: email,
     password: password,
+    }
   };
 
   try {
@@ -53,13 +55,15 @@ export function SignInForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  const navigate = useNavigate();
+
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // Prevent default form submission behavior
     const result = await handleSignIn(email, password);
 
     if (result.success) {
       setError(""); // Clear error on success
-      redirect('/admin');
+      navigate('/admin');
     } else {
       setError(result.error); // Show error message
     }

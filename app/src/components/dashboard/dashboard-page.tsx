@@ -15,6 +15,8 @@ interface DashboardPageProps {
   userRole?: 'employee' | 'project-manager'
 }
 
+const userId = sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
+
 export function DashboardPage({ onSignOut, userRole = 'project-manager' }: DashboardPageProps) {
   const [showTimesheetForm, setShowTimesheetForm] = useState(false)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
@@ -33,7 +35,7 @@ export function DashboardPage({ onSignOut, userRole = 'project-manager' }: Dashb
           </Button>
           <h1 className="text-3xl font-bold text-gradient">New Timesheet</h1>
         </div>
-        <TimesheetTable employee_id="emp003"/>
+        <TimesheetTable employee_id={userId}/>
       </div>
     )
   }
@@ -170,7 +172,7 @@ export function DashboardPage({ onSignOut, userRole = 'project-manager' }: Dashb
                     <CardTitle className="text-sm font-medium text-gray-600">
                       Next Review
                     </CardTitle>
-                    <Calendar className="h-4 h-4 text-black" />
+                    <Calendar className="h-4 text-black" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">2d</div>

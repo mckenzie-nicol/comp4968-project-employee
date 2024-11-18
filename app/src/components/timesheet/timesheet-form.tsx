@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { X, Check, ChevronLeft, ChevronRight } from "lucide-react"
+import { X, Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { startOfWeek, endOfWeek, addWeeks, addDays, format, isBefore, parseISO, differenceInMinutes } from "date-fns"
 import {
   Select,
@@ -40,7 +40,7 @@ type DayHours = {
 }
 
 interface TimeRecord {
-  id: string;
+  id?: string;
   timesheet_id: string;
   day: keyof DayHours;
   date: string;
@@ -49,7 +49,7 @@ interface TimeRecord {
 }
 
 interface TimesheetEntry {
-  id: string
+  id?: string
   project_id: string
   project_name: string
   employee_id: string
@@ -71,7 +71,6 @@ const days: (keyof DayHours)[] = ["Monday", "Tuesday", "Wednesday", "Thursday", 
 
 const transformTSToJSON = (data: TimesheetEntry): Record<string, any> => {
   const dataToStore = {
-    id: data.id,
     project_id: data.project_id,
     employee_id: data.employee_id,
     start_date_of_the_week: data.start_date_of_the_week,
@@ -109,7 +108,7 @@ const transformToTimesheetEntry = (data: Record<string, any>): TimesheetEntry =>
   }
 }
 
-const addProjectToDatabase = async (entry: TimesheetEntry): Promise<void> => {
+const addProjectToDatabase = async (entry: TimesheetEntry): Promise<string | undefined> => {
   const data: Record<string, any> = transformTSToJSON(entry);
   console.log("Added project:", data);
 
@@ -128,8 +127,10 @@ const addProjectToDatabase = async (entry: TimesheetEntry): Promise<void> => {
 
     const responseData = await response.json();
     console.log("Message:", responseData);
+    return responseData.id; // Return the auto-generated ID from the database
   } catch (error) {
     console.error("Error adding project to database:", error);
+    return undefined;
   }
 };
 
@@ -137,7 +138,6 @@ const fetchProjectData = async (): Promise<Project[]> => {
   try {
     const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/project');
     const data = await response.json();
-    // console.log("Fetched data:", data);
 
     if (Array.isArray(data)) {
       return data.map((project: Record<string, any>) => ({
@@ -153,7 +153,6 @@ const fetchProjectData = async (): Promise<Project[]> => {
     return [];
   }
 }
-
 
 const fetchTimesheetData = async (employee_id: string, currentWeekStart: Date): Promise<TimesheetEntry[]> => {
   try {
@@ -175,15 +174,16 @@ const fetchTimesheetData = async (employee_id: string, currentWeekStart: Date): 
   }
 };
 
-const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
+const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<string | undefined> => {
   const data = {
-    id: timeRecord.id,
+    ...(timeRecord.id && { id: timeRecord.id }),
     timesheet_id: timeRecord.timesheet_id,
     day: timeRecord.day,
     date: timeRecord.date,
     start_time: timeRecord.start_time,
     end_time: timeRecord.end_time,
   };
+  
   try {
     const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet/timerecord', {
       method: "POST",
@@ -199,8 +199,10 @@ const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
 
     const responseData = await response.json();
     console.log("Message:", responseData);
+    return responseData.id; // Return the auto-generated ID from the database
   } catch (error) {
     console.error("Error adding/updating time record:", error);
+    return undefined;
   };
 }
 
@@ -211,6 +213,7 @@ const submitTimesheet = async (timesheet: TimesheetEntry[]): Promise<void> => {
       submission_date: format(new Date(), 'yyyy-MM-dd')
     }
   });
+  console.log("Submitting timesheet:", data);
   data.forEach(async (entry) => {
     try {
       const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet/submit', {
@@ -253,6 +256,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const [endTime, setEndTime] = useState<string>("")
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }))
   const [selectedProjectId, setSelectedProjectId] = useState<string>("")
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
 
   const today = new Date()
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 })
@@ -264,6 +268,13 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       setTimesheet(data);
       setAvailableProjects(projectData);
       updateAvailableProjects(data, projectData);
+      if (data && data.length > 0) {
+        const isSubmitted = data.every(entry => entry.submission_date !== null);
+        console.log("isSubmitted:", isSubmitted);
+        setIsSubmitted(isSubmitted);
+      } else {
+        setIsSubmitted(false);
+      }
     };
     fetchData();
   }, [currentWeekStart, employee_id]);
@@ -291,52 +302,50 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       const end = new Date(`2024-01-01T${endTime}:00`)
       const diffHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60)
 
-      const updatedTimesheet = timesheet.map(entry =>
-        entry.id === selectedCell.entryId
-          ? {
-              ...entry,
-              hours: {
-                ...entry.hours,
-                [selectedCell.day!]: diffHours.toFixed(2)
-              },
-              time_records: entry.time_records.some(record => record.day === selectedCell.day)
-                ? entry.time_records.map(record =>
-                    record.day === selectedCell.day
-                      ? {
-                          ...record,
-                          start_time: startTime,
-                          end_time: endTime,
-                        }
-                      : record
-                  )
-                : [
-                    ...entry.time_records,
-                    {
-                      id: `${entry.id}-${selectedCell.day}-${Date.now()}`,
-                      timesheet_id: entry.id,
-                      day: selectedCell.day!,
-                      date: format(addDays(parseISO(entry.start_date_of_the_week), days.indexOf(selectedCell.day!)), 'yyyy-MM-dd'),
-                      start_time: startTime,
-                      end_time: endTime,
-                    }
-                  ]
+      const updatedTimesheet = await Promise.all(timesheet.map(async (entry) => {
+        if (entry.id === selectedCell.entryId) {
+          const existingTimeRecord = entry.time_records.find(r => r.day === selectedCell.day)
+          let updatedTimeRecord: TimeRecord;
+
+          if (existingTimeRecord) {
+            updatedTimeRecord = {
+              ...existingTimeRecord,
+              start_time: startTime,
+              end_time: endTime,
             }
-          : entry
-      )
+          } else {
+            updatedTimeRecord = {
+              timesheet_id: entry.id!,
+              day: selectedCell.day!,
+              date: format(addDays(parseISO(entry.start_date_of_the_week), days.indexOf(selectedCell.day!)), 'yyyy-MM-dd'),
+              start_time: startTime,
+              end_time: endTime,
+            }
+          }
 
-      setTimesheet(updatedTimesheet)
+          const timeRecordId = await addOrUpdateTimeRecord(updatedTimeRecord)
 
-      const updatedEntry = updatedTimesheet.find(entry => entry.id === selectedCell.entryId)
-      if (updatedEntry) {
-        const updatedTimeRecord = updatedEntry.time_records.find(record => record.day === selectedCell.day)
-        if (updatedTimeRecord) {
-          try {
-            await addOrUpdateTimeRecord(updatedTimeRecord)
-          } catch (error) {
-            console.error("Failed to add/update time record:", error)
+          if (timeRecordId) {
+            updatedTimeRecord.id = timeRecordId
+          }
+
+          return {
+            ...entry,
+            hours: {
+              ...entry.hours,
+              [selectedCell.day!]: diffHours.toFixed(2)
+            },
+            time_records: existingTimeRecord
+              ? entry.time_records.map(record =>
+                  record.day === selectedCell.day ? updatedTimeRecord : record
+                )
+              : [...entry.time_records, updatedTimeRecord]
           }
         }
-      }
+        return entry
+      }))
+
+      setTimesheet(updatedTimesheet)
     }
     setIsDialogOpen(false)
   }
@@ -354,7 +363,6 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
     const projectToAdd = availableProjects.find(p => p.id === selectedProjectId)
     if (projectToAdd) {
       const newEntry: TimesheetEntry = {
-        id: `${employee_id}-${projectToAdd.id}-${format(currentWeekStart, 'yyyy-MM-dd')}`,
         project_id: projectToAdd.id,
         project_name: projectToAdd.name,
         employee_id: employee_id,
@@ -368,10 +376,13 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       }
 
       try {
-        await addProjectToDatabase(newEntry)
-        setTimesheet(prevTimesheet => [...prevTimesheet, newEntry])
-        setAvailableProjects(prevAvailable => prevAvailable.filter(p => p.id !== projectToAdd.id))
-        setSelectedProjectId("")
+        const timesheetId = await addProjectToDatabase(newEntry)
+        if (timesheetId) {
+          newEntry.id = timesheetId
+          setTimesheet(prevTimesheet => [...prevTimesheet, newEntry])
+          setAvailableProjects(prevAvailable => prevAvailable.filter(p => p.id !== projectToAdd.id))
+          setSelectedProjectId("")
+        }
       } catch (error) {
         console.error("Failed to add project:", error)
       }
@@ -379,7 +390,11 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   }
 
   const handleSubmitForApproval = () => {
+    if (timesheet.length === 0) {
+      return;
+    }
     submitTimesheet(timesheet);
+    setIsSubmitted(true);
   }
 
   const calculateTotalHours = (hours: DayHours): number => {
@@ -449,7 +464,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                   <Button
                     variant="outline"
                     className="w-full h-full"
-                    onClick={() => handleCellClick(entry.id, day)}
+                    onClick={() => handleCellClick(entry.id!, day)}
                   >
                     {entry.hours[day] || "0.00"}
                   </Button>
@@ -460,8 +475,9 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleDeleteRow(entry.id)}
+                  onClick={() => handleDeleteRow(entry.id!)}
                   aria-label={`Delete ${entry.project_name}`}
+                  disabled={isSubmitted}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -485,7 +501,8 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
 
       <div className="mt-4 flex justify-between items-center">
         <div className="flex items-center space-x-2">
-          <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+          {/* disable the select section when the isSubmitted is true */}
+          <Select value={selectedProjectId} onValueChange={setSelectedProjectId} disabled={isSubmitted}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select a project" />
             </SelectTrigger>
@@ -501,9 +518,15 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
             Add Project
           </Button>
         </div>
-        <Button onClick={handleSubmitForApproval} variant="outline" className="border-black">
-          <Check className="mr-2 h-4 w-4" /> Submit for Approval
-        </Button>
+        { isSubmitted
+          ? <Button onClick={handleSubmitForApproval} disabled>
+              Submitted for Approval
+            </Button>
+          : <Button onClick={handleSubmitForApproval} variant="outline" className="border-black">
+              <Check className="mr-2 h-4 w-4" /> Submit for Approval
+            </Button>
+        }
+        
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -523,6 +546,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 value={startTime}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartTime(e.target.value)}
                 className="col-span-3"
+                disabled={isSubmitted}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -535,11 +559,12 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 value={endTime}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEndTime(e.target.value)}
                 className="col-span-3"
+                disabled={isSubmitted}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSaveTime}>Save</Button>
+            <Button onClick={handleSaveTime} disabled={isSubmitted}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -8,13 +8,14 @@ import { TimesheetForm } from "../timesheet/timesheet-form"
 import { BurnDownChart } from "./burn-down-chart"
 import { ProjectReports } from "./project-reports"
 import { EmployeeProjectHours } from "./employee-project-hours"
+import { ProjectAllocation } from "./project-allocation"
 
 interface DashboardPageProps {
   onSignOut?: () => void
   userRole?: 'employee' | 'project-manager'
 }
 
-export function DashboardPage({ onSignOut, userRole = 'employee' }: DashboardPageProps) {
+export function DashboardPage({ onSignOut, userRole = 'project-manager' }: DashboardPageProps) {
   const [showTimesheetForm, setShowTimesheetForm] = useState(false)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [activeView, setActiveView] = useState<'overview' | 'allocation' | 'reports'>('overview')
@@ -58,9 +59,25 @@ export function DashboardPage({ onSignOut, userRole = 'employee' }: DashboardPag
               >
                 Reports
               </Button>
+              
+              <Button
+                variant={activeView === 'allocation' ? 'default' : 'outline'}
+                onClick={() => setActiveView('allocation')}
+                className={activeView === 'allocation' ? 'bg-black' : 'bg-white/50'}
+              >
+                Project Allocation
+              </Button>
+
+              <Button 
+                className="bg-gradient-to-r from-slate-400 via-gray-800 to-black"
+                onClick={() => setShowTimesheetForm(true)}
+              >
+                New Timesheet
+              </Button>
             </div>
           )}
         </div>
+        
         <Button
           variant="outline"
           onClick={onSignOut}
@@ -99,7 +116,6 @@ export function DashboardPage({ onSignOut, userRole = 'employee' }: DashboardPag
                 <p className="text-xs text-gray-500">Currently assigned</p>
               </CardContent>
             </Card>
-
           </div>
 
           <EmployeeProjectHours />
@@ -177,6 +193,10 @@ export function DashboardPage({ onSignOut, userRole = 'employee' }: DashboardPag
 
           {activeView === 'reports' && (
             <ProjectReports />
+          )}
+
+          {activeView === 'allocation' && (
+            <ProjectAllocation />
           )}
         </>
       )}

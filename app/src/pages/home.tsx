@@ -1,4 +1,3 @@
-
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { SignUpForm } from "@/components/auth/sign-up-form";
 import { DashboardPage } from "@/components/dashboard/dashboard-page";
@@ -8,7 +7,17 @@ import { useState } from "react";
 function Home() {
   const [isSignIn, setIsSignIn] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
- 
+
+  // For dev purposes - allows access to the admin page
+  sessionStorage.setItem(
+    "organizationId",
+    "ad8fad70-47c6-4419-8807-ba4f2fb89a48"
+  );
+
+  sessionStorage.setItem(
+    "userId",
+    "42b9d493-ab5f-466d-9d6b-d23ad8648b02"
+  );
 
   const handleSignOut = () => {
     setIsAuthenticated(false);

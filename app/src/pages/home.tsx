@@ -2,31 +2,32 @@ import { SignInForm } from "@/components/auth/sign-in-form";
 import { SignUpForm } from "@/components/auth/sign-up-form";
 import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import OrgNotConnected from "./org-not-connected";
 
 function Home() {
   const [isSignIn, setIsSignIn] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-
-  // For dev purposes - allows access to the admin page
-  sessionStorage.setItem(
-    "organizationId",
-    "ad8fad70-47c6-4419-8807-ba4f2fb89a48"
-  );
-
-  sessionStorage.setItem(
-    "userId",
-    "42b9d493-ab5f-466d-9d6b-d23ad8648b02"
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const handleSignOut = () => {
     setIsAuthenticated(false);
   };
 
-  if (isAuthenticated) {
-    return <DashboardPage onSignOut={handleSignOut} />;
-  }
+  useEffect(() => {
+    if (
+      sessionStorage.getItem("accessToken") &&
+      sessionStorage.getItem("refreshToken") &&
+      sessionStorage.getItem("userId")
+    ) {
+      setIsAuthenticated(true);
+    }
+  }, [])
 
+  if (isAuthenticated && sessionStorage.getItem("organizationId")) {
+    return <DashboardPage onSignOut={handleSignOut} />;
+  } else if (isAuthenticated && !sessionStorage.getItem("organizationId")) {
+    return <OrgNotConnected />;
+  }
   return (
     <div className="min-h-[77vh] auth-container">
       <div className="container mx-auto px-4 py-8">
@@ -41,7 +42,11 @@ function Home() {
 
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-40rem)]">
           <div className="form-container glass-effect p-1 rounded-xl card-glow">
-            {isSignIn ? <SignInForm /> : <SignUpForm />}
+            {isSignIn ? (
+              <SignInForm setIsAuthenticated={setIsAuthenticated} />
+            ) : (
+              <SignUpForm setHidden={setIsSignIn}/>
+            )}
           </div>
 
           <div className="mt-8 text-center">

@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
 
 const handleSignIn = async (email: string, password: string) => {
 
@@ -98,8 +97,6 @@ export function SignInForm({ setIsAuthenticated }: SignInProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const navigate = useNavigate();
-
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // Prevent default form submission behavior
     const result = await handleSignIn(email, password);
@@ -107,9 +104,6 @@ export function SignInForm({ setIsAuthenticated }: SignInProps) {
     if (result.success) {
       setError(""); // Clear error on success
       setIsAuthenticated(true);
-      if (sessionStorage.getItem("role") === "admin") {
-        navigate("/admin");
-      }
     } else {
       setError(result.error); // Show error message
     }

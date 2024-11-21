@@ -11,7 +11,7 @@ import { EmployeeProjectHours } from "./employee-project-hours"
 import { ProjectAllocation } from "./project-allocation"
 
 interface DashboardPageProps {
-  onSignOut?: () => void
+  onSignOut: () => void
   userRole: 'worker' | 'project_manager'
 }
 

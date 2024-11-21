@@ -20,6 +20,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
 
 export interface PersonProps {
     id: string;
@@ -104,7 +105,11 @@ const handleAddUserToOrg = async (
   }
 };
 
-function Admin() {
+interface AdminProps {
+  onSignOut : () => void;
+}
+
+function Admin({ onSignOut }: AdminProps) {
   const [organizationName, setOrganizationName] = useState("");
   const [projectManagers, setProjectManagers] = useState<PersonProps[] | null>(
     null
@@ -174,79 +179,87 @@ function Admin() {
     <div>
       <div className="flex justify-between mx-20 my-10">
         <h1 className="text-3xl font-bold">{organizationName}</h1>
-
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="default">Add Member</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add a member to your organization...</DialogTitle>
-              <DialogDescription>
-                Fill out the details below to invite a member.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={onSubmit}>
-              <div className="flex-col space-y-5">
-                <div className="flex-col space-y-3">
-                  <label>Email</label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email..."
-                    required
-                    className="backdrop-blur-sm bg-white/50 border-gray-200"
-                  />
-                </div>
-                <div className="flex-col space-y-3">
-                  <label>Role</label>
-                  <Select
-                    onValueChange={(value) => setRole(value)}
-                    value={role}
-                    required
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select a role..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value="project_manager">
-                          Project Manager
-                        </SelectItem>
-                        <SelectItem value="worker">Worker</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="mt-4">
-                <DialogFooter>
-                  <Button
-                    type="submit"
-                    className="bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity"
-                    onClick={() => {
-                    }}
-                  >
-                    Add Member
-                  </Button>
-                  <DialogClose asChild>
-                    <Button
-                      onClick={() => {
-                        setEmail("");
-                        setRole("");
-                      }}
+        <div className="space-x-4">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="default">Add Member</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add a member to your organization...</DialogTitle>
+                <DialogDescription>
+                  Fill out the details below to invite a member.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={onSubmit}>
+                <div className="flex-col space-y-5">
+                  <div className="flex-col space-y-3">
+                    <label>Email</label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Email..."
+                      required
+                      className="backdrop-blur-sm bg-white/50 border-gray-200"
+                    />
+                  </div>
+                  <div className="flex-col space-y-3">
+                    <label>Role</label>
+                    <Select
+                      onValueChange={(value) => setRole(value)}
+                      value={role}
+                      required
                     >
-                      Cancel
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a role..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="project_manager">
+                            Project Manager
+                          </SelectItem>
+                          <SelectItem value="worker">Worker</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <DialogFooter>
+                    <Button
+                      type="submit"
+                      className="bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity"
+                      onClick={() => {}}
+                    >
+                      Add Member
                     </Button>
-                  </DialogClose>
-                </DialogFooter>
-              </div>
-            </form>
-            {response && <div className="mt-4">{response}</div>}
-          </DialogContent>
-        </Dialog>
+                    <DialogClose asChild>
+                      <Button
+                        onClick={() => {
+                          setEmail("");
+                          setRole("");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </div>
+              </form>
+              {response && <div className="mt-4">{response}</div>}
+            </DialogContent>
+          </Dialog>
+          <Button
+            variant="outline"
+            onClick={onSignOut}
+            className="bg-white/50 hover:bg-white/80"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign out
+          </Button>
+        </div>
       </div>
       <div className="xl:flex xl:justify-center xl:space-x-2">
         <div className="w-full">

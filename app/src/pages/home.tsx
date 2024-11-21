@@ -4,10 +4,15 @@ import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import OrgNotConnected from "./org-not-connected";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import Admin from "./admin";
 
 function Home() {
   const [isSignIn, setIsSignIn] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthorizedRole, setIsAuthorizedRole] = useState<
+    "admin" | "worker" | "project_manager" | null
+  >(null);
 
   const handleSignOut = () => {
     sessionStorage.removeItem("accessToken");
@@ -16,6 +21,7 @@ function Home() {
     sessionStorage.removeItem("organizationId");
     sessionStorage.removeItem("role");
     setIsAuthenticated(false);
+    setIsAuthorizedRole(null);
   };
 
   useEffect(() => {
@@ -26,24 +32,36 @@ function Home() {
     ) {
       setIsAuthenticated(true);
     }
-  }, []);
+    if (isAuthenticated && sessionStorage.getItem("organizationId")) {
+      switch (sessionStorage.getItem("role")) {
+        case "worker":
+        case "project_manager":
+        case "admin":
+          setIsAuthorizedRole(
+            sessionStorage.getItem("role") as
+              | "admin"
+              | "worker"
+              | "project_manager"
+              | null
+          );
+          break;
+        default:
+          break;
+      }
+    }
+  }, [isAuthenticated, isAuthorizedRole]);
 
-  const organizationId = sessionStorage.getItem("organizationId");
-  const role = sessionStorage.getItem("role");
-
-  if (
-    isAuthenticated &&
-    organizationId &&
-    (role === 'worker' || role === 'project_manager')
-  ) {
+  if (isAuthenticated && isAuthorizedRole === 'worker' || isAuthorizedRole === 'project_manager') {
     return (
       <DashboardPage
         onSignOut={handleSignOut}
-        userRole={role}
+        userRole={isAuthorizedRole}
       />
     );
+  } else if (isAuthenticated && isAuthorizedRole === 'admin') {
+    return <Admin onSignOut={handleSignOut} />;
   } else if (isAuthenticated && !sessionStorage.getItem("organizationId")) {
-    return <OrgNotConnected />;
+    return <OrgNotConnected onSignOut={handleSignOut} setIsAuthorizedRole={setIsAuthorizedRole} />;
   }
   return (
     <div className="min-h-[77vh] auth-container">
@@ -77,6 +95,28 @@ function Home() {
             >
               {isSignIn ? "Create account" : "Sign in"}
             </Button>
+            <Card className="bg-white/10 border-0">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-lg font-medium text-gray-600">
+                  Sign In Credentials
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-left">
+                  <h3 className="mb-2">All passwords: Password123@</h3>
+                  <ul className="">
+                    <li>Kate - ksullivan33@my.bcit.ca - Admin</li>
+                    <li>Reza - rhedieloo@my.bcit.ca - PM</li>
+                    <li>Grace - isu4@my.bcit.ca - PM</li>
+                    <li>Mckenzie - mnicol11@my.bcit.ca - Worker</li>
+                    <li>Charlie - czhang177@my.bcit.ca - Worker</li>
+                    <li>Colin - cchan535@my.bcit.ca - Worker</li>
+                    <li>Jake - jcurrie42@my.bcit.ca - Worker</li>
+                    <li>Marco - mho122@my.bcit.ca - Worker</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

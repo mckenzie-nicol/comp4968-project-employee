@@ -39,11 +39,15 @@ const functionToGetOrganizationName = async (organizationId: number) => {
 
 const getUsersForOrganization = async (organizationId: string) => {
   try {
+
+    const accessToken = sessionStorage.getItem("accessToken") || "";
+
     const response = await fetch(
       `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/organizations/${organizationId}/users`,
       {
         method: "GET",
         headers: {
+          "Authorization": accessToken,
           "Content-Type": "application/json",
         },
       }

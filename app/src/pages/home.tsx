@@ -21,9 +21,13 @@ function Home() {
     ) {
       setIsAuthenticated(true);
     }
-  }, [])
+  }, []);
 
-  if (isAuthenticated && sessionStorage.getItem("organizationId")) {
+  if (
+    isAuthenticated &&
+    sessionStorage.getItem("organizationId") &&
+    sessionStorage.getItem("role")
+  ) {
     return <DashboardPage onSignOut={handleSignOut} />;
   } else if (isAuthenticated && !sessionStorage.getItem("organizationId")) {
     return <OrgNotConnected />;
@@ -45,7 +49,7 @@ function Home() {
             {isSignIn ? (
               <SignInForm setIsAuthenticated={setIsAuthenticated} />
             ) : (
-              <SignUpForm setHidden={setIsSignIn}/>
+              <SignUpForm setHidden={setIsSignIn} />
             )}
           </div>
 

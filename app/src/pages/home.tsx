@@ -10,6 +10,11 @@ function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const handleSignOut = () => {
+    sessionStorage.removeItem("accessToken");
+    sessionStorage.removeItem("refreshToken");
+    sessionStorage.removeItem("userId");
+    sessionStorage.removeItem("organizationId");
+    sessionStorage.removeItem("role");
     setIsAuthenticated(false);
   };
 

@@ -18,9 +18,9 @@ const handleSignIn = async (email: string, password: string) => {
   }
   const body = {
     body: {
-    username: email,
-    password: password,
-    }
+      username: email,
+      password: password,
+    },
   };
 
   try {
@@ -36,14 +36,41 @@ const handleSignIn = async (email: string, password: string) => {
     );
 
     const data = await response.json();
-    const parseBody = JSON.parse(data.body)
+    const parseBody = JSON.parse(data.body);
     console.log(parseBody);
     if (response.ok) {
       // Example of setting a secure, HTTP-only cookie
-      sessionStorage.setItem("accessToken", parseBody.tokens.accessToken);  
-      sessionStorage.setItem("refreshToken", parseBody.tokens.refreshToken);  
-      sessionStorage.setItem("userId", parseBody.user.Username)
+      sessionStorage.setItem("accessToken", parseBody.tokens.accessToken);
+      sessionStorage.setItem("refreshToken", parseBody.tokens.refreshToken);
+      sessionStorage.setItem("userId", parseBody.user.Username);
       console.log("Login successful:", data);
+
+      try {
+        const body = {
+            userId: parseBody.user.Username,
+        };
+        const response = await fetch(
+          `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/organizations`,
+          {
+            method: "POST",
+            body: JSON.stringify(body),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const data = await response.json();
+        console.log(data);
+        sessionStorage.setItem("organizationId", data.organizationId);
+        sessionStorage.setItem("role", data.role);
+      } catch (error) {
+        console.error("User not connected to organization:", error);
+        return {
+          success: false,
+          error: "An error occurred. Please try again.",
+        };
+      }
 
       return { success: true, data };
     } else {
@@ -86,7 +113,7 @@ const handleGetOrganizationId = async (orgId: string) => {
   // } catch(error) {
   //   console.log(error);
   // }
-}
+};
 
 interface SignInProps {
   setIsAuthenticated: (state: boolean) => void;

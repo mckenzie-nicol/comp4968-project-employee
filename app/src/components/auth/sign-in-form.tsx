@@ -9,8 +9,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 const handleSignIn = async (email: string, password: string) => {
+
+  
+
   if (!email || !password) {
     return {
       error: "Error, missing requirements. Must have email and password.",
@@ -62,8 +66,10 @@ const handleSignIn = async (email: string, password: string) => {
 
         const data = await response.json();
         console.log(data);
-        sessionStorage.setItem("organizationId", data.organizationId);
-        sessionStorage.setItem("role", data.role);
+        if (!data.error) {
+          sessionStorage.setItem("organizationId", data.organizationId);
+          sessionStorage.setItem("role", data.role);
+        } 
       } catch (error) {
         console.error("User not connected to organization:", error);
         return {
@@ -83,38 +89,6 @@ const handleSignIn = async (email: string, password: string) => {
   }
 };
 
-const handleGetOrganizationId = async (orgId: string) => {
-  if (!orgId) {
-    return {
-      error: "Error, missing organization ID.",
-    };
-  }
-  // const body = {
-  //   body: {
-  //     organizationId: orgId,
-  //   },
-  // };
-  // try {
-  //   const response = await fetch(
-  //     `http://example.com`,
-  //     {
-  //       method: "POST",
-  //       body: JSON.stringify(body),
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //     }
-  //   );
-  //   const data = await response.json();
-  //   console.log(data);
-  //   if (response.ok) {
-  //     // sessionStorage.setItem("organizationId", data);
-  //   }
-  // } catch(error) {
-  //   console.log(error);
-  // }
-};
-
 interface SignInProps {
   setIsAuthenticated: (state: boolean) => void;
 }
@@ -124,17 +98,18 @@ export function SignInForm({ setIsAuthenticated }: SignInProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  const navigate = useNavigate();
+
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // Prevent default form submission behavior
     const result = await handleSignIn(email, password);
 
     if (result.success) {
       setError(""); // Clear error on success
-      const userId = sessionStorage.getItem("userId");
-      if (userId) {
-        await handleGetOrganizationId(userId);
-      }
       setIsAuthenticated(true);
+      if (sessionStorage.getItem("role") === "admin") {
+        navigate("/admin");
+      }
     } else {
       setError(result.error); // Show error message
     }

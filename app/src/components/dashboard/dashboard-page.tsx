@@ -12,12 +12,12 @@ import { ProjectAllocation } from "./project-allocation"
 
 interface DashboardPageProps {
   onSignOut?: () => void
-  userRole?: 'employee' | 'project-manager'
+  userRole: 'worker' | 'project_manager'
 }
 
 const userId = sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
 
-export function DashboardPage({ onSignOut, userRole = 'project-manager' }: DashboardPageProps) {
+export function DashboardPage({ onSignOut, userRole }: DashboardPageProps) {
   const [showTimesheetForm, setShowTimesheetForm] = useState(false)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [activeView, setActiveView] = useState<'overview' | 'allocation' | 'reports'>('overview')
@@ -45,7 +45,7 @@ export function DashboardPage({ onSignOut, userRole = 'project-manager' }: Dashb
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold text-gradient">Dashboard</h1>
-          {userRole === 'project-manager' && (
+          {userRole === 'project_manager' && (
             <div className="flex gap-2">
               <Button
                 variant={activeView === 'overview' ? 'default' : 'outline'}
@@ -90,7 +90,7 @@ export function DashboardPage({ onSignOut, userRole = 'project-manager' }: Dashb
         </Button>
       </div>
 
-      {userRole === 'employee' ? (
+      {userRole === 'worker' ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="bg-white/10 border-0">

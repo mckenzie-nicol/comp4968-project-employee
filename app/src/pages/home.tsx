@@ -4,7 +4,6 @@ import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import OrgNotConnected from "./org-not-connected";
-import Admin from "./admin";
 
 function Home() {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -29,17 +28,20 @@ function Home() {
     }
   }, []);
 
+  const organizationId = sessionStorage.getItem("organizationId");
+  const role = sessionStorage.getItem("role");
+
   if (
     isAuthenticated &&
-    sessionStorage.getItem("organizationId") &&
-    (sessionStorage.getItem("role") === "worker" ||
-      sessionStorage.getItem("role") === "project_manager")
+    organizationId &&
+    (role === 'worker' || role === 'project_manager')
   ) {
-    return <DashboardPage onSignOut={handleSignOut} />;
-  } else if (isAuthenticated &&
-    sessionStorage.getItem("organizationId") &&
-    sessionStorage.getItem("role") === "admin") {
-      return <Admin />
+    return (
+      <DashboardPage
+        onSignOut={handleSignOut}
+        userRole={role}
+      />
+    );
   } else if (isAuthenticated && !sessionStorage.getItem("organizationId")) {
     return <OrgNotConnected />;
   }

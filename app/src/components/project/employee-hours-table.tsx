@@ -155,6 +155,7 @@ function EmployeeHoursTable({
             </TableRow>
           ))}
         </TableBody>
+        <div className="h-screen"></div>
       </Table>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

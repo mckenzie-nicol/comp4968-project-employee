@@ -12,6 +12,7 @@ import {
   Timesheet,
   HoursRecord,
 } from "@/components/project/manager-approval-layout";
+import { Check, Undo, X } from "lucide-react";
 import { differenceInMinutes } from "date-fns";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
@@ -96,17 +97,25 @@ function ApprovalTable({
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
+          <TableHead>Hours To Add</TableHead>
           <TableHead>Tracked Hours</TableHead>
           <TableHead>Regular Hours</TableHead>
           <TableHead>Overtime Hours</TableHead>
           <TableHead>Status</TableHead>
-          <TableHead>Action</TableHead>
+          <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {timesheets.map((entry, index) => (
           <TableRow key={entry.id}>
             <TableCell>{`${entry.first_name} ${entry.last_name}`}</TableCell>
+            <TableCell>
+              {!entry.approved
+                ? Object.values(entry.hours)
+                    .reduce((acc, curr) => acc + (parseFloat(curr) || 0), 0)
+                    .toFixed(2)
+                : ""}
+            </TableCell>
             <TableCell>
               {trackedHours[index]
                 ?.map((timeRecord: HoursRecord) => {
@@ -152,24 +161,31 @@ function ApprovalTable({
             <TableCell>
               <div className="flex items-center space-x-3">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => handleApproveClick(entry.id, entry.approved)}
                   disabled={isChangingStatus}
+                  size="icon"
                 >
-                  {entry.approved ? "Unapprove" : "Approve"}
+                  {entry.approved ? (
+                    <Undo className="h-4 w-4" />
+                  ) : (
+                    <Check className="h-4 w-4" />
+                  )}
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => handleRejectClick(entry.id)}
                   disabled={isChangingStatus || entry.approved}
+                  size="icon"
                 >
-                  Reject
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             </TableCell>
           </TableRow>
         ))}
       </TableBody>
+      <div className="h-screen"></div>
     </Table>
   );
 }

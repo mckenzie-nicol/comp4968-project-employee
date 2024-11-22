@@ -38,7 +38,7 @@ const Loading = () => {
   );
 };
 
-const fetchProjectName = async (pid: string) => {
+const fetchProjectDetails = async (pid: string) => {
   try {
     const response = await fetch(`${API_URL}/test/project/manager/${pid}`);
 
@@ -47,10 +47,10 @@ const fetchProjectName = async (pid: string) => {
     }
 
     const data = await response.json();
-    return data.data[0].project_name;
+    return data.data[0];
   } catch (error) {
     console.error(error);
-    return "";
+    return null;
   }
 };
 
@@ -117,7 +117,7 @@ const fetchTrackedHoursData = async (
         }
 
         const data = await response.json();
-        return data.data
+        return data.data;
       }
     )
   );
@@ -210,9 +210,14 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
-  const [projectName, setProjectName] = useState<string>("");
+  const [projectDetails, setProjectDetails] = useState<{
+    start_date: string;
+    project_name: string;
+  } | null>(null);
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
-  const [trackedHours, setTrackedHours] = useState<(HoursRecord[] | null)[]>([]);
+  const [trackedHours, setTrackedHours] = useState<(HoursRecord[] | null)[]>(
+    []
+  );
   const [refetch, setRefetch] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -261,8 +266,8 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
   // Fetch project details
   useEffect(() => {
     const fetchProjectNameData = async () => {
-      const name = await fetchProjectName(pid);
-      setProjectName(name);
+      const details = await fetchProjectDetails(pid);
+      setProjectDetails(details);
     };
 
     fetchProjectNameData();
@@ -273,7 +278,14 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between mb-4">
-        <h1 className="text-3xl font-bold text-gradient">{projectName}</h1>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-gradient">
+            {projectDetails?.project_name ?? ""}
+          </h1>
+          <h3 className="text-gradient">{`Start Date: ${
+            projectDetails?.start_date ?? ""
+          }`}</h3>
+        </div>
 
         {/* Week selector */}
         <div className="flex items-center space-x-2">

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DatePicker } from "../ui/date-picker";
 
 const handleCreateProject = async (
@@ -19,27 +19,35 @@ const handleCreateProject = async (
   estStartDate: Date,
   estEndDate: Date
 ) => {
-  if (!projectName || !totalHours || !estStartDate || !estEndDate) {
+  if (
+    !projectName ||
+    !totalHours ||
+    !estStartDate ||
+    (!estEndDate && sessionStorage.getItem("role") !== "project_manager")
+  ) {
     return {
-      error:
+      error: "Missing Requirements Error",
+      message:
         "Error, missing project requirements. Must have project name, estimated hours, estimated start date and estimated end date.",
     };
   }
   const body = {
-    project: {
-      projectName: projectName,
-      totalHours: totalHours,
-      estStartDate: estStartDate,
-      estEndDate: estEndDate,
-    },
+    projectName: projectName,
+    projectManagerId: sessionStorage.getItem("userId"),
+    totalHours: totalHours,
+    estStartDate: estStartDate,
+    estEndDate: estEndDate,
   };
-  const response = await fetch("https://example.org/post", {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const response = await fetch(
+    "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/project",
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
   console.log(response);
 };
@@ -49,10 +57,31 @@ export default function CreateProject() {
   const [totalHours, setTotalHours] = useState<number>(0);
   const [estStartDate, setEstStartDate] = useState<Date>();
   const [estEndDate, setEstEndDate] = useState<Date>();
+  const [open, setOpen] = useState<boolean>(false);
+
+  const onCreateProject = () => {
+    if (!projectName || !totalHours || !estStartDate || !estEndDate) {
+      const errorElement = document.getElementById("createProjectError");
+      if (errorElement) {
+        errorElement.innerHTML =
+          "Invalid request, please enter the project name, the estimated total hours, the start date, and the end date for the project.";
+      }
+    } else {
+      handleCreateProject(projectName, totalHours, estStartDate, estEndDate);
+      setOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    setProjectName("");
+    setTotalHours(0);
+    setEstEndDate(undefined);
+    setEstStartDate(undefined);
+  }, [open]);
 
   return (
     <>
-      <Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger>
           <Button>Create Project</Button>
         </DialogTrigger>
@@ -103,39 +132,18 @@ export default function CreateProject() {
           <DialogFooter>
             <div className="flex-col">
               <div className="flex justify-end">
-                <Button
-                  onClick={() => {
-                    if (
-                      !projectName ||
-                      !totalHours ||
-                      !estStartDate ||
-                      !estEndDate
-                    ) {
-                      const errorElement =
-                        document.getElementById("createProjectError");
-                      if (errorElement) {
-                        errorElement.innerHTML =
-                          "Invalid request, please enter the project name, the estimated total hours, the start date, and the end date for the project.";
-                      }
-                    } else {
-                      handleCreateProject(
-                        projectName,
-                        totalHours,
-                        estStartDate,
-                        estEndDate
-                      );
-                    }
-                  }}
-                >
-                  Create Project
-                </Button>
+                <Button onClick={onCreateProject}>Create Project</Button>
                 <DialogClose>
-                  <Button onClick={() => {
-                    setProjectName('');
-                    setTotalHours(0);
-                    setEstStartDate(undefined);
-                    setEstEndDate(undefined);
-                  }}>Cancel</Button>
+                  <Button
+                    onClick={() => {
+                      setProjectName("");
+                      setTotalHours(0);
+                      setEstStartDate(undefined);
+                      setEstEndDate(undefined);
+                    }}
+                  >
+                    Cancel
+                  </Button>
                 </DialogClose>
               </div>
               <div id="createProjectError"></div>

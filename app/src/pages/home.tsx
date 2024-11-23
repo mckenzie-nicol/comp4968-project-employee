@@ -7,7 +7,7 @@ import { useState } from "react";
 
 function Home() {
   const [isSignIn, setIsSignIn] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
  
 
   const handleSignOut = () => {

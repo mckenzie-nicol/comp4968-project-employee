@@ -48,7 +48,7 @@ export function DashboardPage({ onSignOut, userRole }: DashboardPageProps) {
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold text-gradient">Dashboard</h1>
-          {userRole === 'employee' && (
+          {userRole === 'worker' && (
             <Button 
             className="bg-gradient-to-r from-grey-800 via-gray-800 to-black"
             onClick={() => setShowTimesheetForm(true)}
@@ -56,7 +56,7 @@ export function DashboardPage({ onSignOut, userRole }: DashboardPageProps) {
             New Timesheet
           </Button>
           )}
-          {userRole === 'project-manager' && (
+          {userRole === 'project_manager' && (
             <div className="flex gap-2">
               <Button
                 variant={activeView === "overview" ? "default" : "outline"}

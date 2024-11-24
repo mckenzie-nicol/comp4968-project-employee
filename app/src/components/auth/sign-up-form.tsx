@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FaArrowLeft } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
 
 const handleRegisterUser = async (
   email: string,
@@ -41,9 +40,10 @@ const handleRegisterUser = async (
   );
   try {
     const data = await response.json();
-    const body = JSON.parse(data.body);
-    sessionStorage.setItem("userId", body.userId);
     if (response.ok) {
+      window.alert(
+        "User signed up! Check your email for verification before signing in."
+      );
       console.log("Sign Up successful:", data);
       return { success: true, data };
     } else {
@@ -87,10 +87,8 @@ const handleOrganizationSubmit = async (
   );
   try {
     const data = await response.json();
-    const body = JSON.parse(data.body);
-    sessionStorage.setItem("organizationId", body.organizationId);
-    sessionStorage.setItem("userId", body.userId);
     if (response.ok) {
+      window.alert("Organization and user signed up! Check your email for verification before signing in.")
       console.log("Sign Up successful:", data);
       return { success: true, data };
     } else {
@@ -103,7 +101,11 @@ const handleOrganizationSubmit = async (
   }
 };
 
-export function SignUpForm() {
+interface SignUpProps {
+  setHidden: (hidden: boolean) => void;
+}
+
+export function SignUpForm({ setHidden }: SignUpProps) {
   const [isOrganization, setIsOrganization] = useState<boolean>(true);
   const [organizationName, setOrganizationName] = useState<string>("");
   const [firstName, setFirstName] = useState("");
@@ -114,8 +116,6 @@ export function SignUpForm() {
   const [checkAvailabilityResponse, setCheckAvailabilityResponse] =
     useState<string>("");
   const [error, setError] = useState<string>("");
-
-  const navigate = useNavigate();
 
   const handleCheckAvailability = async (organizationName: string) => {
     const response = await fetch(`${organizationName}`);
@@ -136,7 +136,7 @@ export function SignUpForm() {
 
     if (result.success) {
       setError(""); // Clear error on success
-      navigate("/admin");
+      setHidden(true);
     } else {
       setError(result.error); // Show error message
     }
@@ -152,7 +152,7 @@ export function SignUpForm() {
 
     if (result.success) {
       setError(""); // Clear error on success
-      navigate("/admin");
+      setHidden(true);
     } else {
       setError(result.error); // Show error message
     }

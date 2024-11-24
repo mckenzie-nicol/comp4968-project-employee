@@ -45,6 +45,14 @@ export function DashboardPage({ onSignOut, userRole = 'project-manager' }: Dashb
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold text-gradient">Dashboard</h1>
+          {userRole === 'employee' && (
+            <Button 
+            className="bg-gradient-to-r from-grey-800 via-gray-800 to-black"
+            onClick={() => setShowTimesheetForm(true)}
+          >
+            New Timesheet
+          </Button>
+          )}
           {userRole === 'project-manager' && (
             <div className="flex gap-2">
               <Button
@@ -68,13 +76,6 @@ export function DashboardPage({ onSignOut, userRole = 'project-manager' }: Dashb
                 className={activeView === 'allocation' ? 'bg-black' : 'bg-white/50'}
               >
                 Project Allocation
-              </Button>
-
-              <Button 
-                className="bg-gradient-to-r from-slate-400 via-gray-800 to-black"
-                onClick={() => setShowTimesheetForm(true)}
-              >
-                New Timesheet
               </Button>
             </div>
           )}
@@ -122,6 +123,8 @@ export function DashboardPage({ onSignOut, userRole = 'project-manager' }: Dashb
 
           <EmployeeProjectHours />
           <RecentTimesheets />
+
+      
         </div>
       ) : (
         <>

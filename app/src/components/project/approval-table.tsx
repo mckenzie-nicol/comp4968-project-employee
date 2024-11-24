@@ -113,6 +113,7 @@ function ApprovalTable({
             <TableHead>Regular Hours</TableHead>
             <TableHead>Overtime Hours</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Approved On</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -175,6 +176,7 @@ function ApprovalTable({
                   .toFixed(2) ?? ""}
               </TableCell>
               <TableCell>{entry.approved ? "Approved" : "Open"}</TableCell>
+              <TableCell>{entry.approved_date}</TableCell>
               <TableCell>
                 <div className="flex items-center space-x-3">
                   <Button
@@ -204,8 +206,8 @@ function ApprovalTable({
               </TableCell>
             </TableRow>
           ))}
+          <TableRow className="h-screen"></TableRow>
         </TableBody>
-        <div className="h-screen"></div>
       </Table>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

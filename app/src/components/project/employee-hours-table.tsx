@@ -56,6 +56,12 @@ const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
   }
 };
 
+const validateTime = (startTime: string, endTime: string): boolean => {
+  const start = new Date(`2024-01-01T${startTime}:00`);
+  const end = new Date(`2024-01-01T${endTime}:00`);
+  return start < end;
+};
+
 function EmployeeHoursTable({
   timesheets,
   refetchData,
@@ -75,7 +81,12 @@ function EmployeeHoursTable({
 
   const handleSaveTime = async () => {
     setIsSaving(true);
-    if (startTime && endTime && selectedTimesheetId) {
+    if (
+      startTime &&
+      endTime &&
+      selectedTimesheetId &&
+      validateTime(startTime, endTime)
+    ) {
       const entry = timesheets.find((e) => e.id === selectedTimesheetId);
 
       const updatedTimeRecord = selectedTimeRecord
@@ -154,8 +165,8 @@ function EmployeeHoursTable({
               </TableCell>
             </TableRow>
           ))}
+          <TableRow className="h-screen"></TableRow>
         </TableBody>
-        <div className="h-screen"></div>
       </Table>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

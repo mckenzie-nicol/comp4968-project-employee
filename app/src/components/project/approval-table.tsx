@@ -108,10 +108,10 @@ function ApprovalTable({
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead>Hours To Add</TableHead>
-            <TableHead>Tracked Hours</TableHead>
-            <TableHead>Regular Hours</TableHead>
-            <TableHead>Overtime Hours</TableHead>
+            <TableHead className="text-center">Hours To Add</TableHead>
+            <TableHead className="text-center">Tracked Hours</TableHead>
+            <TableHead className="text-center">Regular Hours</TableHead>
+            <TableHead className="text-center">Overtime Hours</TableHead>
             <TableHead className="text-center">Status</TableHead>
             <TableHead className="text-center">Submitted On</TableHead>
             <TableHead className="text-center">Approved On</TableHead>
@@ -122,14 +122,14 @@ function ApprovalTable({
           {timesheets.map((entry, index) => (
             <TableRow key={entry.id}>
               <TableCell>{`${entry.first_name} ${entry.last_name}`}</TableCell>
-              <TableCell>
+              <TableCell className="text-center">
                 {!entry.approved
                   ? Object.values(entry.hours)
                       .reduce((acc, curr) => acc + (parseFloat(curr) || 0), 0)
                       .toFixed(2)
                   : ""}
               </TableCell>
-              <TableCell>
+              <TableCell className="text-center">
                 {trackedHours[index]
                   ?.map((timeRecord: HoursRecord) => {
                     const start = new Date(
@@ -143,7 +143,7 @@ function ApprovalTable({
                   .reduce((acc: number, curr: number) => acc + curr, 0)
                   .toFixed(2) ?? ""}
               </TableCell>
-              <TableCell>
+              <TableCell className="text-center">
                 {trackedHours[index]
                   ?.map((timeRecord: HoursRecord) => {
                     const start = new Date(
@@ -158,7 +158,7 @@ function ApprovalTable({
                   .reduce((acc: number, curr: number) => acc + curr, 0)
                   .toFixed(2) ?? ""}
               </TableCell>
-              <TableCell>
+              <TableCell className="text-center">
                 {trackedHours[index]
                   ?.filter((timeRecord: HoursRecord) => {
                     const end = new Date(
@@ -220,7 +220,7 @@ function ApprovalTable({
               </TableCell>
             </TableRow>
           ))}
-          <TableRow className="h-screen"></TableRow>
+          <TableRow className="h-[calc(100vh-400px)]"></TableRow>
         </TableBody>
       </Table>
 

@@ -165,7 +165,7 @@ function EmployeeHoursTable({
               </TableCell>
             </TableRow>
           ))}
-          <TableRow className="h-screen"></TableRow>
+          <TableRow className="h-[calc(100vh-400px)]"></TableRow>
         </TableBody>
       </Table>
 

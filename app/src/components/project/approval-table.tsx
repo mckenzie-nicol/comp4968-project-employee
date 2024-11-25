@@ -19,7 +19,7 @@ import {
   Timesheet,
   HoursRecord,
 } from "@/components/project/manager-approval-layout";
-import { Check, Undo, X } from "lucide-react";
+import { Check, Undo, X, ClockAlert, CircleCheckBig } from "lucide-react";
 import { differenceInMinutes } from "date-fns";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
@@ -112,9 +112,10 @@ function ApprovalTable({
             <TableHead>Tracked Hours</TableHead>
             <TableHead>Regular Hours</TableHead>
             <TableHead>Overtime Hours</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Approved On</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-center">Status</TableHead>
+            <TableHead className="text-center">Submitted On</TableHead>
+            <TableHead className="text-center">Approved On</TableHead>
+            <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -175,10 +176,23 @@ function ApprovalTable({
                   .reduce((acc: number, curr: number) => acc + curr, 0)
                   .toFixed(2) ?? ""}
               </TableCell>
-              <TableCell>{entry.approved ? "Approved" : "Open"}</TableCell>
-              <TableCell>{entry.approved_date}</TableCell>
               <TableCell>
-                <div className="flex items-center space-x-3">
+                {entry.approved ? (
+                  <CircleCheckBig className="mx-auto" />
+                ) : (
+                  <ClockAlert className="mx-auto" />
+                )}
+              </TableCell>
+              <TableCell className="text-center">
+                {new Date(entry.submission_date).toLocaleDateString("en-US")}
+              </TableCell>
+              <TableCell className="text-center">
+                {entry.approved_date
+                  ? new Date(entry.approved_date).toLocaleDateString("en-US")
+                  : ""}
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center space-x-3 justify-center">
                   <Button
                     variant="ghost"
                     onClick={() => handleApproveClick(entry.id, entry.approved)}

@@ -7,6 +7,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter,
 } from "@/components/ui/table";
 import { addDays, format, parseISO } from "date-fns";
 import {
@@ -165,8 +166,32 @@ function EmployeeHoursTable({
               </TableCell>
             </TableRow>
           ))}
-          <TableRow className="h-[calc(100vh-400px)]"></TableRow>
         </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell>Total Hours</TableCell>
+            {days.map((day) => (
+              <TableCell key={day} className="text-center">
+                {timesheets
+                  .map((entry) => parseFloat(entry.hours[day]) || 0)
+                  .reduce((acc, curr) => acc + curr, 0)
+                  .toFixed(2)}
+              </TableCell>
+            ))}
+            <TableCell className="text-center">
+              {timesheets
+                .map((entry) =>
+                  Object.values(entry.hours).reduce(
+                    (acc, curr) => acc + (parseFloat(curr) || 0),
+                    0
+                  )
+                )
+                .reduce((acc, curr) => acc + curr, 0)
+                .toFixed(2)}
+            </TableCell>
+          </TableRow>
+          <TableRow className="h-[calc(100vh-400px)]"></TableRow>
+        </TableFooter>
       </Table>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

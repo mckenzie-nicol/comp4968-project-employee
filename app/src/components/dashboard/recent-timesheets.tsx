@@ -1,6 +1,21 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Bell } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 
 export function RecentTimesheets() {
+  const [hasNotifications, setHasNotifications] = useState(true);
+  const navigate = useNavigate();
+
+  const handleApproveClick = () => {
+    navigate("/approve-timesheets");
+  };
+
+  const bellIconStyle = hasNotifications
+    ? "text-red-500"
+    : "text-red-500";
+
   const timesheets = [
     {
       id: 1,
@@ -26,11 +41,20 @@ export function RecentTimesheets() {
   ]
 
   return (
-    <Card className="bg-white/10 border-0">
+    <Card className="bg-white/10 border-4">
       <CardHeader>
+        <div className="flex justify-between items-center">
         <CardTitle className="text-xl font-semibold text-gradient">
           Recent Timesheets
         </CardTitle>
+          <button
+            onClick={handleApproveClick}
+            className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-md hover:bg-gray-200 transition"
+          >
+            <Bell className={`h-6 w-6 ${bellIconStyle}`} />
+            <span>Approve Timesheets</span>
+          </button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -70,6 +94,7 @@ export function RecentTimesheets() {
           ))}
         </div>
       </CardContent>
+      
     </Card>
   )
 }

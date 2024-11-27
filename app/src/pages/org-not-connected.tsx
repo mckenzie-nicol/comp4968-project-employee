@@ -69,7 +69,7 @@ export default function OrgNotConnected({ onSignOut, setIsAuthorizedRole }: OrgN
   }
 
     return (
-      <div className="flex-col justify-center">
+      <div className="min-h-[77vh] flex-col justify-center">
         <div className="my-8">
           <h1 className="text-2xl text-center">
             You are not connected to an organization, contact the organization

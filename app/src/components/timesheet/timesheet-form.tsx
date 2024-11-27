@@ -475,7 +475,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
               <TableCell>{calculateTotalHours(entry.hours).toFixed(2)}</TableCell>
               {/* check if the entry.approved is true or false. TODO */}
               <TableCell className="text-center">
-                {entry.approved ? "Approved" : "Pending"}
+                status place holder
               </TableCell>
               <TableCell>
                 <Button

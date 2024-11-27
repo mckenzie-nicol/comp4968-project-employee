@@ -1,30 +1,22 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { format, parseISO, subDays } from "date-fns"
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts"
-import type { Project } from "./projects-list"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format, parseISO, subDays } from "date-fns";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import type { Project } from "./projects-list";
 
 interface BurnDownData {
-  date: string
-  remaining: number
-  ideal: number
+  date: string;
+  remaining: number;
+  ideal: number;
 }
 
 interface BurnDownChartProps {
-  project: Project | null
+  project: Project | null;
 }
 
 export function BurnDownChart({ project }: BurnDownChartProps) {
   if (!project) {
     return (
-      <Card className="bg-white/10 border-0">
+      <Card className="bg-white/10 border-4">
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-gradient">
             Project Burn Down
@@ -36,37 +28,55 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
           </div>
         </CardContent>
       </Card>
-    )
+    );
+  }
+
+  if (!project.end_date) {
+    return (
+      <Card className="bg-white/10 border-4">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold text-gradient">
+            {project.name} - Burn Down
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[300px] w-full flex items-center justify-center text-gray-500">
+            The project does not have an end date, so the burn down chart cannot be generated.
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   const generateBurnDownData = (): BurnDownData[] => {
-    const startDate = parseISO(project.startDate)
-    const totalDays = 14
-    const totalWork = project.totalStoryPoints
-    const data: BurnDownData[] = []
-    const dailyIdealBurn = totalWork / totalDays
+    const startDate = parseISO(project.start_date);
+    const endDate = parseISO(project.end_date!);
+    const totalDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+    const totalWork = project.estimated_hours;
+    const data: BurnDownData[] = [];
+    const dailyIdealBurn = totalWork / totalDays;
 
     for (let i = 0; i <= totalDays; i++) {
-      const date = subDays(startDate, totalDays - i)
-      const ideal = totalWork - (dailyIdealBurn * i)
+      const date = subDays(endDate, totalDays - i);
+      const ideal = totalWork - (dailyIdealBurn * i);
       // Simulate actual remaining work with some variance
-      const variance = Math.random() * 10 - 5
+      const variance = Math.random() * 10 - 5;
       const remaining = i === 0 ? totalWork : 
-        Math.max(0, data[i-1].remaining - (dailyIdealBurn + variance))
+        Math.max(0, data[i-1].remaining - (dailyIdealBurn + variance));
 
       data.push({
         date: format(date, "MMM dd"),
         remaining: Math.round(remaining),
         ideal: Math.round(ideal),
-      })
+      });
     }
-    return data
-  }
+    return data;
+  };
 
-  const data = generateBurnDownData()
+  const data = generateBurnDownData();
 
   return (
-    <Card className="bg-white/10 border-0">
+    <Card className="bg-white/10 border-4">
       <CardHeader>
         <CardTitle className="text-xl font-semibold text-gradient">
           {project.name} - Burn Down
@@ -99,7 +109,7 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
                 tick={{ fill: '#666666' }}
                 tickLine={{ stroke: '#666666' }}
                 label={{ 
-                  value: 'Story Points',
+                  value: 'Hours',
                   angle: -90,
                   position: 'insideLeft',
                   style: { fill: '#666666' }
@@ -134,27 +144,32 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
           </ResponsiveContainer>
         </div>
         
-        <div className="mt-6 space-y-4">
-          <div className="text-sm text-gray-600">
-            <h4 className="font-semibold mb-2">Understanding the Burn Down Chart:</h4>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-0.5 bg-black"></div>
-                <span><strong>Actual Progress</strong> - Shows the actual remaining work over time. If this line is above the ideal line, the project is behind schedule; if below, it's ahead of schedule.</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-0.5 bg-gray-600 border-t-2 border-dashed"></div>
-                <span><strong>Ideal Progress</strong> - Represents the perfect scenario where work is completed at a constant rate from start to finish.</span>
-              </div>
+       <div className="mt-6">
+          <h4 className="font-semibold text-sm mb-2 text-gray-600">Project Metrics:</h4>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-gray-500">Estimated Hours:</p>
+              <p className="font-medium">{project.estimated_hours} hours</p>
             </div>
-          </div>
-          
-          <div className="text-sm text-gray-500">
-            <p>Total Story Points: {project.totalStoryPoints}</p>
-            <p>Start Date: {format(parseISO(project.startDate), 'MMMM d, yyyy')}</p>
+            <div>
+              <p className="text-gray-500">Approved Hours:</p>
+              <p className="font-medium">{Math.round(project.approved_hours * 100) / 100} hours</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Start Date:</p>
+              <p className="font-medium">
+                {format(parseISO(project.start_date), "MMMM d, yyyy")}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500">End Date:</p>
+              <p className="font-medium">
+                {format(parseISO(project.end_date!), "MMMM d, yyyy")}
+              </p>
+            </div>
           </div>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

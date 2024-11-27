@@ -220,7 +220,6 @@ function ApprovalTable({
               </TableCell>
             </TableRow>
           ))}
-          <TableRow className="h-[calc(100vh-400px)]"></TableRow>
         </TableBody>
       </Table>
 

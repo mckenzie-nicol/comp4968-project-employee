@@ -190,7 +190,6 @@ function EmployeeHoursTable({
                 .toFixed(2)}
             </TableCell>
           </TableRow>
-          <TableRow className="h-[calc(100vh-400px)]"></TableRow>
         </TableFooter>
       </Table>
 

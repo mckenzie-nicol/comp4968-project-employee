@@ -16,8 +16,6 @@ function App() {
         <Route path="/" element={<Home />} />
         {/* timesheet route */}
         <Route path="/timesheet" element={<Timesheet/>}></Route>
-        {/* manager project route */}
-        <Route path="/project/:id" element={<Project />} />
         <Route path="/approve-timesheets" element={<ApproveTimesheets />} />
         <Route path="/test" element={<Test />} />
       </Routes>

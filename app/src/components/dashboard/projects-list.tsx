@@ -44,7 +44,7 @@ export function ProjectsList({ onProjectSelect, selectedProjectId }: ProjectsLis
         id: project.id,
         name: project.name,
         estimated_hours: project.estimated_hours,
-        approved_hours: project.approved_hours, // New property for logged hours
+        approved_hours: Math.round(project.approved_hours * 100) / 100, // Round to 2 decimal places
         start_date: project.start_date,
         end_date: project.end_date,
         progress: Math.min(
@@ -72,7 +72,7 @@ export function ProjectsList({ onProjectSelect, selectedProjectId }: ProjectsLis
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF4560', '#00A6B4', '#A3A1FB'];
 
   return (
-    <Card className="bg-white/10 border-0">
+    <Card className="bg-white/10 border-4">
       <CardHeader>
         <CardTitle className="text-xl font-semibold text-gradient">
           Active Projects

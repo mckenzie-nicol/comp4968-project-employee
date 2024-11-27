@@ -132,59 +132,7 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
         <>
           {activeView === 'overview' && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="bg-white/10 border-0">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-600">
-                      Hours This Week
-                    </CardTitle>
-                    <Clock className="h-4 w-4 text-black" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">32.5</div>
-                    <p className="text-xs text-gray-500">+2.5 from last week</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white/10 border-0">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-600">
-                      Active Projects
-                    </CardTitle>
-                    <PieChart className="h-4 w-4 text-black" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">4</div>
-                    <p className="text-xs text-gray-500">Across 2 teams</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white/10 border-0">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-600">
-                      Team Members
-                    </CardTitle>
-                    <Users className="h-4 w-4 text-black" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">12</div>
-                    <p className="text-xs text-gray-500">In your projects</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white/10 border-0">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-600">
-                      Next Review
-                    </CardTitle>
-                    <Calendar className="h-4 text-black" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">2d</div>
-                    <p className="text-xs text-gray-500">Friday, 3PM</p>
-                  </CardContent>
-                </Card>
-              </div>
+            
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <ProjectsList 

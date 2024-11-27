@@ -16,7 +16,7 @@ interface BurnDownChartProps {
 export function BurnDownChart({ project }: BurnDownChartProps) {
   if (!project) {
     return (
-      <Card className="bg-white/10 border-0">
+      <Card className="bg-white/10 border-4">
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-gradient">
             Project Burn Down
@@ -33,7 +33,7 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
 
   if (!project.end_date) {
     return (
-      <Card className="bg-white/10 border-0">
+      <Card className="bg-white/10 border-4">
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-gradient">
             {project.name} - Burn Down
@@ -76,7 +76,7 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
   const data = generateBurnDownData();
 
   return (
-    <Card className="bg-white/10 border-0">
+    <Card className="bg-white/10 border-4">
       <CardHeader>
         <CardTitle className="text-xl font-semibold text-gradient">
           {project.name} - Burn Down
@@ -153,7 +153,7 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
             </div>
             <div>
               <p className="text-gray-500">Approved Hours:</p>
-              <p className="font-medium">{project.approved_hours} hours</p>
+              <p className="font-medium">{Math.round(project.approved_hours * 100) / 100} hours</p>
             </div>
             <div>
               <p className="text-gray-500">Start Date:</p>

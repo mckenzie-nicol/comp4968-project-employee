@@ -41,7 +41,7 @@ export function RecentTimesheets() {
   ]
 
   return (
-    <Card className="bg-white/10 border-0">
+    <Card className="bg-white/10 border-4">
       <CardHeader>
         <div className="flex justify-between items-center">
         <CardTitle className="text-xl font-semibold text-gradient">

@@ -1,50 +1,75 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export interface Project {
-  id: number
-  name: string
-  progress: number
-  hours: number
-  status: string
-  startDate: string
-  totalStoryPoints: number
+  id: string;
+  name: string;
+  progress: number;
+  estimated_hours: number;
+  approved_hours: number; // New property for logged hours
+  start_date: string;
+  end_date: string | null; // End date could be null
 }
 
 interface ProjectsListProps {
-  onProjectSelect: (project: Project) => void
-  selectedProjectId: number | null
+  onProjectSelect: (project: Project) => void;
+  selectedProjectId: string | null;
 }
 
+const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
+
 export function ProjectsList({ onProjectSelect, selectedProjectId }: ProjectsListProps) {
-  const projects: Project[] = [
-    {
-      id: 1,
-      name: "Website Redesign",
-      progress: 65,
-      hours: 24.5,
-      status: "In Progress",
-      startDate: "2023-11-20",
-      totalStoryPoints: 100
-    },
-    {
-      id: 2,
-      name: "Mobile App Development",
-      progress: 32,
-      hours: 12.5,
-      status: "In Progress",
-      startDate: "2023-11-25",
-      totalStoryPoints: 150
-    },
-    {
-      id: 3,
-      name: "Database Migration",
-      progress: 89,
-      hours: 42.0,
-      status: "Review",
-      startDate: "2023-11-15",
-      totalStoryPoints: 80
-    },
-  ]
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  const fetchProjectData = async () => {
+    try {
+      const response = await fetch(`${API_URL}/test/project/manager`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: sessionStorage.getItem("userId") }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Project Data Response:", data); // Log the response to verify the data
+
+      // Assuming backend processes progress dynamically; otherwise, calculate based on start_date and end_date
+      const mappedProjects = data.data.map((project: any) => ({
+        id: project.id,
+        name: project.name,
+        estimated_hours: project.estimated_hours,
+        approved_hours: project.approved_hours, // New property for logged hours
+        start_date: project.start_date,
+        end_date: project.end_date,
+        progress: Math.min(
+          100,
+          Math.round((project.approved_hours / project.estimated_hours) * 100)
+        ),
+      }));
+
+      console.log("Mapped Projects:", mappedProjects); // Log the mapped projects to verify
+      return mappedProjects;
+    } catch (error) {
+      console.error("Error fetching project data:", error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    async function loadProjects() {
+      const data = await fetchProjectData();
+      setProjects(data);
+    }
+    loadProjects();
+  }, []);
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF4560', '#00A6B4', '#A3A1FB'];
 
   return (
     <Card className="bg-white/10 border-0">
@@ -69,27 +94,93 @@ export function ProjectsList({ onProjectSelect, selectedProjectId }: ProjectsLis
                 <h3 className="font-medium text-gray-800">{project.name}</h3>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-sm text-gray-500">
-                    {project.hours} hours logged
+                    Estimated Hours: {project.estimated_hours}
                   </span>
                   <span className="text-sm text-gray-400">•</span>
-                  <span className="text-sm text-gray-500">{project.status}</span>
+                  <span className="text-sm text-gray-500">
+                    Approved Hours: {project.approved_hours}
+                  </span>
+                  <span className="text-sm text-gray-400">•</span>
+                  <span className="text-sm text-gray-500">
+                    Start Date: {new Date(project.start_date).toLocaleDateString()}
+                  </span>
+                  {project.end_date && (
+                    <>
+                      <span className="text-sm text-gray-400">•</span>
+                      <span className="text-sm text-gray-500">
+                        End Date: {new Date(project.end_date).toLocaleDateString()}
+                      </span>
+                    </>
+                  )}
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-black to-gray-800"
-                    style={{ width: `${project.progress}%` }}
-                  />
+                <div className="flex items-center gap-4">
+                  <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-black to-gray-800"
+                      style={{ width: `${project.progress}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-gray-600">
+                    {Math.round(project.progress)}%
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-gray-600">
-                  {project.progress}%
-                </span>
               </div>
             </div>
           ))}
         </div>
+        <div className="mt-8">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold text-gradient">
+              Estimated Hours Distribution:
+            </CardTitle>
+          </CardHeader>
+          <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <defs>
+              <linearGradient id="pieGradient1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#666666" stopOpacity={0.9} />
+                <stop offset="95%" stopColor="#000000" stopOpacity={0.4} />
+              </linearGradient>
+              <linearGradient id="pieGradient2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#999999" stopOpacity={0.9} />
+                <stop offset="95%" stopColor="#555555" stopOpacity={0.4} />
+              </linearGradient>
+            </defs>
+            <Pie
+              data={projects}
+              dataKey="estimated_hours"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              innerRadius={70}
+              outerRadius={100}
+              paddingAngle={5}
+              stroke="none"
+              label={({ name, percent }) => `${name} (${Math.round(percent * 100)}%)`} // Add percentage labels
+            >
+              {projects.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={`url(#pieGradient${index % 2 === 0 ? 1 : 2})`} // Alternate gradients
+                />
+              ))}
+            </Pie>
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                border: "1px solid #ccc",
+                color: "#666666",
+              }}
+            />
+            <Legend
+              wrapperStyle={{ color: "#666666" }}
+              formatter={(value) => <span style={{ color: "#666666" }}>{value}</span>}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+
+        </div>
       </CardContent>
     </Card>
-  )
+  );
 }

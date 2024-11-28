@@ -58,9 +58,18 @@ export function ApproveTimesheets() {
   return (
     <Card className="bg-white/10 border-0 min-h-screen">
       <CardHeader>
-        <CardTitle className="text-xl font-semibold text-gradient">
-          Approve Timesheets
-        </CardTitle>
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/")}
+            className="bg-white/50"
+          >
+            Back to Dashboard
+          </Button>
+          <CardTitle className="text-3xl font-bold text-gradient">
+            Approve Timesheets
+          </CardTitle>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="mb-4">
@@ -86,15 +95,6 @@ export function ApproveTimesheets() {
         </div>
         {selectedProject && <ManagerApprovalLayout pid={selectedProject} />}
       </CardContent>
-      <div className="p-4">
-        <Button
-          variant="outline"
-          onClick={() => navigate("/")}
-          className="bg-white/50"
-        >
-          Back to Dashboard
-        </Button>
-      </div>
     </Card>
   );
 }

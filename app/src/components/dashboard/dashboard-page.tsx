@@ -16,12 +16,13 @@ interface DashboardPageProps {
   userRole?: 'worker' | 'project_manager'
 }
 
-const userId = sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
 
 export function DashboardPage({ onSignOut, userRole = 'project_manager' }: DashboardPageProps) {
   const [showTimesheetForm, setShowTimesheetForm] = useState(false)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [activeView, setActiveView] = useState<'overview' | 'allocation' | 'reports'>('overview')
+
+  const userId = sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
 
   if (showTimesheetForm) {
     return (

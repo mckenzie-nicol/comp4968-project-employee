@@ -257,9 +257,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const [endTime, setEndTime] = useState<string>("")
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }))
   const [selectedProjectId, setSelectedProjectId] = useState<string>("")
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
-
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(true)  //TODO 
   const today = new Date()
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 })
 
@@ -271,11 +269,11 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       setAvailableProjects(projectData);
       updateAvailableProjects(data, projectData);
       if (data && data.length > 0) {
-        const isSubmitted = data.every(entry => entry.submission_date !== null);
-        console.log("isSubmitted:", isSubmitted);
-        setIsSubmitted(isSubmitted);
+        const isSubmitting = data.some(entry => entry.submission_date === null);
+        console.log("isSubmitting:", isSubmitting);
+        setIsSubmitting(isSubmitting);
       } else {
-        setIsSubmitted(false);
+        setIsSubmitting(false);
       }
     };
     fetchData();
@@ -352,7 +350,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
 
       setTimesheet(updatedTimesheet)
     }
-    setIsSubmitting(false)
+    // setIsSubmitting(false)
     setIsDialogOpen(false)
   }
 
@@ -386,6 +384,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
           newEntry.id = timesheetId
           setTimesheet(prevTimesheet => [...prevTimesheet, newEntry])
           setAvailableProjects(prevAvailable => prevAvailable.filter(p => p.id !== projectToAdd.id))
+          setIsSubmitting(true)
           setSelectedProjectId("")
         }
       } catch (error) {
@@ -399,9 +398,9 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       return;
     }
     submitTimesheet(timesheet);
-    timesheet.forEach(entry => entry.status = "pending");
+    timesheet.filter(entry => entry.status !== "approved").forEach(entry => entry.status = "pending");
     setTimesheet([...timesheet]);
-    setIsSubmitted(true);
+    setIsSubmitting(false);  // not sure
   }
 
   const calculateTotalHours = (hours: DayHours): number => {
@@ -488,7 +487,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                   size="icon"
                   onClick={() => handleDeleteRow(entry.id!)}
                   aria-label={`Delete ${entry.project_name}`}
-                  disabled={isSubmitted || entry.status === 'pending' || entry.status === 'approved'}
+                  disabled={entry.status === 'pending' || entry.status === 'approved'}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -513,7 +512,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       <div className="mt-4 flex justify-between items-center">
         <div className="flex items-center space-x-2">
           {/* disable the select section when the isSubmitted is true */}
-          <Select value={selectedProjectId} onValueChange={setSelectedProjectId} disabled={isSubmitted}>
+          <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select a project" />
             </SelectTrigger>
@@ -529,12 +528,12 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
             Add Project
           </Button>
         </div>
-        { isSubmitted
-          ? <Button onClick={handleSubmitForApproval} disabled>
-              Submitted for Approval
-            </Button>
-          : <Button onClick={handleSubmitForApproval} variant="outline" className="border-black">
+        { isSubmitting
+          ? <Button onClick={handleSubmitForApproval} variant="outline" className="border-black">
               <Check className="mr-2 h-4 w-4" /> Submit for Approval
+            </Button>
+          : <Button onClick={handleSubmitForApproval} disabled>
+              Submitted for Approval
             </Button>
         }
         

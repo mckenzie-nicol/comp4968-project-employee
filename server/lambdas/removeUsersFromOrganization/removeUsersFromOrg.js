@@ -1,4 +1,5 @@
 const { pool } = require('./db');
+const { genericHeaders, protectedHeaders } = require('./headers');
 
 const deleteQuery = `
 WITH deleted AS (
@@ -61,6 +62,7 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
+      headers: genericHeaders,
       body: JSON.stringify({
         message: 'Delete request completed.',
         results: {

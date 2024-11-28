@@ -155,8 +155,9 @@ const transformTimesheet = (data: Record<string, any>): Timesheet => {
     submission_date: data.submission_date,
     first_name: data.first_name,
     last_name: data.last_name,
-    approved: data.approved,
-    approved_by: data.approved_by ?? "",
+    status: data.status,
+    // approved: data.approved,
+    // approved_by: data.approved_by ?? "",
     approved_date: data.approved_date ?? "",
     hours: data.hours
       ? data.hours
@@ -190,6 +191,8 @@ export interface TimeRecord {
   end_time: string;
 }
 
+export type ApprovedStatus = "approved" | "rejected" | "pending" | null;
+
 export type Timesheet = {
   id: string;
   project_id: string;
@@ -198,8 +201,9 @@ export type Timesheet = {
   start_date_of_the_week: string;
   submission_date: string;
   hours: DayHours;
-  approved: boolean;
-  approved_by: string;
+  status: ApprovedStatus;
+  // approved: boolean;
+  // approved_by: string;
   approved_date: string;
   first_name: string;
   last_name: string;

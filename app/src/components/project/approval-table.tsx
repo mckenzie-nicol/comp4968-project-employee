@@ -18,13 +18,14 @@ import {
 import {
   Timesheet,
   HoursRecord,
+  ApprovedStatus,
 } from "@/components/project/manager-approval-layout";
 import { Check, Undo, X, ClockAlert, CircleCheckBig } from "lucide-react";
 import { differenceInMinutes } from "date-fns";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
-const updateApproveStatus = async (id: string, approved: boolean) => {
+const updateApproveStatus = async (id: string, approved: ApprovedStatus) => {
   try {
     const response = await fetch(`${API_URL}/test/timesheet/approve`, {
       method: "POST",
@@ -33,8 +34,9 @@ const updateApproveStatus = async (id: string, approved: boolean) => {
       },
       body: JSON.stringify({
         id,
-        approved: !approved,
-        approved_date: !approved ? new Date().toISOString() : null,
+        approved: approved !== "approved" ? "approved" : "pending",
+        approved_date:
+          approved !== "approved" ? new Date().toISOString() : null,
       }),
     });
 
@@ -85,7 +87,7 @@ function ApprovalTable({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [entryToReject, setEntryToReject] = useState<string>("");
 
-  const handleApproveClick = async (id: string, approved: boolean) => {
+  const handleApproveClick = async (id: string, approved: ApprovedStatus) => {
     setIsChangingStatus(true);
     await updateApproveStatus(id, approved);
     refetchData();
@@ -123,7 +125,7 @@ function ApprovalTable({
             <TableRow key={entry.id}>
               <TableCell>{`${entry.first_name} ${entry.last_name}`}</TableCell>
               <TableCell className="text-center">
-                {!entry.approved
+                {entry.status !== "approved"
                   ? Object.values(entry.hours)
                       .reduce((acc, curr) => acc + (parseFloat(curr) || 0), 0)
                       .toFixed(2)
@@ -177,7 +179,7 @@ function ApprovalTable({
                   .toFixed(2) ?? ""}
               </TableCell>
               <TableCell>
-                {entry.approved ? (
+                {entry.status === "approved" ? (
                   <CircleCheckBig className="mx-auto" />
                 ) : (
                   <ClockAlert className="mx-auto" />
@@ -195,11 +197,11 @@ function ApprovalTable({
                 <div className="flex items-center space-x-3 justify-center">
                   <Button
                     variant="ghost"
-                    onClick={() => handleApproveClick(entry.id, entry.approved)}
+                    onClick={() => handleApproveClick(entry.id, entry.status)}
                     disabled={isChangingStatus}
                     size="icon"
                   >
-                    {entry.approved ? (
+                    {entry.status === "approved" ? (
                       <Undo className="h-4 w-4" />
                     ) : (
                       <Check className="h-4 w-4" />
@@ -211,7 +213,7 @@ function ApprovalTable({
                       setIsDialogOpen(true);
                       setEntryToReject(entry.id);
                     }}
-                    disabled={isChangingStatus || entry.approved}
+                    disabled={isChangingStatus || entry.status === "approved"}
                     size="icon"
                   >
                     <X className="h-4 w-4" />

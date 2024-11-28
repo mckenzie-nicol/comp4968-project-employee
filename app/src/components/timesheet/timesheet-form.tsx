@@ -55,7 +55,7 @@ interface TimesheetEntry {
   employee_id: string
   start_date_of_the_week: string
   hours: DayHours
-  approved: boolean
+  status?: string
   submission_date?: Date
   approved_date?: Date
   time_records: TimeRecord[]
@@ -96,7 +96,7 @@ const transformToTimesheetEntry = (data: Record<string, any>): TimesheetEntry =>
     employee_id: data.employee_id,
     start_date_of_the_week: data.start_date_of_the_week,
     hours: data.hours ? data.hours : { Monday: "", Tuesday: "", Wednesday: "", Thursday: "", Friday: "" },
-    approved: data.approved,
+    status: data.status ? data.status : "",
     submission_date: data.submission_date,
     approved_date: data.approved_date,
     time_records: data.time_records ? data.time_records.map((record: any) => ({
@@ -256,7 +256,6 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const [selectedProjectId, setSelectedProjectId] = useState<string>("")
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
-  const [isApproved, setIsApproved] = useState<boolean>(false)
 
   const today = new Date()
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 })
@@ -370,7 +369,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
         employee_id: employee_id,
         start_date_of_the_week: format(currentWeekStart, 'yyyy-MM-dd'),
         hours: { Monday: "", Tuesday: "", Wednesday: "", Thursday: "", Friday: "" },
-        approved: false,
+        status: undefined,
         submission_date: undefined,
         approved_date: undefined,
         time_records: []
@@ -395,6 +394,8 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       return;
     }
     submitTimesheet(timesheet);
+    timesheet.forEach(entry => entry.status = "pending");
+    setTimesheet([...timesheet]);
     setIsSubmitted(true);
   }
 
@@ -473,9 +474,8 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 </TableCell>
               ))}
               <TableCell>{calculateTotalHours(entry.hours).toFixed(2)}</TableCell>
-              {/* check if the entry.approved is true or false. TODO */}
               <TableCell className="text-center">
-                status place holder
+                {entry.status? entry.status : ""}
               </TableCell>
               <TableCell>
                 <Button
@@ -483,7 +483,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                   size="icon"
                   onClick={() => handleDeleteRow(entry.id!)}
                   aria-label={`Delete ${entry.project_name}`}
-                  disabled={isSubmitted}
+                  disabled={isSubmitted || entry.status === "pending" || entry.status === "approved"}
                 >
                   <X className="h-4 w-4" />
                 </Button>

@@ -76,13 +76,13 @@ CREATE TABLE IF NOT EXISTS public.time_record
 
 CREATE TABLE IF NOT EXISTS public.timesheet
 (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
     project_id uuid NOT NULL,
     employee_id uuid NOT NULL,
     start_date_of_the_week character varying(10) COLLATE pg_catalog."default" NOT NULL,
     submission_date timestamp with time zone DEFAULT now(),
-    approved boolean DEFAULT false,
+    status character varying(10) COLLATE pg_catalog."default",
     approved_date timestamp with time zone,
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
     CONSTRAINT timesheet_pkey PRIMARY KEY (id)
 );
 

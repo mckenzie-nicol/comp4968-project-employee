@@ -56,7 +56,6 @@ interface TimesheetEntry {
   start_date_of_the_week: string
   hours: DayHours
   approved: boolean
-  approved_by?: string
   submission_date?: Date
   approved_date?: Date
   time_records: TimeRecord[]
@@ -98,7 +97,6 @@ const transformToTimesheetEntry = (data: Record<string, any>): TimesheetEntry =>
     start_date_of_the_week: data.start_date_of_the_week,
     hours: data.hours ? data.hours : { Monday: "", Tuesday: "", Wednesday: "", Thursday: "", Friday: "" },
     approved: data.approved,
-    approved_by: data.approved_by,
     submission_date: data.submission_date,
     approved_date: data.approved_date,
     time_records: data.time_records ? data.time_records.map((record: any) => ({
@@ -134,15 +132,15 @@ const addProjectToDatabase = async (entry: TimesheetEntry): Promise<string | und
   }
 };
 
-const fetchProjectData = async (): Promise<Project[]> => {
+const fetchProjectData = async (employee_id : string): Promise<Project[]> => {
   try {
-    const response = await fetch('https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/project');
+    const response = await fetch(`https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/project/worker/${employee_id}`);
     const data = await response.json();
 
     if (Array.isArray(data)) {
       return data.map((project: Record<string, any>) => ({
-        id: project.id,
-        name: project.name,
+        id: project.project_id,
+        name: project.project_name,
       }));
     } else {
       console.error("No data found");
@@ -258,6 +256,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const [selectedProjectId, setSelectedProjectId] = useState<string>("")
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [isApproved, setIsApproved] = useState<boolean>(false)
 
   const today = new Date()
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 })
@@ -265,7 +264,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   useEffect(() => {
     const fetchData = async () => {
       const data = await fetchTimesheetData(employee_id, currentWeekStart);
-      const projectData = await fetchProjectData();
+      const projectData = await fetchProjectData(employee_id);
       setTimesheet(data);
       setAvailableProjects(projectData);
       updateAvailableProjects(data, projectData);
@@ -372,7 +371,6 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
         start_date_of_the_week: format(currentWeekStart, 'yyyy-MM-dd'),
         hours: { Monday: "", Tuesday: "", Wednesday: "", Thursday: "", Friday: "" },
         approved: false,
-        approved_by: undefined,
         submission_date: undefined,
         approved_date: undefined,
         time_records: []
@@ -455,6 +453,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
               <TableHead key={day} className="text-center">{day}</TableHead>
             ))}
             <TableHead>Total Hours</TableHead>
+            <TableHead className="text-center">Status</TableHead>
             <TableHead className="w-[50px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -474,6 +473,10 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 </TableCell>
               ))}
               <TableCell>{calculateTotalHours(entry.hours).toFixed(2)}</TableCell>
+              {/* check if the entry.approved is true or false. TODO */}
+              <TableCell className="text-center">
+                status place holder
+              </TableCell>
               <TableCell>
                 <Button
                   variant="ghost"

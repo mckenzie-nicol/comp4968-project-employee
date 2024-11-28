@@ -205,12 +205,15 @@ const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<string | u
 }
 
 const submitTimesheet = async (timesheet: TimesheetEntry[]): Promise<void> => {
-  const data = timesheet.map(entry => {
-    return {
+  const data = timesheet.reduce<{ id: string | undefined; submission_date: string }[]>((result, entry) => {
+    if (entry.status === "pending" || entry.status === "approved") return result;
+    result.push({
       id: entry.id,
-      submission_date: format(new Date(), 'yyyy-MM-dd')
-    }
-  });
+      submission_date: format(new Date(), 'yyyy-MM-dd'),
+    });
+    return result;
+  }, []);
+  
   console.log("Submitting timesheet:", data);
   data.forEach(async (entry) => {
     try {
@@ -293,6 +296,8 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
     const timeRecord = entry?.time_records.find(r => r.day === day)
     setStartTime(timeRecord?.start_time || "")
     setEndTime(timeRecord?.end_time || "")
+    const isDisabled = entry?.status === 'pending' || entry?.status === 'approved'
+    setIsSubmitting(isDisabled) // Reuse isSubmitting state to disable inputs
   }
 
   const handleSaveTime = async () => {
@@ -483,7 +488,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                   size="icon"
                   onClick={() => handleDeleteRow(entry.id!)}
                   aria-label={`Delete ${entry.project_name}`}
-                  disabled={isSubmitted || entry.status === "pending" || entry.status === "approved"}
+                  disabled={isSubmitted || entry.status === 'pending' || entry.status === 'approved'}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -552,7 +557,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 value={startTime}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartTime(e.target.value)}
                 className="col-span-3"
-                disabled={isSubmitted}
+                disabled={isSubmitting}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -565,12 +570,12 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 value={endTime}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEndTime(e.target.value)}
                 className="col-span-3"
-                disabled={isSubmitted}
+                disabled={isSubmitting}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSaveTime} disabled={isSubmitting || isSubmitted}>Save</Button>
+            <Button onClick={handleSaveTime} disabled={isSubmitting}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

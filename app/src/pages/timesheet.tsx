@@ -11,6 +11,6 @@ export default function Timesheet() {
           <h1 className="text-3xl font-bold">Timesheet</h1>
         </div>
         <TimesheetTable employee_id={userId}/>
-      </div>
+    </div>
   );
 }

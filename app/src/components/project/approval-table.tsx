@@ -147,7 +147,13 @@ function ApprovalTable({
               </TableCell>
               <TableCell className="text-center">
                 {trackedHours[index]
-                  ?.map((timeRecord: HoursRecord) => {
+                  ?.filter((timeRecord: HoursRecord) => {
+                    const start = new Date(
+                      `2024-01-01T${timeRecord.start_time}:00`
+                    );
+                    return start < new Date(`2024-01-01T17:00:00`);
+                  })
+                  .map((timeRecord: HoursRecord) => {
                     const start = new Date(
                       `2024-01-01T${timeRecord.start_time}:00`
                     );
@@ -166,10 +172,15 @@ function ApprovalTable({
                     const end = new Date(
                       `2024-01-01T${timeRecord.end_time}:00`
                     );
-                    return end >= new Date(`2024-01-01T17:00:00`);
+                    return end > new Date(`2024-01-01T17:00:00`);
                   })
                   .map((timeRecord: HoursRecord) => {
-                    const start = new Date(`2024-01-01T17:00:00`);
+                    let start = new Date(
+                      `2024-01-01T${timeRecord.start_time}:00`
+                    );
+                    if (start <= new Date(`2024-01-01T17:00:00`)) {
+                      start = new Date(`2024-01-01T17:00:00`);
+                    }
                     const end = new Date(
                       `2024-01-01T${timeRecord.end_time}:00`
                     );
@@ -186,7 +197,9 @@ function ApprovalTable({
                 )}
               </TableCell>
               <TableCell className="text-center">
-                {new Date(entry.submission_date).toLocaleDateString("en-US")}
+                {new Date(entry.submission_date).toLocaleDateString("en-US", {
+                  timeZone: "UTC",
+                })}
               </TableCell>
               <TableCell className="text-center">
                 {entry.approved_date

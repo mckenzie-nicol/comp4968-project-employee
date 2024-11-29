@@ -28,8 +28,7 @@ async function addWorkerToProject(projectId, workerId) {
 
 
 /**
- * Exported lambda function handler for inviting user(s) to project.
- * Checks if user with a matching email exists in DB, if they're already part of the project, and adds them to it if not
+ * Exported lambda function handler for adding worker(s) to project.
  * @param {*} event - The Lambda event object
  * @returns {object} - The HTTP response
  */

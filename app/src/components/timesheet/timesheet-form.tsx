@@ -39,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import refreshTokens from "@/actions/refresh-token";
 
 type TimesheetProps = {
   employee_id: string;
@@ -135,6 +136,10 @@ const transformToTimesheetEntry = (
 const addProjectToDatabase = async (
   entry: TimesheetEntry
 ): Promise<string | undefined> => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   const accessToken = sessionStorage.getItem("accessToken") || "";
   const data: Record<string, any> = transformTSToJSON(entry);
   console.log("Added project:", data);
@@ -166,6 +171,10 @@ const addProjectToDatabase = async (
 };
 
 const fetchProjectData = async (employee_id: string): Promise<Project[]> => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(
@@ -199,6 +208,10 @@ const fetchTimesheetData = async (
   employee_id: string,
   currentWeekStart: Date
 ): Promise<TimesheetEntry[]> => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(
@@ -242,6 +255,10 @@ const addOrUpdateTimeRecord = async (
     start_time: timeRecord.start_time,
     end_time: timeRecord.end_time,
   };
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(
@@ -281,10 +298,13 @@ const submitTimesheet = async (timesheet: TimesheetEntry[]): Promise<void> => {
     });
     return result;
   }, []);
-
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   console.log("Submitting timesheet:", data);
   data.forEach(async (entry) => {
-    const accessToken = sessionStorage.getItem("accessToken") || "";
     try {
       const response = await fetch(
         "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet/submit",
@@ -312,6 +332,10 @@ const submitTimesheet = async (timesheet: TimesheetEntry[]): Promise<void> => {
 };
 
 const deleteTimesheetEntry = async (entryId: string): Promise<void> => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   const accessToken = sessionStorage.getItem("accessToken") || "";
   const response = await fetch(
     `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/timesheet?id=${entryId}`,

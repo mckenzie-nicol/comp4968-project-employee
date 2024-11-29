@@ -19,6 +19,7 @@ import {
   DialogDescription,
 } from "../ui/dialog";
 import { PersonProps } from "@/pages/admin";
+import refreshTokens from "@/actions/refresh-token";
 
 interface PersonListProps {
   title: string;
@@ -37,6 +38,10 @@ const handleRemoveUserFromOrg = async (
   organizationId: string,
   userName: string
 ) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   const accessToken = sessionStorage.getItem("accessToken") || "";
   if (!userName) {
     return {

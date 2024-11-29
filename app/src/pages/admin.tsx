@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
+import refreshTokens from "@/actions/refresh-token";
 
 export interface PersonProps {
     id: string;
@@ -39,6 +40,10 @@ const functionToGetOrganizationName = async (organizationId: number) => {
 };
 
 const getUsersForOrganization = async (organizationId: string) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   try {
 
     const accessToken = sessionStorage.getItem("accessToken") || "";
@@ -83,6 +88,10 @@ const handleAddUserToOrg = async (
       },
     ],
   };
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   try {
 
     const accessToken = sessionStorage.getItem("accessToken") || "";

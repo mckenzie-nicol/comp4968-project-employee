@@ -15,6 +15,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { EmployeeHoursTable } from "./employee-hours-table";
 import { ApprovalTable } from "./approval-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import refreshTokens from "@/actions/refresh-token";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
@@ -39,6 +40,10 @@ const Loading = () => {
 };
 
 const fetchProjectDetails = async (pid: string) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(`${API_URL}/test/project/manager/${pid}`, {
@@ -62,6 +67,10 @@ const fetchProjectDetails = async (pid: string) => {
 };
 
 const fetchTimesheetData = async (pid: string, currentWeekStart: Date) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(
@@ -94,6 +103,10 @@ const fetchTimesheetData = async (pid: string, currentWeekStart: Date) => {
 const fetchTimeRecordData = async (
   timesheetsData: Record<string, unknown>[]
 ) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   const accessToken = sessionStorage.getItem("accessToken") || "";
   const promisesArray = await Promise.allSettled(
     timesheetsData.map(async (timesheetData: Record<string, unknown>) => {
@@ -128,6 +141,10 @@ const fetchTimeRecordData = async (
 const fetchTrackedHoursData = async (
   timesheetAndRecordsData: Record<string, unknown>[]
 ) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   const accessToken = sessionStorage.getItem("accessToken") || "";
   const promisesArray = await Promise.allSettled(
     timesheetAndRecordsData.map(

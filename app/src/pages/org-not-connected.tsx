@@ -1,3 +1,4 @@
+import refreshTokens from "@/actions/refresh-token";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
@@ -8,7 +9,10 @@ interface OrgNotConnectedProps {
 }
 
 const handleCheckConnection = async () => {
-
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const body = {

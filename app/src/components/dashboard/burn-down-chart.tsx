@@ -144,15 +144,17 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
                   border: "1px solid #ccc",
                 }}
               />
-              <Area
-                type="monotone"
-                dataKey="remaining"
-                stroke="#000000"
-                fillOpacity={1}
-                fill="url(#remaining)"
-                strokeWidth={2}
-                name="Actual Remaining"
-              />
+              {project.approved_hours > 0 && (
+                <Area
+                  type="monotone"
+                  dataKey="remaining"
+                  stroke="#000000"
+                  fillOpacity={1}
+                  fill="url(#remaining)"
+                  strokeWidth={2}
+                  name="Actual Remaining"
+                />
+              )}
               <Area
                 type="monotone"
                 dataKey="ideal"

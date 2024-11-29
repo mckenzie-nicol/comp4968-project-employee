@@ -18,7 +18,7 @@ export function RecentTimesheets() {
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [hasNotifications] = useState(true);
+  const [hasNotifications, setHasNotifications] = useState(true);
   const navigate = useNavigate();
 
   const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
@@ -119,7 +119,7 @@ export function RecentTimesheets() {
                 className="flex flex-col p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-gray-300 shadow-sm"
               >
                 <div className="flex justify-between items-center">
-                  <h3 className="font-extrabold text-xs  bg-gray-200 text-gray-800 ">{timesheet.projects[0]}</h3>
+                  <h3 className="font-medium text-gray-800">{timesheet.projects[0]}</h3>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
                       timesheet.status === "Approved"

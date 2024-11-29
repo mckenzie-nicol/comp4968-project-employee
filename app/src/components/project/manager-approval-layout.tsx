@@ -258,14 +258,20 @@ export type Timesheet = {
   time_records: TimeRecord[];
 };
 
+type Project = {
+  id: string;
+  name: string;
+  project_manager_id: string;
+  start_date: string | null;
+  estimated_hours: number;
+  end_date: string | null;
+};
+
 function ManagerApprovalLayout({ pid }: { pid: string }) {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
-  const [projectDetails, setProjectDetails] = useState<{
-    start_date: string;
-    project_name: string;
-  } | null>(null);
+  const [projectDetails, setProjectDetails] = useState<Project | null>(null);
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
   const [trackedHours, setTrackedHours] = useState<(HoursRecord[] | null)[]>(
     []
@@ -317,12 +323,12 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
 
   // Fetch project details
   useEffect(() => {
-    const fetchProjectNameData = async () => {
+    const fetchProjectDetailsData = async () => {
       const details = await fetchProjectDetails(pid);
       setProjectDetails(details);
     };
 
-    fetchProjectNameData();
+    fetchProjectDetailsData();
   }, [pid]);
 
   console.log(timesheets);
@@ -332,11 +338,15 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
       <div className="flex justify-between mb-4">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-gradient">
-            {projectDetails?.project_name ?? ""}
+            {projectDetails?.name ?? ""}
           </h1>
-          <h3 className="text-gradient">{`Start Date: ${
-            projectDetails?.start_date ?? ""
-          }`}</h3>
+          {projectDetails && (
+            <h3 className="text-gradient">{`Start Date: ${
+              projectDetails.start_date ?? "N/A"
+            }, End Date: ${
+              projectDetails.end_date ?? "N/A"
+            }, Estimated Hours: ${projectDetails.estimated_hours} Hours`}</h3>
+          )}
         </div>
 
         {/* Week selector */}

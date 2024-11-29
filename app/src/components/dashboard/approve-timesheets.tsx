@@ -1,110 +1,110 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components//ui/card";
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components//ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { ManagerApprovalLayout } from "@/components/project/manager-approval-layout";
+import refreshTokens from "@/actions/refresh-token";
+
+const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
+
+const fetchProjectDetails = async () => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
+  try {
+    const response = await fetch(`${API_URL}/test/project/manager/details`, {
+      method: "POST",
+      headers: {
+        "Authorization": accessToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: sessionStorage.getItem("userId") }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+type Project = {
+  id: string;
+  name: string;
+  project_manager_id: string;
+  start_date: string;
+  estimated_hours: number;
+  end_date: string;
+};
 
 export function ApproveTimesheets() {
-  const projects = [
-    { id: 1, name: "Website Redesign" },
-    { id: 2, name: "Mobile App Development" },
-    { id: 3, name: "Database Migration" },
-  ];
-
-  const [selectedProject, setSelectedProject] = useState<number | null>(null);
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
   const navigate = useNavigate();
 
-  const timesheets: { [key: number]: { id: number; employee: string; week: string; hours: number; }[] } = {
-    1: [
-      { id: 1, employee: "Alice", week: "Nov 20 - Nov 26", hours: 40 },
-      { id: 2, employee: "Bob", week: "Nov 20 - Nov 26", hours: 38.5 },
-    ],
-    2: [
-      { id: 3, employee: "Eve", week: "Nov 20 - Nov 26", hours: 35 },
-    ],
-    3: [],
-  };
-
-  const projectTimesheets = selectedProject ? timesheets[selectedProject] || [] : [];
-
-  const handleApprove = (timesheetId: number) => {
-    console.log("Approve timesheet:", timesheetId);
-    // Add API or state update logic here
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      const projectsData = await fetchProjectDetails();
+      setProjects(projectsData);
+    };
+    fetchData();
+  }, []);
 
   return (
     <Card className="bg-white/10 border-0 min-h-screen">
       <CardHeader>
-        <CardTitle className="text-xl font-semibold text-gradient">
-          Approve Timesheets
-        </CardTitle>
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/")}
+            className="bg-white/50"
+          >
+            Back to Dashboard
+          </Button>
+          <CardTitle className="text-3xl font-bold text-gradient">
+            Approve Timesheets
+          </CardTitle>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
-          <label htmlFor="project-dropdown" className="block text-sm font-medium text-gray-700">
-            Select Project
-          </label>
-          <select
-            id="project-dropdown"
+        <div className="mb-6">
+          <Select
             value={selectedProject || ""}
-            className="w-full mt-1 block bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            onChange={(e) => setSelectedProject(Number(e.target.value))}
+            onValueChange={setSelectedProject}
           >
-            <option value="">-- Select Project --</option>
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a project" />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              {projects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        {selectedProject && (
-          <>
-            {projectTimesheets.length > 0 ? (
-              <table className="min-w-full bg-white shadow-md rounded-md">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="py-2 px-4">Employee</th>
-                    <th className="py-2 px-4">Week</th>
-                    <th className="py-2 px-4">Hours</th>
-                    <th className="py-2 px-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {projectTimesheets.map((timesheet: { id: number; employee: string; week: string; hours: number }) => (
-                    <tr key={timesheet.id}>
-                      <td className="py-2 px-4">{timesheet.employee}</td>
-                      <td className="py-2 px-4">{timesheet.week}</td>
-                      <td className="py-2 px-4">{timesheet.hours}</td>
-                      <td className="py-2 px-4">
-                        <button
-                          onClick={() => handleApprove(timesheet.id)}
-                          aria-label={`Approve timesheet for ${timesheet.employee}`}
-                          className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 focus:ring focus:ring-green-300"
-                        >
-                          Approve
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <p className="text-gray-500 text-center py-4">
-                No timesheets available for the selected project.
-              </p>
-            )}
-          </>
-        )}
+        {selectedProject && <ManagerApprovalLayout pid={selectedProject} />}
       </CardContent>
-      <div className="p-4">
-        <Button
-          variant="outline"
-          onClick={() => navigate("/")}
-          className="bg-white/50 hover:bg-white/80"
-        >
-          Back to Dashboard
-        </Button>
-      </div>
     </Card>
   );
 }

@@ -15,6 +15,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { EmployeeHoursTable } from "./employee-hours-table";
 import { ApprovalTable } from "./approval-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import refreshTokens from "@/actions/refresh-token";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
@@ -38,29 +39,52 @@ const Loading = () => {
   );
 };
 
-const fetchProjectName = async (pid: string) => {
+const fetchProjectDetails = async (pid: string) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
-    const response = await fetch(`${API_URL}/test/project/manager/${pid}`);
+    const response = await fetch(`${API_URL}/test/project/manager/${pid}`, {
+      method: "GET",
+      headers: {
+        Authorization: accessToken,
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     const data = await response.json();
-    return data.data[0].project_name;
+    return data.data[0];
   } catch (error) {
     console.error(error);
-    return "";
+    return null;
   }
 };
 
 const fetchTimesheetData = async (pid: string, currentWeekStart: Date) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(
       `${API_URL}/test/timesheet/manager/${pid}?start_date=${format(
         currentWeekStart,
         "yyyy-MM-dd"
-      )}`
+      )}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: accessToken,
+          "Content-Type": "application/json",
+        },
+      }
     );
 
     if (!response.ok) {
@@ -79,10 +103,22 @@ const fetchTimesheetData = async (pid: string, currentWeekStart: Date) => {
 const fetchTimeRecordData = async (
   timesheetsData: Record<string, unknown>[]
 ) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   const promisesArray = await Promise.allSettled(
     timesheetsData.map(async (timesheetData: Record<string, unknown>) => {
       const response = await fetch(
-        `${API_URL}/test/timesheet/timerecord?timesheet_id=${timesheetData.id}`
+        `${API_URL}/test/timesheet/timerecord?timesheet_id=${timesheetData.id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: accessToken,
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       if (!response.ok) {
@@ -105,11 +141,23 @@ const fetchTimeRecordData = async (
 const fetchTrackedHoursData = async (
   timesheetAndRecordsData: Record<string, unknown>[]
 ) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   const promisesArray = await Promise.allSettled(
     timesheetAndRecordsData.map(
       async (timesheetAndRecord: Record<string, unknown>) => {
         const response = await fetch(
-          `${API_URL}/test/timesheet/timerecord/manager/${timesheetAndRecord.employee_id}?pid=${timesheetAndRecord.project_id}`
+          `${API_URL}/test/timesheet/timerecord/manager/${timesheetAndRecord.employee_id}?pid=${timesheetAndRecord.project_id}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: accessToken,
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         if (!response.ok) {
@@ -117,7 +165,7 @@ const fetchTrackedHoursData = async (
         }
 
         const data = await response.json();
-        return data.data
+        return data.data;
       }
     )
   );
@@ -155,8 +203,9 @@ const transformTimesheet = (data: Record<string, any>): Timesheet => {
     submission_date: data.submission_date,
     first_name: data.first_name,
     last_name: data.last_name,
-    approved: data.approved,
-    approved_by: data.approved_by ?? "",
+    status: data.status,
+    // approved: data.approved,
+    // approved_by: data.approved_by ?? "",
     approved_date: data.approved_date ?? "",
     hours: data.hours
       ? data.hours
@@ -190,6 +239,8 @@ export interface TimeRecord {
   end_time: string;
 }
 
+export type ApprovedStatus = "approved" | "rejected" | "pending" | null;
+
 export type Timesheet = {
   id: string;
   project_id: string;
@@ -198,21 +249,33 @@ export type Timesheet = {
   start_date_of_the_week: string;
   submission_date: string;
   hours: DayHours;
-  approved: boolean;
-  approved_by: string;
+  status: ApprovedStatus;
+  // approved: boolean;
+  // approved_by: string;
   approved_date: string;
   first_name: string;
   last_name: string;
   time_records: TimeRecord[];
 };
 
+type Project = {
+  id: string;
+  name: string;
+  project_manager_id: string;
+  start_date: string | null;
+  estimated_hours: number;
+  end_date: string | null;
+};
+
 function ManagerApprovalLayout({ pid }: { pid: string }) {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
-  const [projectName, setProjectName] = useState<string>("");
+  const [projectDetails, setProjectDetails] = useState<Project | null>(null);
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
-  const [trackedHours, setTrackedHours] = useState<(HoursRecord[] | null)[]>([]);
+  const [trackedHours, setTrackedHours] = useState<(HoursRecord[] | null)[]>(
+    []
+  );
   const [refetch, setRefetch] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -260,12 +323,12 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
 
   // Fetch project details
   useEffect(() => {
-    const fetchProjectNameData = async () => {
-      const name = await fetchProjectName(pid);
-      setProjectName(name);
+    const fetchProjectDetailsData = async () => {
+      const details = await fetchProjectDetails(pid);
+      setProjectDetails(details);
     };
 
-    fetchProjectNameData();
+    fetchProjectDetailsData();
   }, [pid]);
 
   console.log(timesheets);
@@ -273,7 +336,18 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between mb-4">
-        <h1 className="text-3xl font-bold text-gradient">{projectName}</h1>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-gradient">
+            {projectDetails?.name ?? ""}
+          </h1>
+          {projectDetails && (
+            <h3 className="text-gradient">{`Start Date: ${
+              projectDetails.start_date ?? "N/A"
+            }, End Date: ${
+              projectDetails.end_date ?? "N/A"
+            }, Estimated Hours: ${projectDetails.estimated_hours} Hours`}</h3>
+          )}
+        </div>
 
         {/* Week selector */}
         <div className="flex items-center space-x-2">

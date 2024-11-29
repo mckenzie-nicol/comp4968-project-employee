@@ -4,7 +4,6 @@ import { Navbar } from './components/layout/navbar';
 import { Footer } from './components/layout/footer';
 import { ApproveTimesheets } from "@/components/dashboard/approve-timesheets";
 import Timesheet from "./pages/timesheet";
-import Project from "./pages/project";
 import Test from "./pages/test";
 
 function App() {

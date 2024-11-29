@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
+import refreshTokens from "@/actions/refresh-token";
 
 interface Project {
   id: string;
@@ -34,10 +35,16 @@ export function ProjectReports() {
   const [reports, setReports] = useState<ProjectReport[]>([]);
 
   const fetchProjectData = async () => {
-    try {
+    const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+    if (Date.now() > tokenExpiry) {
+      await refreshTokens();
+    }
+    const accessToken = sessionStorage.getItem("accessToken") || "";
+    try { 
       const response = await fetch(`${API_URL}/test/project/manager`, {
         method: "POST",
         headers: {
+          "Authorization": accessToken,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ id: sessionStorage.getItem("userId") }),

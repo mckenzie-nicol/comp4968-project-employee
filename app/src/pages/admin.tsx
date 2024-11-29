@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
+import refreshTokens from "@/actions/refresh-token";
 
 export interface PersonProps {
     id: string;
@@ -30,15 +31,44 @@ export interface PersonProps {
     role: string;
 }
 
-const functionToGetAdmin = async () => {
-  return { id: 1, organizationId: 1, firstName: "Bob", lastName: "Smith" };
-};
+const getOrganizationName = async (organizationId: string) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  try {
+    const accessToken = sessionStorage.getItem("accessToken") || "";
 
-const functionToGetOrganizationName = async (organizationId: number) => {
-  return { organizationId, organizationName: "Example Organization Name" };
+    const response = await fetch(
+      `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/organizations/${organizationId}/`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: accessToken,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await response.json();
+
+    if (response.ok) {
+      return data;
+    } else {
+      return { success: false, error: data.message || "Failed to find organization." };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: `An error occurred - ${error}. Please try again.`,
+    };
+  }
 };
 
 const getUsersForOrganization = async (organizationId: string) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   try {
 
     const accessToken = sessionStorage.getItem("accessToken") || "";
@@ -83,13 +113,21 @@ const handleAddUserToOrg = async (
       },
     ],
   };
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   try {
+
+    const accessToken = sessionStorage.getItem("accessToken") || "";
+
     const response = await fetch(
       `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/organizations/${organizationId}/users`,
       {
         method: "POST",
         body: JSON.stringify(body),
         headers: {
+          Authorization: accessToken,
           "Content-Type": "application/json",
         },
       }
@@ -118,6 +156,7 @@ function Admin({ onSignOut }: AdminProps) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [response, setResponse] = useState("");
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const navigate = useNavigate();
   const organizationId = sessionStorage.getItem("organizationId") || "";
@@ -129,11 +168,11 @@ function Admin({ onSignOut }: AdminProps) {
     }
 
     const fetchData = async () => {
-      const admin = await functionToGetAdmin();
-      const organization = await functionToGetOrganizationName(
-        admin.organizationId
+      
+      const organization = await getOrganizationName(
+        organizationId
       );
-
+      console.log(organization)
       const employees = await getUsersForOrganization(organizationId);
 
       const workers: PersonProps[] = [];
@@ -153,7 +192,7 @@ function Admin({ onSignOut }: AdminProps) {
     };
 
     fetchData();
-  }, [organizationId, navigate]);
+  }, [organizationId, isOpen]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -165,7 +204,7 @@ function Admin({ onSignOut }: AdminProps) {
       setResponse("Successfully Added User to Organization!");
       setEmail("");
       setRole("");
-      navigate("/admin");
+      
     } else if (result.data.results.notFound > 0) {
       setResponse(
         "User not found, please verify user is signed up and correctness of submitted email."
@@ -176,11 +215,11 @@ function Admin({ onSignOut }: AdminProps) {
   };
 
   return (
-    <div>
+    <div className="min-h-[71vh] flex flex-col justify-center">
       <div className="flex justify-between mx-20 my-10">
         <h1 className="text-3xl font-bold">{organizationName}</h1>
         <div className="space-x-4">
-          <Dialog>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button variant="default">Add Member</Button>
             </DialogTrigger>

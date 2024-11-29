@@ -22,14 +22,21 @@ import {
 } from "@/components/project/manager-approval-layout";
 import { Check, Undo, X, ClockAlert, CircleCheckBig } from "lucide-react";
 import { differenceInMinutes } from "date-fns";
+import refreshTokens from "@/actions/refresh-token";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
 const updateApproveStatus = async (id: string, approved: ApprovedStatus) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(`${API_URL}/test/timesheet/approve`, {
       method: "POST",
       headers: {
+        Authorization: accessToken,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -52,10 +59,16 @@ const updateApproveStatus = async (id: string, approved: ApprovedStatus) => {
 };
 
 const updateSubmissionStatus = async (id: string) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(`${API_URL}/test/timesheet/reject`, {
       method: "POST",
       headers: {
+        Authorization: accessToken,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

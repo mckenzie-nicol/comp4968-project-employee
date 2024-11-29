@@ -15,6 +15,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { EmployeeHoursTable } from "./employee-hours-table";
 import { ApprovalTable } from "./approval-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import refreshTokens from "@/actions/refresh-token";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
@@ -39,8 +40,19 @@ const Loading = () => {
 };
 
 const fetchProjectDetails = async (pid: string) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
-    const response = await fetch(`${API_URL}/test/project/manager/${pid}`);
+    const response = await fetch(`${API_URL}/test/project/manager/${pid}`, {
+      method: "GET",
+      headers: {
+        Authorization: accessToken,
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -55,12 +67,24 @@ const fetchProjectDetails = async (pid: string) => {
 };
 
 const fetchTimesheetData = async (pid: string, currentWeekStart: Date) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(
       `${API_URL}/test/timesheet/manager/${pid}?start_date=${format(
         currentWeekStart,
         "yyyy-MM-dd"
-      )}`
+      )}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: accessToken,
+          "Content-Type": "application/json",
+        },
+      }
     );
 
     if (!response.ok) {
@@ -79,10 +103,22 @@ const fetchTimesheetData = async (pid: string, currentWeekStart: Date) => {
 const fetchTimeRecordData = async (
   timesheetsData: Record<string, unknown>[]
 ) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   const promisesArray = await Promise.allSettled(
     timesheetsData.map(async (timesheetData: Record<string, unknown>) => {
       const response = await fetch(
-        `${API_URL}/test/timesheet/timerecord?timesheet_id=${timesheetData.id}`
+        `${API_URL}/test/timesheet/timerecord?timesheet_id=${timesheetData.id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: accessToken,
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       if (!response.ok) {
@@ -105,11 +141,23 @@ const fetchTimeRecordData = async (
 const fetchTrackedHoursData = async (
   timesheetAndRecordsData: Record<string, unknown>[]
 ) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   const promisesArray = await Promise.allSettled(
     timesheetAndRecordsData.map(
       async (timesheetAndRecord: Record<string, unknown>) => {
         const response = await fetch(
-          `${API_URL}/test/timesheet/timerecord/manager/${timesheetAndRecord.employee_id}?pid=${timesheetAndRecord.project_id}`
+          `${API_URL}/test/timesheet/timerecord/manager/${timesheetAndRecord.employee_id}?pid=${timesheetAndRecord.project_id}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: accessToken,
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         if (!response.ok) {

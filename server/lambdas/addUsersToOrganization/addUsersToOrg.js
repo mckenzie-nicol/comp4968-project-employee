@@ -1,4 +1,5 @@
 const { pool } = require('./db');
+const { genericHeaders, protectedHeaders } = require('./headers');
 
 // Query for finding user in DB
 const findUserQuery = `
@@ -20,34 +21,22 @@ const addToOrgQuery = `
   DO NOTHING
   RETURNING EXISTS (SELECT 1 FROM public.organization_user WHERE organization_id = $1 AND user_id = $2) AS inserted;
 `;
+
 /**
  * Finds a user in the database by email.
  * @param {string} email - The user's email address
- * @returns {Promise<number|null>} - The user's ID or null if not found
+ * @returns {Promise<string|null>} - The user's ID or null if not found
  */
 async function findUserInDatabaseByEmail(email) {
   const userResult = await pool.query(findUserQuery, [email]);
   return (userResult.rows.length > 0 ? userResult.rows[0].id : null);
 }
 
-/**
- * Checks if a user is already a member of an organization.
- * @param {number} organizationId - The ID of the organization
- * @param {number} userId - The ID of the user
- * @returns {Promise<boolean>} - True if the user is a member, false otherwise
- */
-async function isUserInOrganization(organizationId, userId) {
-  const membershipResult = await pool.query(checkMembershipQuery, [
-    organizationId,
-    userId
-  ]);
-  return membershipResult.rows.length > 0;
-}
 
 /**
  * Adds a user to an organization.
- * @param {number} organizationId - The ID of the organization.
- * @param {number} userId - The ID of the user
+ * @param {string} organizationId - The ID of the organization.
+ * @param {string} userId - The ID of the user
  * @param {string} role - The role assigned to the user in the organization
  * @returns {Promise<object>} - The newly created membership record
  */
@@ -113,6 +102,7 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
+      headers: genericHeaders,
       body: JSON.stringify({
         message: 'Invitation processing completed',
         results: {
@@ -130,6 +120,7 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 500,
+      headers: genericHeaders,
       body: JSON.stringify({
         message: 'Error processing invitations',
         error: error.message

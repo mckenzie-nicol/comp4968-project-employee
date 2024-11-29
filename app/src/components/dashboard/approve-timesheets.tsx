@@ -15,14 +15,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ManagerApprovalLayout } from "@/components/project/manager-approval-layout";
+import refreshTokens from "@/actions/refresh-token";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
 const fetchProjectDetails = async () => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(`${API_URL}/test/project/manager/details`, {
       method: "POST",
       headers: {
+        "Authorization": accessToken,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ id: sessionStorage.getItem("userId") }),

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import refreshTokens from "@/actions/refresh-token";
 
 export interface Project {
   id: string;
@@ -23,10 +24,16 @@ export function ProjectsList({ onProjectSelect, selectedProjectId }: ProjectsLis
   const [projects, setProjects] = useState<Project[]>([]);
 
   const fetchProjectData = async () => {
+    const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+    if (Date.now() > tokenExpiry) {
+      await refreshTokens();
+    }
+    const accessToken = sessionStorage.getItem("accessToken") || "";
     try {
       const response = await fetch(`${API_URL}/test/project/manager`, {
         method: "POST",
         headers: {
+          "Authorization": accessToken,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ id: sessionStorage.getItem("userId") }),

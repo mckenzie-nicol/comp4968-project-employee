@@ -25,6 +25,7 @@ import {
   DayHours,
   TimeRecord,
 } from "@/components/project/manager-approval-layout";
+import refreshTokens from "@/actions/refresh-token";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
@@ -37,10 +38,16 @@ const days: (keyof DayHours)[] = [
 ];
 
 const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(`${API_URL}/test/timesheet/timerecord`, {
       method: "POST",
       headers: {
+        "Authorization": accessToken,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(timeRecord),

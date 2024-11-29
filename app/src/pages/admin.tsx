@@ -131,6 +131,7 @@ function Admin({ onSignOut }: AdminProps) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [response, setResponse] = useState("");
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const navigate = useNavigate();
   const organizationId = sessionStorage.getItem("organizationId") || "";
@@ -166,7 +167,7 @@ function Admin({ onSignOut }: AdminProps) {
     };
 
     fetchData();
-  }, [organizationId, navigate]);
+  }, [organizationId, isOpen]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -178,7 +179,7 @@ function Admin({ onSignOut }: AdminProps) {
       setResponse("Successfully Added User to Organization!");
       setEmail("");
       setRole("");
-      navigate("/admin");
+      
     } else if (result.data.results.notFound > 0) {
       setResponse(
         "User not found, please verify user is signed up and correctness of submitted email."
@@ -193,7 +194,7 @@ function Admin({ onSignOut }: AdminProps) {
       <div className="flex justify-between mx-20 my-10">
         <h1 className="text-3xl font-bold">{organizationName}</h1>
         <div className="space-x-4">
-          <Dialog>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button variant="default">Add Member</Button>
             </DialogTrigger>

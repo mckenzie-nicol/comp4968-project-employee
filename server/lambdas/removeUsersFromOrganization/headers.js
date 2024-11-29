@@ -4,13 +4,13 @@
 const genericHeaders = {
     'Content-Type': 'application/json',    
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-AllowMethods': "DELETE, OPTIONS",
+    'Access-Control-Allow-Methods': "DELETE, OPTIONS",
 }
 
 const protectedHeaders = {
     'Content-Type': 'application/json',    
     'Access-Control-Allow-Origin': 'http://localhost:5173',
-    'Access-Control-AllowMethods': "DELETE, OPTIONS",
+    'Access-Control-Allow-Methods': "DELETE, OPTIONS",
     'Access-Control-Allow-Credentials': true
 }
 

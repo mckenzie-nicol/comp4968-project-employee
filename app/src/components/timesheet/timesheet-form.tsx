@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   startOfWeek,
   endOfWeek,
@@ -624,7 +624,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
             <TableHead className="w-[50px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="[&_tr:nth-child(odd)]:bg-gray-100">
           {timesheet.map((entry) => (
             <TableRow key={entry.id}>
               <TableCell>{entry.project_name}</TableCell>

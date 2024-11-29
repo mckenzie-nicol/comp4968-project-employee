@@ -643,7 +643,21 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 {calculateTotalHours(entry.hours).toFixed(2)}
               </TableCell>
               <TableCell className="text-center">
-                {entry.status ? entry.status : ""}
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    entry.status === "pending"
+                      ? "bg-yellow-100 text-yellow-800" // Pending
+                      : entry.status === "approved"
+                      ? "bg-green-100 text-green-800" // Approved
+                      : entry.status === "rejected"
+                      ? "bg-red-100 text-red-800" // Rejected
+                      : "" // Fallback for unknown status
+                  }`}
+                >
+                  {entry.status
+                  ? entry.status.charAt(0).toUpperCase() + entry.status.slice(1)
+                  : ""}
+                </span>
               </TableCell>
               <TableCell>
                 <Button

@@ -4,13 +4,13 @@
 const genericHeaders = {
     'Content-Type': 'application/json',    
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-AllowMethods': "GET",
+    'Access-Control-AllowMethods': "GET, OPTIONS",
 }
 
 const protectedHeaders = {
     'Content-Type': 'application/json',    
     'Access-Control-Allow-Origin': 'http://localhost:5173',
-    'Access-Control-AllowMethods': "GET",
+    'Access-Control-AllowMethods': "GET, OPTIONS",
     'Access-Control-Allow-Credentials': true
 }
 

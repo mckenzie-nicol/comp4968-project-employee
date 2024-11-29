@@ -79,7 +79,7 @@ const getAllWorkers = async () => {
   return workers;
 };
 
-const handleAddWorkers = async (projectId: string, workerIds: { workerId: string }[]) => {
+const handleAddWorkers = async (projectId: string, workerIds: { worker_id: string }[]) => {
   const accessToken = sessionStorage.getItem("accessToken") || "";
   const body = {
     workerIds: workerIds
@@ -125,7 +125,7 @@ export default function CreateProject() {
       );
       if (projectResponse && workers) {
         const project = await projectResponse.json();
-        const workerIds = selectedWorkers.map((worker) => ({ workerId: worker.id }));
+        const workerIds = selectedWorkers.map((worker) => ({ worker_id: worker.id }));
         handleAddWorkers(project.data.id, workerIds);
       }
       setOpen(false);

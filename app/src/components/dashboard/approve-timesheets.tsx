@@ -5,6 +5,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components//ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ManagerApprovalLayout } from "@/components/project/manager-approval-layout";
@@ -72,26 +79,22 @@ export function ApproveTimesheets() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
-          <label
-            htmlFor="project-dropdown"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Select Project
-          </label>
-          <select
-            id="project-dropdown"
+        <div className="mb-6">
+          <Select
             value={selectedProject || ""}
-            className="w-full mt-1 block bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            onChange={(e) => setSelectedProject(e.target.value)}
+            onValueChange={setSelectedProject}
           >
-            <option value="">-- Select Project --</option>
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a project" />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              {projects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         {selectedProject && <ManagerApprovalLayout pid={selectedProject} />}
       </CardContent>

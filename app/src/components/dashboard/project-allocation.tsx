@@ -1,173 +1,230 @@
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Save, Edit2, X } from 'lucide-react'
 
-interface TeamMember {
-  id: number
-  name: string
-  role: string
-  avatar: string
-  estimatedHours: number
-}
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import refreshTokens from "@/actions/refresh-token";
+import { CalendarIcon, UsersIcon } from "lucide-react";
 
-interface ProjectAllocation {
-  projectId: number
-  projectName: string
-  estimatedHours: number
-  team: TeamMember[]
-}
+// Function to get all projects managed by the user
+const getAllProjects = async () => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
 
-export function ProjectAllocation() {
-  const [allocations, setAllocations] = useState<ProjectAllocation[]>([
+  const userId = sessionStorage.getItem("userId");
+  const accessToken = sessionStorage.getItem("accessToken") || "";
+
+  const body = {
+    id: userId,
+  };
+  const result = await fetch(
+    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/project/manager`,
     {
-      projectId: 1,
-      projectName: "Website Redesign",
-      estimatedHours: 120,
-      team: [
-        { id: 1, name: "Alice Johnson", role: "Lead Developer", avatar: "AJ", estimatedHours: 40 },
-        { id: 2, name: "Bob Smith", role: "UI Designer", avatar: "BS", estimatedHours: 30 },
-        { id: 3, name: "Carol White", role: "Backend Developer", avatar: "CW", estimatedHours: 50 }
-      ]
-    },
-    {
-      projectId: 2,
-      projectName: "Mobile App Development",
-      estimatedHours: 160,
-      team: [
-        { id: 4, name: "David Brown", role: "Mobile Developer", avatar: "DB", estimatedHours: 60 },
-        { id: 5, name: "Eve Taylor", role: "UX Designer", avatar: "ET", estimatedHours: 40 },
-        { id: 1, name: "Alice Johnson", role: "Technical Lead", avatar: "AJ", estimatedHours: 60 }
-      ]
+      method: "POST",
+      headers: {
+        Authorization: accessToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
     }
-  ])
+  );
+  const data = await result.json();
+  return data;
+};
 
-  const [editingMember, setEditingMember] = useState<{
-    projectId: number
-    memberId: number
-    hours: number
-  } | null>(null)
-
-  const startEditing = (projectId: number, memberId: number, currentHours: number) => {
-    setEditingMember({
-      projectId,
-      memberId,
-      hours: currentHours
-    })
+// Function to get workers for a specific project
+const getWorkers = async (projectId: string) => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
   }
 
-  const cancelEditing = () => {
-    setEditingMember(null)
-  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
 
-  const updateMemberHours = () => {
-    if (!editingMember) return
+  const result = await fetch(
+    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/project/worker?projectId=${projectId}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: accessToken,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  const data = await result.json();
+  return data;
+};
 
-    const { projectId, memberId, hours } = editingMember
+// Main component
+export function ProjectAllocation() {
+  const [projects, setProjects] = useState<
+    {
+      id: string;
+      name: string;
+      estimated_hours?: number;
+      approved_hours?: number;
+      start_date?: string;
+      end_date?: string;
+      workers?: {
+        id: string;
+        first_name: string;
+        last_name: string;
+        email: string;
+      }[];
+    }[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    setAllocations(current =>
-      current.map(project => {
-        if (project.projectId === projectId) {
-          return {
-            ...project,
-            team: project.team.map(member => {
-              if (member.id === memberId) {
-                return { ...member, estimatedHours: hours }
+  // Fetch projects and workers on component mount
+  useEffect(() => {
+    const fetchProjectsAndWorkers = async () => {
+      try {
+        const projectsResponse = await getAllProjects();
+        if (projectsResponse.status === "success") {
+          const projectsData = projectsResponse.data;
+
+          // Fetch workers for each project
+          const projectsWithWorkersPromises = projectsData.map(
+            async (project: {
+              id: string;
+              name: string;
+              estimated_hours?: number;
+              approved_hours?: number;
+              start_date?: string;
+              end_date?: string;
+            }) => {
+              const workersResponse = await getWorkers(project.id);
+              if (
+                workersResponse.message ===
+                "Project workers retrieved successfully."
+              ) {
+                return {
+                  ...project,
+                  workers: workersResponse.users, // Adjust according to actual API response
+                };
+              } else {
+                return {
+                  ...project,
+                  workers: [],
+                };
               }
-              return member
-            })
-          }
-        }
-        return project
-      })
-    )
+            }
+          );
 
-    setEditingMember(null)
+          const projectsWithWorkers = await Promise.all(
+            projectsWithWorkersPromises
+          );
+          setProjects(projectsWithWorkers);
+        } else {
+          setError(projectsResponse.message || "Error fetching projects");
+        }
+      } catch (err) {
+        console.error("Error fetching projects and workers:", err);
+        setError("Error fetching projects and workers");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjectsAndWorkers();
+  }, []);
+
+  // Handle loading and error states
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="text-xl font-semibold">Loading...</div>
+      </div>
+    );
   }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="text-xl font-semibold text-red-500">Error: {error}</div>
+      </div>
+    );
+  }
+
+  // Helper function to format dates
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
   return (
-    <div className="space-y-6">
-      {allocations.map((project) => (
-        <Card key={project.projectId} className="bg-white/10 border-0">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-gradient">
-              {project.projectName}
-            </CardTitle>
-            <div className="text-sm text-gray-500">
-              Total Estimated Hours: {project.estimatedHours}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {project.team.map((member) => (
-                <div key={member.id} className="flex items-center gap-4 p-4 rounded-lg bg-white/5">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                    {member.avatar}
-                  </div>
-                  <div className="flex-grow">
-                    <div className="font-medium">{member.name}</div>
-                    <div className="text-sm text-gray-500">{member.role}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor={`hours-${project.projectId}-${member.id}`} className="text-sm">
-                      Weekly Hours:
-                    </Label>
-                    {editingMember?.projectId === project.projectId && 
-                     editingMember?.memberId === member.id ? (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id={`hours-${project.projectId}-${member.id}`}
-                          type="number"
-                          min="0"
-                          max="40"
-                          value={editingMember.hours}
-                          onChange={(e) => setEditingMember({
-                            ...editingMember,
-                            hours: Number(e.target.value)
-                          })}
-                          className="w-20 bg-white/50"
-                        />
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={updateMemberHours}
-                          className="bg-black hover:bg-gray-800"
-                        >
-                          <Save className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={cancelEditing}
-                          className="bg-white/50"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="w-20 text-center font-medium">
-                          {member.estimatedHours}h
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => startEditing(project.projectId, member.id, member.estimatedHours)}
-                          className="bg-white/50"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
+    <div className="container mx-auto py-8">
+      <h1 className="text-4xl font-bold mb-10 text-center text-gray-800">
+        Project Allocations
+      </h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {projects.map((project) => (
+          <Card
+            key={project.id}
+            className="bg-white shadow-lg rounded-lg overflow-hidden transform hover:-translate-y-1 hover:shadow-2xl transition duration-300"
+          >
+            <CardHeader className="bg-slate-700 text-white p-6">
+              <CardTitle className="text-2xl font-bold">
+                {project.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center text-gray-700">
+                  <CalendarIcon className="h-6 w-6 mr-2 text-blue-500" />
+                  <span>
+                    <strong>Start Date:</strong>{" "}
+                    {formatDate(project.start_date || "")}
+                  </span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+                <div className="flex items-center text-gray-700">
+                  <CalendarIcon className="h-6 w-6 mr-2 text-purple-500" />
+                  <span>
+                    <strong>End Date:</strong>{" "}
+                    {formatDate(project.end_date || "")}
+                  </span>
+                </div>
+                <div className="flex items-center text-gray-700">
+                  <span className="font-medium">Estimated Hours:</span>
+                  <span className="ml-2">
+                    {project.estimated_hours || "N/A"}
+                  </span>
+                </div>
+                <div className="flex items-center text-gray-700">
+                  <span className="font-medium">Approved Hours:</span>
+                  <span className="ml-2">{project.approved_hours || 0}</span>
+                </div>
+                <div className="mt-6">
+                  <h3 className="text-xl font-semibold mb-4">Workers</h3>
+                  {project.workers && project.workers.length > 0 ? (
+                    <ul className="space-y-3">
+                      {project.workers.map((worker) => (
+                        <li key={worker.id} className="flex items-center">
+                          <UsersIcon className="h-6 w-6 mr-2 text-green-500" />
+                          <span className="text-gray-800">
+                            {worker.first_name} {worker.last_name} (
+                            {worker.email})
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      No workers assigned to this project.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
-  )
+  );
 }

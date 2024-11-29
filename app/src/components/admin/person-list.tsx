@@ -37,6 +37,7 @@ const handleRemoveUserFromOrg = async (
   organizationId: string,
   userName: string
 ) => {
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   if (!userName) {
     return {
       error: "Error, missing requirements. Must have userId and role.",
@@ -55,6 +56,7 @@ const handleRemoveUserFromOrg = async (
       method: "DELETE",
       body: JSON.stringify(body),
       headers: {
+        "Authorization": accessToken,
         "Content-Type": "application/json",
       },
     }

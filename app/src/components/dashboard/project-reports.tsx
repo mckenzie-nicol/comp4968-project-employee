@@ -34,10 +34,13 @@ export function ProjectReports() {
   const [reports, setReports] = useState<ProjectReport[]>([]);
 
   const fetchProjectData = async () => {
-    try {
+
+    const accessToken = sessionStorage.getItem("accessToken") || "";
+    try { 
       const response = await fetch(`${API_URL}/test/project/manager`, {
         method: "POST",
         headers: {
+          "Authorization": accessToken,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ id: sessionStorage.getItem("userId") }),

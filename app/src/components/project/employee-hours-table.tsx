@@ -37,10 +37,12 @@ const days: (keyof DayHours)[] = [
 ];
 
 const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(`${API_URL}/test/timesheet/timerecord`, {
       method: "POST",
       headers: {
+        "Authorization": accessToken,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(timeRecord),

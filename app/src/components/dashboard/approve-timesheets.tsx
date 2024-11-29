@@ -12,10 +12,12 @@ import { ManagerApprovalLayout } from "@/components/project/manager-approval-lay
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
 const fetchProjectDetails = async () => {
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(`${API_URL}/test/project/manager/details`, {
       method: "POST",
       headers: {
+        "Authorization": accessToken,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ id: sessionStorage.getItem("userId") }),

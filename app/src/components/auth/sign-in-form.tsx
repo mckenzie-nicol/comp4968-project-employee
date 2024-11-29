@@ -48,6 +48,8 @@ const handleSignIn = async (email: string, password: string) => {
       sessionStorage.setItem("userId", parseBody.user.Username);
       console.log("Login successful:", data);
 
+      const accessToken = sessionStorage.getItem("accessToken") || "";
+
       try {
         const body = {
             userId: parseBody.user.Username,
@@ -58,6 +60,7 @@ const handleSignIn = async (email: string, password: string) => {
             method: "POST",
             body: JSON.stringify(body),
             headers: {
+              "Authorization": accessToken,
               "Content-Type": "application/json",
             },
           }

@@ -8,6 +8,8 @@ interface OrgNotConnectedProps {
 }
 
 const handleCheckConnection = async () => {
+
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const body = {
       userId: sessionStorage.getItem("userId"),
@@ -18,6 +20,7 @@ const handleCheckConnection = async () => {
         method: "POST",
         body: JSON.stringify(body),
         headers: {
+          "Authorization": accessToken,
           "Content-Type": "application/json",
         },
       }

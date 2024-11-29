@@ -26,10 +26,13 @@ import { differenceInMinutes } from "date-fns";
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
 const updateApproveStatus = async (id: string, approved: ApprovedStatus) => {
+
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(`${API_URL}/test/timesheet/approve`, {
       method: "POST",
       headers: {
+        "Authorization": accessToken,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -52,10 +55,12 @@ const updateApproveStatus = async (id: string, approved: ApprovedStatus) => {
 };
 
 const updateSubmissionStatus = async (id: string) => {
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(`${API_URL}/test/timesheet/reject`, {
       method: "POST",
       headers: {
+        "Authorization": accessToken,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

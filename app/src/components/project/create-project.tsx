@@ -38,12 +38,14 @@ const handleCreateProject = async (
     estStartDate: estStartDate,
     estEndDate: estEndDate,
   };
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   const response = await fetch(
     "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/project",
     {
       method: "POST",
       body: JSON.stringify(body),
       headers: {
+        "Authorization": accessToken,
         "Content-Type": "application/json",
       },
     }

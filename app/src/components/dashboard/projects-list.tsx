@@ -23,10 +23,12 @@ export function ProjectsList({ onProjectSelect, selectedProjectId }: ProjectsLis
   const [projects, setProjects] = useState<Project[]>([]);
 
   const fetchProjectData = async () => {
+    const accessToken = sessionStorage.getItem("accessToken") || "";
     try {
       const response = await fetch(`${API_URL}/test/project/manager`, {
         method: "POST",
         headers: {
+          "Authorization": accessToken,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ id: sessionStorage.getItem("userId") }),

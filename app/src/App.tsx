@@ -5,7 +5,6 @@ import { Footer } from './components/layout/footer';
 import { ApproveTimesheets } from "@/components/dashboard/approve-timesheets";
 import Timesheet from "./pages/timesheet";
 import Test from "./pages/test";
-
 function App() {
   return (
     <Router>
@@ -19,8 +18,6 @@ function App() {
             <Route path="/" element={<Home />} />
             {/* timesheet route */}
             <Route path="/timesheet" element={<Timesheet />} />
-            {/* manager project route */}
-            <Route path="/project/:id" element={<Project />} />
             <Route path="/approve-timesheets" element={<ApproveTimesheets />} />
             <Route path="/test" element={<Test />} />
           </Routes>

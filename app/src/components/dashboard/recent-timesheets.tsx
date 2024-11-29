@@ -11,7 +11,7 @@ interface Timesheet {
   hours: number;
   projects: string[];
   employeeName: string;
-  submission_date:string;
+  submission_date: string;
 }
 
 export function RecentTimesheets() {
@@ -39,7 +39,13 @@ export function RecentTimesheets() {
 
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/test/timesheet/manager/recent/${managerId}`);
+      const accessToken = sessionStorage.getItem("accessToken") || "";
+      const response = await fetch(`${API_URL}/test/timesheet/manager/recent/${managerId}`, {
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
       console.log("API Response Status:", response.status);
 
       if (!response.ok) {
@@ -59,8 +65,8 @@ export function RecentTimesheets() {
       const transformedTimesheets = timesheetData.map((item: any) => ({
         id: item.id,
         date: `Week of ${new Date(item.start_date_of_the_week).toLocaleDateString()}`,
-        status: item.status || "Pending", 
-        hours: item.hours || 40, 
+        status: item.status || "Pending",
+        hours: item.hours || 40,
         projects: [projectMapping[item.project_id as keyof typeof projectMapping] || `Unknown Project (${item.project_id})`],
         employeeName: employeeMapping[item.employee_id as keyof typeof employeeMapping] || `Unknown Employee (${item.employee_id})`,
       }));
@@ -84,15 +90,14 @@ export function RecentTimesheets() {
     navigate("/approve-timesheets");
   };
 
-
-  const bellIconStyle = hasNotifications ? " " : "text-gray-500";
+  const bellIconStyle = hasNotifications ? "text-red-500" : "text-gray-500";
 
   return (
     <Card className="bg-white/10 border-4">
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle className="text-xl font-semibold text-gradient">
-            Recent  Timesheets
+            Recent Timesheets
           </CardTitle>
           <Button
             onClick={handleApproveClick}
@@ -114,12 +119,12 @@ export function RecentTimesheets() {
                 className="flex flex-col p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-gray-300 shadow-sm"
               >
                 <div className="flex justify-between items-center">
-                  <h3 className="font-medium text-gray-800bg-gray-100 text-gray-800 bg-gray-100 text-gray-800">{timesheet.projects}</h3>
+                  <h3 className="font-medium text-gray-800">{timesheet.projects[0]}</h3>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
                       timesheet.status === "Approved"
                         ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 "
+                        : "bg-gray-200 text-gray-800"
                     }`}
                   >
                     {timesheet.status}
@@ -129,19 +134,16 @@ export function RecentTimesheets() {
                   {timesheet.projects.map((project) => (
                     <span
                       key={project}
-                      // className="inline-flex items-center px-2 py-1  text-xs font-medium bg-gray-100 text-gray-800"
+                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
                     >
-                      {/* {project} */}
-                      
+                      {project}
                     </span>
                   ))}
-                  
                 </div>
-                 <p className="text-sm font-medium text-gray-600 ml-2">{timesheet.date}</p>
-                <p className="text-sm font-medium text-gray-600 ml-2">Employee: {timesheet.employeeName}</p>
-                <div className="flex justify-between items-center  ml-2">
+                <p className="text-sm text-gray-500 mt-1">Employee: {timesheet.employeeName}</p>
+                <div className="flex justify-between items-center mt-2">
                   <span className="text-sm font-medium text-gray-600">
-                   Timesheet hours: {timesheet.hours} 
+                    {timesheet.hours} hours
                   </span>
                 </div>
               </div>

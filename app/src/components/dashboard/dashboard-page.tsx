@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Clock, Calendar, Users, PieChart, LogOut } from "lucide-react"
+import { Clock, PieChart, LogOut } from "lucide-react"
 import { ProjectsList, type Project } from "./projects-list"
 import { RecentTimesheets } from "./recent-timesheets"
 import { TimesheetTable } from "../timesheet/timesheet-form"

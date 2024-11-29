@@ -18,7 +18,7 @@ export function RecentTimesheets() {
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [hasNotifications, setHasNotifications] = useState(true);
+  const [hasNotifications] = useState(true);
   const navigate = useNavigate();
 
   const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";

@@ -72,23 +72,23 @@ const getAllWorkers = async () => {
   return workers;
 };
 
-const handleAddWorkers = async (projectId: string, workerIds: string[]) => {
+const handleAddWorkers = async (projectId: string, workerIds: { workerId: string }[]) => {
   const accessToken = sessionStorage.getItem("accessToken") || "";
   const body = {
-    projectId: projectId,
     workerIds: workerIds
   }  
   const result = await fetch(
-    "endpoint",
+    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/project/manager/${projectId}/workers`,
     {
       method: "POST",
       headers: {
         Authorization: accessToken,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(body)
-    });
-  
+      body: JSON.stringify(body),
+    }
+  );
+  console.log(result);
 };
 
 export default function CreateProject() {
@@ -118,7 +118,7 @@ export default function CreateProject() {
       );
       if (projectResponse && workers) {
         const project = await projectResponse.json();
-        const workerIds = selectedWorkers.map((worker) => worker.id);
+        const workerIds = selectedWorkers.map((worker) => ({ workerId: worker.id }));
         handleAddWorkers(project.data.id, workerIds);
       }
       setOpen(false);

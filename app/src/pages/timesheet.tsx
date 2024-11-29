@@ -2,7 +2,7 @@
 import { TimesheetTable } from "@/components/timesheet/timesheet-form";
 
 // get userId from session storage
-const userId = sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
+const userId = sessionStorage.getItem("userId") || "";
 
 export default function Timesheet() {
   return (
@@ -11,6 +11,6 @@ export default function Timesheet() {
           <h1 className="text-3xl font-bold">Timesheet</h1>
         </div>
         <TimesheetTable employee_id={userId}/>
-      </div>
+    </div>
   );
 }

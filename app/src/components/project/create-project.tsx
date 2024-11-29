@@ -12,6 +12,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useEffect, useState } from "react";
 import { DatePicker } from "../ui/date-picker";
+import refreshTokens from "@/actions/refresh-token";
 import { PersonProps } from "@/pages/admin";
 import {
   Select,
@@ -34,12 +35,18 @@ const handleCreateProject = async (
     estStartDate: estStartDate,
     estEndDate: estEndDate,
   };
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   const response = await fetch(
     "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/project",
     {
       method: "POST",
       body: JSON.stringify(body),
       headers: {
+        "Authorization": accessToken,
         "Content-Type": "application/json",
       },
     }

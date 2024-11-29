@@ -1,4 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart,
   Bar,
@@ -9,49 +10,88 @@ import {
   Legend,
   ResponsiveContainer,
   Cell
-} from 'recharts'
+} from 'recharts';
+import refreshTokens from "@/actions/refresh-token";
 
-interface ProjectReport {
-  projectName: string
-  estimatedHours: number
-  actualHours: number
-  remainingHours: number
+interface Project {
+  id: string;
+  name: string;
+  estimated_hours: number;
+  approved_hours: number;
+  start_date: string;
+  end_date: string | null;
 }
 
+interface ProjectReport {
+  projectName: string;
+  estimatedHours: number;
+  actualHours: number;
+  remainingHours: number;
+}
+
+const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
+
 export function ProjectReports() {
-  const reports: ProjectReport[] = [
-    {
-      projectName: "Website Redesign",
-      estimatedHours: 120,
-      actualHours: 85,
-      remainingHours: 35
-    },
-    {
-      projectName: "Mobile App",
-      estimatedHours: 160,
-      actualHours: 100,
-      remainingHours: 60
-    },
-    {
-      projectName: "Database Migration",
-      estimatedHours: 80,
-      actualHours: 95,
-      remainingHours: 0
+  const [reports, setReports] = useState<ProjectReport[]>([]);
+
+  const fetchProjectData = async () => {
+    const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+    if (Date.now() > tokenExpiry) {
+      await refreshTokens();
     }
-  ]
+    const accessToken = sessionStorage.getItem("accessToken") || "";
+    try { 
+      const response = await fetch(`${API_URL}/test/project/manager`, {
+        method: "POST",
+        headers: {
+          "Authorization": accessToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: sessionStorage.getItem("userId") }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Project Data Response:", data); // Log the response to verify the data
+
+      const mappedReports = data.data.map((project: Project) => ({
+        projectName: project.name,
+        estimatedHours: project.estimated_hours,
+        actualHours: Math.round(project.approved_hours * 100) / 100,
+        remainingHours:  Math.round(Math.max(0, project.estimated_hours - project.approved_hours)) ,
+      }));
+
+      console.log("Mapped Reports:", mappedReports); // Log the mapped reports to verify
+      return mappedReports;
+    } catch (error) {
+      console.error("Error fetching project data:", error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    async function loadReports() {
+      const data = await fetchProjectData();
+      setReports(data);
+    }
+    loadReports();
+  }, []);
 
   const getCompletionColor = (actual: number, estimated: number) => {
-    return actual > estimated ? '#ef4444' : '#000000'
-  }
+    return actual > estimated ? '#ef4444' : '#000000';
+  };
 
   const getProgressBarColor = (actual: number, estimated: number) => {
     return actual > estimated 
       ? 'bg-gradient-to-r from-red-600 to-red-800'
-      : 'bg-gradient-to-r from-black to-gray-800'
-  }
+      : 'bg-gradient-to-r from-black to-gray-800';
+  };
 
   return (
-    <Card className="bg-white/10 border-0">
+    <Card className="bg-white/10 border-0 min-w-screen flex flex-col h-full ">
       <CardHeader>
         <CardTitle className="text-xl font-semibold text-gradient">
           Project Hours Overview
@@ -117,8 +157,8 @@ export function ProjectReports() {
 
         <div className="mt-6 space-y-4">
           {reports.map((report) => {
-            const completion = (report.actualHours / report.estimatedHours) * 100
-            const isOverallocated = completion > 100
+            const completion = (report.actualHours / report.estimatedHours) * 100;
+            const isOverallocated = completion > 100;
             
             return (
               <div 
@@ -161,10 +201,10 @@ export function ProjectReports() {
                   </div>
                 )}
               </div>
-            )
+            );
           })}
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

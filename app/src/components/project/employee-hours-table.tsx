@@ -7,6 +7,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter,
 } from "@/components/ui/table";
 import { addDays, format, parseISO } from "date-fns";
 import {
@@ -24,6 +25,7 @@ import {
   DayHours,
   TimeRecord,
 } from "@/components/project/manager-approval-layout";
+import refreshTokens from "@/actions/refresh-token";
 
 const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
 
@@ -36,10 +38,16 @@ const days: (keyof DayHours)[] = [
 ];
 
 const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const accessToken = sessionStorage.getItem("accessToken") || "";
   try {
     const response = await fetch(`${API_URL}/test/timesheet/timerecord`, {
       method: "POST",
       headers: {
+        "Authorization": accessToken,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(timeRecord),
@@ -54,6 +62,12 @@ const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
   } catch (error) {
     console.error("Error adding/updating time record:", error);
   }
+};
+
+const validateTime = (startTime: string, endTime: string): boolean => {
+  const start = new Date(`2024-01-01T${startTime}:00`);
+  const end = new Date(`2024-01-01T${endTime}:00`);
+  return start < end;
 };
 
 function EmployeeHoursTable({
@@ -75,7 +89,12 @@ function EmployeeHoursTable({
 
   const handleSaveTime = async () => {
     setIsSaving(true);
-    if (startTime && endTime && selectedTimesheetId) {
+    if (
+      startTime &&
+      endTime &&
+      selectedTimesheetId &&
+      validateTime(startTime, endTime)
+    ) {
       const entry = timesheets.find((e) => e.id === selectedTimesheetId);
 
       const updatedTimeRecord = selectedTimeRecord
@@ -141,7 +160,7 @@ function EmployeeHoursTable({
                     variant="outline"
                     className="w-full h-full"
                     onClick={() => handleCellClick(entry.id, day)}
-                    disabled={entry.approved}
+                    disabled={entry.status === "approved"}
                   >
                     {entry.hours[day] || "0.00"}
                   </Button>
@@ -155,6 +174,30 @@ function EmployeeHoursTable({
             </TableRow>
           ))}
         </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell>Total Hours</TableCell>
+            {days.map((day) => (
+              <TableCell key={day} className="text-center">
+                {timesheets
+                  .map((entry) => parseFloat(entry.hours[day]) || 0)
+                  .reduce((acc, curr) => acc + curr, 0)
+                  .toFixed(2)}
+              </TableCell>
+            ))}
+            <TableCell className="text-center">
+              {timesheets
+                .map((entry) =>
+                  Object.values(entry.hours).reduce(
+                    (acc, curr) => acc + (parseFloat(curr) || 0),
+                    0
+                  )
+                )
+                .reduce((acc, curr) => acc + curr, 0)
+                .toFixed(2)}
+            </TableCell>
+          </TableRow>
+        </TableFooter>
       </Table>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

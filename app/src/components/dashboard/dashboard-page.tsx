@@ -16,7 +16,6 @@ interface DashboardPageProps {
   userRole?: 'worker' | 'project_manager'
 }
 
-
 export function DashboardPage({ onSignOut, userRole = 'project_manager' }: DashboardPageProps) {
   const [showTimesheetForm, setShowTimesheetForm] = useState(false)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
@@ -80,6 +79,12 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
                 Project Allocation
               </Button>
               <CreateProject />
+              <Button
+                onClick={() => window.location.href = "/approve-timesheets"}
+                className="flex items-center gap-2 bg-black px-4 py-2 rounded-md hover:bg-gray-200 transition"
+              >
+                Approve Timesheets
+              </Button>
             </div>
           )}
         </div>
@@ -125,16 +130,11 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
           </div>
 
           <EmployeeProjectHours />
-          <RecentTimesheets />
-
-      
         </div>
       ) : (
         <>
           {activeView === 'overview' && (
             <>
-            
-
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <ProjectsList 
                   onProjectSelect={setSelectedProject}
@@ -142,7 +142,6 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
                 />
                 <BurnDownChart project={selectedProject} />
               </div>
-
               <RecentTimesheets />
             </>
           )}

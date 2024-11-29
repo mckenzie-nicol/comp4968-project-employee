@@ -1,6 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { format, parseISO, subDays } from "date-fns";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { format, parseISO, addDays, differenceInCalendarDays } from "date-fns";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import type { Project } from "./projects-list";
 
 interface BurnDownData {
@@ -51,25 +59,37 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
   const generateBurnDownData = (): BurnDownData[] => {
     const startDate = parseISO(project.start_date);
     const endDate = parseISO(project.end_date!);
-    const totalDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+
+    // Calculate total days including both start and end dates
+    let totalDays = differenceInCalendarDays(endDate, startDate) + 1;
+    if (totalDays <= 0) totalDays = 1; // Ensure at least one day
+
     const totalWork = project.estimated_hours;
     const data: BurnDownData[] = [];
-    const dailyIdealBurn = totalWork / totalDays;
+    const dailyIdealBurn = totalWork / (totalDays - 1);
 
-    for (let i = 0; i <= totalDays; i++) {
-      const date = subDays(endDate, totalDays - i);
-      const ideal = totalWork - (dailyIdealBurn * i);
+    let remainingWork = totalWork;
+
+    for (let i = 0; i < totalDays; i++) {
+      const date = addDays(startDate, i);
+
+      // Ideal remaining work
+      const ideal = totalWork - dailyIdealBurn * i;
+
       // Simulate actual remaining work with some variance
-      const variance = Math.random() * 10 - 5;
-      const remaining = i === 0 ? totalWork : 
-        Math.max(0, data[i-1].remaining - (dailyIdealBurn + variance));
+      if (i > 0) {
+        const variance = (Math.random() * 0.2 - 0.1) * dailyIdealBurn; // ±10% variance
+        const actualBurn = dailyIdealBurn + variance;
+        remainingWork = Math.max(0, remainingWork - actualBurn);
+      }
 
       data.push({
         date: format(date, "MMM dd"),
-        remaining: Math.round(remaining),
+        remaining: Math.round(remainingWork),
         ideal: Math.round(ideal),
       });
     }
+
     return data;
   };
 
@@ -99,26 +119,29 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
                   <stop offset="95%" stopColor="#666666" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                className="stroke-gray-200"
+              />
               <XAxis
                 dataKey="date"
-                tick={{ fill: '#666666' }}
-                tickLine={{ stroke: '#666666' }}
+                tick={{ fill: "#666666" }}
+                tickLine={{ stroke: "#666666" }}
               />
               <YAxis
-                tick={{ fill: '#666666' }}
-                tickLine={{ stroke: '#666666' }}
-                label={{ 
-                  value: 'Hours',
+                tick={{ fill: "#666666" }}
+                tickLine={{ stroke: "#666666" }}
+                label={{
+                  value: "Hours",
                   angle: -90,
-                  position: 'insideLeft',
-                  style: { fill: '#666666' }
+                  position: "insideLeft",
+                  style: { fill: "#666666" },
                 }}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  border: '1px solid #ccc',
+                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  border: "1px solid #ccc",
                 }}
               />
               <Area
@@ -143,9 +166,11 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        
-       <div className="mt-6">
-          <h4 className="font-semibold text-sm mb-2 text-gray-600">Project Metrics:</h4>
+
+        <div className="mt-6">
+          <h4 className="font-semibold text-sm mb-2 text-gray-600">
+            Project Metrics:
+          </h4>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-gray-500">Estimated Hours:</p>
@@ -153,7 +178,9 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
             </div>
             <div>
               <p className="text-gray-500">Approved Hours:</p>
-              <p className="font-medium">{Math.round(project.approved_hours * 100) / 100} hours</p>
+              <p className="font-medium">
+                {Math.round(project.approved_hours * 100) / 100} hours
+              </p>
             </div>
             <div>
               <p className="text-gray-500">Start Date:</p>
@@ -170,7 +197,6 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
           </div>
         </div>
       </CardContent>
-      
     </Card>
   );
 }

@@ -170,6 +170,7 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
           </div>
         </div>
       </CardContent>
+      
     </Card>
   );
 }

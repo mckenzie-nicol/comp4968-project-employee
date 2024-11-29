@@ -69,7 +69,6 @@ export function ProjectsList({ onProjectSelect, selectedProjectId }: ProjectsLis
     loadProjects();
   }, []);
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF4560', '#00A6B4', '#A3A1FB'];
 
   return (
     <Card className="bg-white/10 border-4">
@@ -156,12 +155,12 @@ export function ProjectsList({ onProjectSelect, selectedProjectId }: ProjectsLis
               outerRadius={100}
               paddingAngle={5}
               stroke="none"
-              label={({ name, percent }) => `${name} (${Math.round(percent * 100)}%)`} // Add percentage labels
+              label={({ name, percent }) => `${name} (${Math.round(percent * 100)}%)`} 
             >
               {projects.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={`url(#pieGradient${index % 2 === 0 ? 1 : 2})`} // Alternate gradients
+                  fill={`url(#pieGradient${index % 2 === 0 ? 1 : 2})`} 
                 />
               ))}
             </Pie>

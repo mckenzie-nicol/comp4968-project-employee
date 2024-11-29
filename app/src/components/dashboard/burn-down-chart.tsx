@@ -1,8 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { format, parseISO, addDays, differenceInCalendarDays } from "date-fns";
 import {
-  Area,
-  AreaChart,
+  format,
+  parseISO,
+  addDays,
+  differenceInCalendarDays,
+} from "date-fns";
+import {
+  LineChart,
+  Line,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -11,10 +16,10 @@ import {
 } from "recharts";
 import type { Project } from "./projects-list";
 
-interface BurnDownData {
+interface ChartData {
   date: string;
-  remaining: number;
-  ideal: number;
+  estimatedCumulative: number;
+  approvedCumulative: number;
 }
 
 interface BurnDownChartProps {
@@ -49,51 +54,61 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
         </CardHeader>
         <CardContent>
           <div className="h-[300px] w-full flex items-center justify-center text-gray-500">
-            The project does not have an end date, so the burn down chart cannot be generated.
+            The project does not have an end date, so the burn down chart cannot
+            be generated.
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  const generateBurnDownData = (): BurnDownData[] => {
+  const generateChartData = (): ChartData[] => {
     const startDate = parseISO(project.start_date);
     const endDate = parseISO(project.end_date!);
+    const today = new Date();
 
     // Calculate total days including both start and end dates
     let totalDays = differenceInCalendarDays(endDate, startDate) + 1;
-    if (totalDays <= 0) totalDays = 1; // Ensure at least one day
+    if (totalDays <= 0) totalDays = 1; 
 
     const totalWork = project.estimated_hours;
-    const data: BurnDownData[] = [];
-    const dailyIdealBurn = totalWork / (totalDays - 1);
+    const approvedWork = project.approved_hours;
 
-    let remainingWork = totalWork;
+    const estimatedHoursPerDay = totalWork / totalDays;
+
+    // Calculate days from start date up to today
+    let daysUpToToday = differenceInCalendarDays(today, startDate) + 1;
+    if (daysUpToToday < 0) daysUpToToday = 0;
+    if (daysUpToToday > totalDays) daysUpToToday = totalDays;
+
+    const approvedHoursPerDay =
+      daysUpToToday > 0 ? approvedWork / daysUpToToday : 0;
+
+    const data: ChartData[] = [];
+
+    let cumulativeEstimated = 0;
+    let cumulativeApproved = 0;
 
     for (let i = 0; i < totalDays; i++) {
       const date = addDays(startDate, i);
 
-      // Ideal remaining work
-      const ideal = totalWork - dailyIdealBurn * i;
+      cumulativeEstimated += estimatedHoursPerDay;
 
-      // Simulate actual remaining work with some variance
-      if (i > 0) {
-        const variance = (Math.random() * 0.2 - 0.1) * dailyIdealBurn; // ±10% variance
-        const actualBurn = dailyIdealBurn + variance;
-        remainingWork = Math.max(0, remainingWork - actualBurn);
+      if (differenceInCalendarDays(date, today) <= 0) {
+        cumulativeApproved += approvedHoursPerDay;
       }
 
       data.push({
         date: format(date, "MMM dd"),
-        remaining: Math.round(remainingWork),
-        ideal: Math.round(ideal),
+        estimatedCumulative: Math.round(cumulativeEstimated * 100) / 100,
+        approvedCumulative: Math.round(cumulativeApproved * 100) / 100,
       });
     }
 
     return data;
   };
 
-  const data = generateBurnDownData();
+  const data = generateChartData();
 
   return (
     <Card className="bg-white/10 border-4">
@@ -105,20 +120,10 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
       <CardContent>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
+            <LineChart
               data={data}
               margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
             >
-              <defs>
-                <linearGradient id="remaining" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#000000" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#000000" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="ideal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#666666" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#666666" stopOpacity={0} />
-                </linearGradient>
-              </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
                 className="stroke-gray-200"
@@ -144,28 +149,21 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
                   border: "1px solid #ccc",
                 }}
               />
-              {project.approved_hours > 0 && (
-                <Area
-                  type="monotone"
-                  dataKey="remaining"
-                  stroke="#000000"
-                  fillOpacity={1}
-                  fill="url(#remaining)"
-                  strokeWidth={2}
-                  name="Actual Remaining"
-                />
-              )}
-              <Area
+              <Line
                 type="monotone"
-                dataKey="ideal"
-                stroke="#666666"
-                fillOpacity={1}
-                fill="url(#ideal)"
+                dataKey="estimatedCumulative"
+                stroke="#0000FF"
                 strokeWidth={2}
-                strokeDasharray="5 5"
-                name="Ideal Burn"
+                name="Estimated Hours"
               />
-            </AreaChart>
+              <Line
+                type="monotone"
+                dataKey="approvedCumulative"
+                stroke="#FF0000"
+                strokeWidth={2}
+                name="Approved Hours"
+              />
+            </LineChart>
           </ResponsiveContainer>
         </div>
 

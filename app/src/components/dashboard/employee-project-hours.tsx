@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { format, subDays } from "date-fns";
+import moment from "moment";
 
 interface HoursBreakdown {
   [day: string]: {
@@ -28,6 +28,7 @@ interface ProjectDetails {
 interface EmployeeProjectHoursProps {
   hoursBreakdown: HoursBreakdown;
   projects: ProjectDetails[];
+  currentDate: moment.Moment;
 }
 
 interface WeeklyEntry {
@@ -38,18 +39,24 @@ interface WeeklyEntry {
 export function EmployeeProjectHours({
   hoursBreakdown,
   projects,
+  currentDate,
 }: EmployeeProjectHoursProps) {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(currentDate.clone());
 
-  // Generate the last 7 days of data for the bar graph
-  const generateLast7DaysData = (): WeeklyEntry[] => {
+  // Generate data for the selected week
+  const generateWeeklyData = (): WeeklyEntry[] => {
     const data: WeeklyEntry[] = [];
 
-    // Iterate over the last 7 days
-    for (let i = 0; i < 7; i++) {
-      const currentDate = subDays(selectedDate, i);
-      const formattedDate = format(currentDate, "yyyy-MM-dd");
-      const displayDate = format(currentDate, "MMM d");
+    const weekStart = selectedDate.clone().startOf("isoWeek");
+    const weekEnd = selectedDate.clone().endOf("isoWeek");
+
+    for (
+      let day = weekStart.clone();
+      day.isSameOrBefore(weekEnd);
+      day.add(1, "day")
+    ) {
+      const formattedDate = day.format("YYYY-MM-DD");
+      const displayDate = day.format("MMM D");
 
       const entry: WeeklyEntry = { day: displayDate };
 
@@ -61,14 +68,16 @@ export function EmployeeProjectHours({
       data.push(entry);
     }
 
-    return data.reverse(); // Reverse to show oldest dates first
+    return data;
   };
 
-  const weeklyData = generateLast7DaysData();
+  const weeklyData = generateWeeklyData();
 
-  const navigateDay = (direction: "prev" | "next") => {
+  const navigateWeek = (direction: "prev" | "next") => {
     setSelectedDate((current) =>
-      direction === "prev" ? subDays(current, 7) : subDays(current, -7)
+      direction === "prev"
+        ? current.clone().subtract(1, "week")
+        : current.clone().add(1, "week")
     );
   };
 
@@ -82,17 +91,17 @@ export function EmployeeProjectHours({
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => navigateDay("prev")}
+              onClick={() => navigateWeek("prev")}
               className="bg-white/50"
             >
-              Previous 7 Days
+              Previous Week
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigateDay("next")}
+              onClick={() => navigateWeek("next")}
               className="bg-white/50"
             >
-              Next 7 Days
+              Next Week
             </Button>
           </div>
         </div>

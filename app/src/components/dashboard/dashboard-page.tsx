@@ -1,32 +1,35 @@
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Clock, PieChart, LogOut } from "lucide-react"
-import { ProjectsList, type Project } from "./projects-list"
-import { RecentTimesheets } from "./recent-timesheets"
-import { TimesheetTable } from "../timesheet/timesheet-form"
-import { BurnDownChart } from "./burn-down-chart"
-import { ProjectReports } from "./project-reports"
-import { EmployeeProjectHours } from "./employee-project-hours"
-import { ProjectAllocation } from "./project-allocation"
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Clock, PieChart, LogOut } from "lucide-react";
+import { ProjectsList, type Project } from "./projects-list";
+import { RecentTimesheets } from "./recent-timesheets";
+import { TimesheetTable } from "../timesheet/timesheet-form";
+import { BurnDownChart } from "./burn-down-chart";
+import { ProjectReports } from "./project-reports";
+import { EmployeeProjectHours } from "./employee-project-hours";
+import { ProjectAllocation } from "./project-allocation";
 import CreateProject from "@/components/project/create-project";
-import refreshTokens from "@/actions/refresh-token"
- import moment from "moment";
+import refreshTokens from "@/actions/refresh-token";
+import moment from "moment";
 
 interface DashboardPageProps {
-  onSignOut?: () => void
-  userRole?: 'worker' | 'project_manager'
+  onSignOut?: () => void;
+  userRole?: "worker" | "project_manager";
 }
 
 export interface TimeRecord {
-  time_record_id: string;
-  start_time: string; // ISO string
-  end_time: string; // ISO string
+  id: string;
+  timesheet_id: string;
+  date: string; // ISO string, e.g., "2024-11-25T00:00:00.000Z"
+  day: string; // e.g., "Monday"
+  start_time: string; // Time string, e.g., "08:00"
+  end_time: string; // Time string, e.g., "17:00"
 }
 
 export interface Timesheet {
   timesheet_id: string;
-  submission_date: string; // ISO string
+  submission_date: string; // ISO string, e.g., "2024-11-30T00:00:00.000Z"
   status: string; // Example: 'approved'
   time_records: TimeRecord[];
 }
@@ -59,8 +62,8 @@ export interface ExtractedData {
   activeProjectsCount: number;
   hoursBreakdown: HoursBreakdown;
   projects: ProjectDetails[];
+  lastWeekStart: moment.Moment; // Add this line
 }
-
 
 const getAllTimesheetsByWorkerId = async () => {
   const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
@@ -83,29 +86,56 @@ const getAllTimesheetsByWorkerId = async () => {
   return data;
 };
 
-export function DashboardPage({ onSignOut, userRole = 'project_manager' }: DashboardPageProps) {
-  const [showTimesheetForm, setShowTimesheetForm] = useState(false)
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [activeView, setActiveView] = useState<'overview' | 'allocation' | 'reports'>('overview');
+export function DashboardPage({
+  onSignOut,
+  userRole = "project_manager",
+}: DashboardPageProps) {
+  const [showTimesheetForm, setShowTimesheetForm] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [activeView, setActiveView] = useState<
+    "overview" | "allocation" | "reports"
+  >("overview");
   const [hoursLastWeek, setHoursLastWeek] = useState<number>(0);
   const [hoursDifference, setHoursDifference] = useState<number>(0);
   const [activeProjects, setActiveProjects] = useState<number>(0);
   const [hoursBreakdown, setHoursBreakdown] = useState<HoursBreakdown>({});
   const [projectDetails, setProjectDetails] = useState<ProjectDetails[]>([]);
 
-  const userId = sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
-  
+  // State to hold currentWeekStart
+  const [currentWeekStart, setCurrentWeekStart] =
+    useState<moment.Moment | null>(null);
+
+  const userId =
+    sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
+
   const extractData = (apiResponse: ApiResponse): ExtractedData => {
     const projects = apiResponse.projects;
-    const lastWeekStart = moment().subtract(1, "weeks").startOf("isoWeek");
-    const lastWeekEnd = moment().subtract(1, "weeks").endOf("isoWeek");
-    const previousWeekStart = moment().subtract(2, "weeks").startOf("isoWeek");
-    const previousWeekEnd = moment().subtract(2, "weeks").endOf("isoWeek");
+
+    // Use a fixed current date for testing or actual current date
+    const currentDate = moment.utc("2024-12-07"); // For testing
+    // const currentDate = moment.utc(); // Use actual current date in production
+
+    const lastWeekStart = currentDate
+      .clone()
+      .subtract(1, "weeks")
+      .startOf("isoWeek");
+    const lastWeekEnd = currentDate
+      .clone()
+      .subtract(1, "weeks")
+      .endOf("isoWeek");
+    const previousWeekStart = currentDate
+      .clone()
+      .subtract(2, "weeks")
+      .startOf("isoWeek");
+    const previousWeekEnd = currentDate
+      .clone()
+      .subtract(2, "weeks")
+      .endOf("isoWeek");
 
     let lastWeekHours = 0;
     let previousWeekHours = 0;
     const hoursBreakdown: HoursBreakdown = {}; // { day: { projectId: hours } }
-    const activeProjects = new Set<string>();
+    const activeProjectsSet = new Set<string>();
     const projectDetailsMap: { [projectId: string]: ProjectDetails } = {};
 
     // Predefined colors for projects
@@ -119,7 +149,7 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
     let colorIndex = 0;
 
     projects.forEach((project) => {
-      activeProjects.add(project.project_id);
+      activeProjectsSet.add(project.project_id);
 
       // Add project details
       if (!projectDetailsMap[project.project_id]) {
@@ -133,8 +163,16 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
 
       project.timesheets.forEach((timesheet) => {
         timesheet.time_records.forEach((record) => {
-          const startTime = moment(record.start_time);
-          const endTime = moment(record.end_time);
+          // Use UTC to parse dates and times
+          const date = moment.utc(record.date).format("YYYY-MM-DD");
+          const startTime = moment.utc(
+            `${date} ${record.start_time}`,
+            "YYYY-MM-DD HH:mm"
+          );
+          const endTime = moment.utc(
+            `${date} ${record.end_time}`,
+            "YYYY-MM-DD HH:mm"
+          );
           const duration = moment.duration(endTime.diff(startTime)).asHours();
 
           if (
@@ -170,36 +208,39 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
     return {
       totalHoursLastWeek: lastWeekHours,
       hoursDifference: hoursDifference,
-      activeProjectsCount: activeProjects.size,
+      activeProjectsCount: activeProjectsSet.size,
       hoursBreakdown: hoursBreakdown,
       projects: Object.values(projectDetailsMap),
+      lastWeekStart: lastWeekStart.clone(), // Add this line
     };
   };
 
   const processData = async () => {
     const timesheets = await getAllTimesheetsByWorkerId();
-    const extractedData = await extractData(timesheets);
-    console.log("Hours Breakdown:", extractedData.hoursBreakdown);
+    const extractedData = extractData(timesheets);
+
     setHoursLastWeek(extractedData.totalHoursLastWeek);
     setHoursDifference(extractedData.hoursDifference);
     setActiveProjects(extractedData.activeProjectsCount);
     setHoursBreakdown(extractedData.hoursBreakdown);
-    setProjectDetails(extractedData.projects)
+    setProjectDetails(extractedData.projects);
 
-  }
+    // Set currentWeekStart to lastWeekStart from extractData
+    setCurrentWeekStart(extractedData.lastWeekStart.clone()); // Update this line
+  };
 
   useEffect(() => {
     if (userRole === "worker") {
       processData();
     }
-  }, [])
+  }, []);
 
   if (showTimesheetForm) {
     return (
       <div className="p-6 mb-80">
         <div className="flex items-center gap-4 mb-6">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setShowTimesheetForm(false)}
             className="bg-white/50"
           >
@@ -207,9 +248,9 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
           </Button>
           <h1 className="text-3xl font-bold text-gradient">New Timesheet</h1>
         </div>
-        <TimesheetTable employee_id={userId}/>
+        <TimesheetTable employee_id={userId} />
       </div>
-    )
+    );
   }
 
   return (
@@ -217,13 +258,13 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold text-gradient">Dashboard</h1>
-          {userRole === 'worker' && (
-            <Button 
-            className="bg-gradient-to-r from-grey-800 via-gray-800 to-black"
-            onClick={() => setShowTimesheetForm(true)}
-          >
-            New Timesheet
-          </Button>
+          {userRole === "worker" && (
+            <Button
+              className="bg-gradient-to-r from-grey-800 via-gray-800 to-black"
+              onClick={() => setShowTimesheetForm(true)}
+            >
+              New Timesheet
+            </Button>
           )}
           {userRole === 'project_manager' && (
             <div className="flex gap-2">
@@ -259,7 +300,7 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
             </div>
           )}
         </div>
-        
+
         <Button
           variant="outline"
           onClick={onSignOut}
@@ -270,19 +311,23 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
         </Button>
       </div>
 
-      {userRole === 'worker' ? (
+      {userRole === "worker" ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* ... Cards ... */}
             <Card className="bg-white/10 border-0">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-gray-600">
-                  Hours This Week
+                  Hours Last Week
                 </CardTitle>
                 <Clock className="h-4 w-4 text-black" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{hoursLastWeek}</div>
-                <p className="text-xs text-gray-500">{hoursDifference > 0 ? "+" : "-"}{hoursDifference} from last week</p>
+                <p className="text-xs text-gray-500">
+                  {hoursDifference > 0 ? "+" : ""}
+                  {hoursDifference} from previous week
+                </p>
               </CardContent>
             </Card>
 
@@ -300,14 +345,20 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
             </Card>
           </div>
 
-          <EmployeeProjectHours hoursBreakdown={hoursBreakdown} projects={projectDetails} />
+          {currentWeekStart && (
+            <EmployeeProjectHours
+              hoursBreakdown={hoursBreakdown}
+              projects={projectDetails}
+              currentDate={currentWeekStart} // Pass the correct week start date
+            />
+          )}
         </div>
       ) : (
         <>
-          {activeView === 'overview' && (
+          {activeView === "overview" && (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ProjectsList 
+                <ProjectsList
                   onProjectSelect={setSelectedProject}
                   selectedProjectId={selectedProject?.id ?? null}
                 />
@@ -317,15 +368,11 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
             </>
           )}
 
-          {activeView === 'reports' && (
-            <ProjectReports />
-          )}
+          {activeView === "reports" && <ProjectReports />}
 
-          {activeView === 'allocation' && (
-            <ProjectAllocation />
-          )}
+          {activeView === "allocation" && <ProjectAllocation />}
         </>
       )}
     </div>
-  )
+  );
 }

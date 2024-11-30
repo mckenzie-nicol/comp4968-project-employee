@@ -18,6 +18,22 @@
     --input: 0 0% 90%;
     --ring: 0 0% 0%;
   }
+
+  .dark {
+    --background: 0 0% 10%;
+    --foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+    --destructive: 0 0% 100%;
+    --destructive-foreground: 0 0% 10%;
+    --accent: 0 0% 100%;
+    --accent-foreground: 0 0% 10%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 100%;
+  }
 }
 
 @layer utilities {

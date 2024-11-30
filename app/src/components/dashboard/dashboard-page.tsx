@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Clock, PieChart, LogOut } from "lucide-react"
@@ -10,18 +10,189 @@ import { ProjectReports } from "./project-reports"
 import { EmployeeProjectHours } from "./employee-project-hours"
 import { ProjectAllocation } from "./project-allocation"
 import CreateProject from "@/components/project/create-project";
+import refreshTokens from "@/actions/refresh-token"
+ import moment from "moment";
 
 interface DashboardPageProps {
   onSignOut?: () => void
   userRole?: 'worker' | 'project_manager'
 }
 
+export interface TimeRecord {
+  time_record_id: string;
+  start_time: string; // ISO string
+  end_time: string; // ISO string
+}
+
+export interface Timesheet {
+  timesheet_id: string;
+  submission_date: string; // ISO string
+  status: string; // Example: 'approved'
+  time_records: TimeRecord[];
+}
+
+export interface ProjectData {
+  project_id: string;
+  project_name: string;
+  timesheets: Timesheet[];
+}
+
+export interface ApiResponse {
+  projects: ProjectData[];
+}
+
+export interface HoursBreakdown {
+  [day: string]: {
+    [projectId: string]: number; // Hours worked
+  };
+}
+
+export interface ProjectDetails {
+  projectId: string;
+  projectName: string;
+  color: string;
+}
+
+export interface ExtractedData {
+  totalHoursLastWeek: number;
+  hoursDifference: number;
+  activeProjectsCount: number;
+  hoursBreakdown: HoursBreakdown;
+  projects: ProjectDetails[];
+}
+
+
+const getAllTimesheetsByWorkerId = async () => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
+  const workerId = sessionStorage.getItem("userId");
+  const accessToken = sessionStorage.getItem("accessToken") || "";
+  const response = await fetch(
+    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/dashboard/worker?worker_id=${workerId}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: accessToken,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  const data = await response.json();
+  return data;
+};
+
 export function DashboardPage({ onSignOut, userRole = 'project_manager' }: DashboardPageProps) {
   const [showTimesheetForm, setShowTimesheetForm] = useState(false)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [activeView, setActiveView] = useState<'overview' | 'allocation' | 'reports'>('overview')
+  const [activeView, setActiveView] = useState<'overview' | 'allocation' | 'reports'>('overview');
+  const [hoursLastWeek, setHoursLastWeek] = useState<number>(0);
+  const [hoursDifference, setHoursDifference] = useState<number>(0);
+  const [activeProjects, setActiveProjects] = useState<number>(0);
+  const [hoursBreakdown, setHoursBreakdown] = useState<HoursBreakdown>({});
+  const [projectDetails, setProjectDetails] = useState<ProjectDetails[]>([]);
 
   const userId = sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
+  
+  const extractData = (apiResponse: ApiResponse): ExtractedData => {
+    const projects = apiResponse.projects;
+    const lastWeekStart = moment().subtract(1, "weeks").startOf("isoWeek");
+    const lastWeekEnd = moment().subtract(1, "weeks").endOf("isoWeek");
+    const previousWeekStart = moment().subtract(2, "weeks").startOf("isoWeek");
+    const previousWeekEnd = moment().subtract(2, "weeks").endOf("isoWeek");
+
+    let lastWeekHours = 0;
+    let previousWeekHours = 0;
+    const hoursBreakdown: HoursBreakdown = {}; // { day: { projectId: hours } }
+    const activeProjects = new Set<string>();
+    const projectDetailsMap: { [projectId: string]: ProjectDetails } = {};
+
+    // Predefined colors for projects
+    const colorPalette = [
+      "#FF5733",
+      "#33FF57",
+      "#3357FF",
+      "#F333FF",
+      "#FF33A1",
+    ];
+    let colorIndex = 0;
+
+    projects.forEach((project) => {
+      activeProjects.add(project.project_id);
+
+      // Add project details
+      if (!projectDetailsMap[project.project_id]) {
+        projectDetailsMap[project.project_id] = {
+          projectId: project.project_id,
+          projectName: project.project_name,
+          color: colorPalette[colorIndex % colorPalette.length],
+        };
+        colorIndex++;
+      }
+
+      project.timesheets.forEach((timesheet) => {
+        timesheet.time_records.forEach((record) => {
+          const startTime = moment(record.start_time);
+          const endTime = moment(record.end_time);
+          const duration = moment.duration(endTime.diff(startTime)).asHours();
+
+          if (
+            startTime.isBetween(lastWeekStart, lastWeekEnd, "seconds", "[]")
+          ) {
+            lastWeekHours += duration;
+
+            // Breakdown by day and project
+            const day = startTime.format("YYYY-MM-DD");
+            if (!hoursBreakdown[day]) {
+              hoursBreakdown[day] = {};
+            }
+            if (!hoursBreakdown[day][project.project_id]) {
+              hoursBreakdown[day][project.project_id] = 0;
+            }
+            hoursBreakdown[day][project.project_id] += duration;
+          } else if (
+            startTime.isBetween(
+              previousWeekStart,
+              previousWeekEnd,
+              "seconds",
+              "[]"
+            )
+          ) {
+            previousWeekHours += duration;
+          }
+        });
+      });
+    });
+
+    const hoursDifference = lastWeekHours - previousWeekHours;
+
+    return {
+      totalHoursLastWeek: lastWeekHours,
+      hoursDifference: hoursDifference,
+      activeProjectsCount: activeProjects.size,
+      hoursBreakdown: hoursBreakdown,
+      projects: Object.values(projectDetailsMap),
+    };
+  };
+
+  const processData = async () => {
+    const timesheets = await getAllTimesheetsByWorkerId();
+    const extractedData = await extractData(timesheets);
+    console.log("Hours Breakdown:", extractedData.hoursBreakdown);
+    setHoursLastWeek(extractedData.totalHoursLastWeek);
+    setHoursDifference(extractedData.hoursDifference);
+    setActiveProjects(extractedData.activeProjectsCount);
+    setHoursBreakdown(extractedData.hoursBreakdown);
+    setProjectDetails(extractedData.projects)
+
+  }
+
+  useEffect(() => {
+    if (userRole === "worker") {
+      processData();
+    }
+  }, [])
 
   if (showTimesheetForm) {
     return (
@@ -110,8 +281,8 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
                 <Clock className="h-4 w-4 text-black" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">32.5</div>
-                <p className="text-xs text-gray-500">+2.5 from last week</p>
+                <div className="text-2xl font-bold">{hoursLastWeek}</div>
+                <p className="text-xs text-gray-500">{hoursDifference > 0 ? "+" : "-"}{hoursDifference} from last week</p>
               </CardContent>
             </Card>
 
@@ -123,13 +294,13 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
                 <PieChart className="h-4 w-4 text-black" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">2</div>
+                <div className="text-2xl font-bold">{activeProjects}</div>
                 <p className="text-xs text-gray-500">Currently assigned</p>
               </CardContent>
             </Card>
           </div>
 
-          <EmployeeProjectHours />
+          <EmployeeProjectHours hoursBreakdown={hoursBreakdown} projects={projectDetails} />
         </div>
       ) : (
         <>

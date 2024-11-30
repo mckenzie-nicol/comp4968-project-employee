@@ -55,6 +55,10 @@ const handleCreateProject = async (
 };
 
 const getAllWorkers = async () => {
+  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
+  if (Date.now() > tokenExpiry) {
+    await refreshTokens();
+  }
   const organizationId = sessionStorage.getItem("organizationId");
   const accessToken = sessionStorage.getItem("accessToken") || "";
   const response = await fetch(

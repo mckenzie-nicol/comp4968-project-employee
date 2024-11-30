@@ -10,6 +10,7 @@ import { ProjectReports } from "./project-reports"
 import { EmployeeProjectHours } from "./employee-project-hours"
 import { ProjectAllocation } from "./project-allocation"
 import CreateProject from "@/components/project/create-project";
+import { UserNotification } from "@/components/dashboard/user-notification";
 
 interface DashboardPageProps {
   onSignOut?: () => void
@@ -46,6 +47,7 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
+          <UserNotification />
           <h1 className="text-3xl font-bold text-gradient">Dashboard</h1>
           {userRole === 'worker' && (
             <Button 

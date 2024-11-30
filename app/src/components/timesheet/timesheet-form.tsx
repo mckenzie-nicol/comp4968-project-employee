@@ -583,7 +583,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const isCurrentWeek = isBefore(currentWeekStart, addWeeks(currentWeek, 1));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 border border-gray-200 rounded-lg shadow-md p-6">
       <div className="flex justify-end mb-4">
         <div className="flex items-center space-x-2">
           <Button
@@ -609,7 +609,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
         </div>
       </div>
 
-      <Table className="">
+      <Table>
         <TableCaption>Weekly Timesheet</TableCaption>
         <TableHeader>
           <TableRow>

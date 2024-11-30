@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   BarChart,
   Bar,
@@ -28,10 +26,9 @@ interface ProjectDetails {
 interface EmployeeProjectHoursProps {
   hoursBreakdown: HoursBreakdown;
   projects: ProjectDetails[];
-  currentDate: moment.Moment;
 }
 
-interface WeeklyEntry {
+interface DailyEntry {
   day: string;
   [key: string]: string | number;
 }
@@ -39,26 +36,23 @@ interface WeeklyEntry {
 export function EmployeeProjectHours({
   hoursBreakdown,
   projects,
-  currentDate,
 }: EmployeeProjectHoursProps) {
-  const [selectedDate, setSelectedDate] = useState(currentDate.clone());
+  // Generate data for the past 14 days
+  const generatePast14DaysData = (): DailyEntry[] => {
+    const data: DailyEntry[] = [];
 
-  // Generate data for the selected week
-  const generateWeeklyData = (): WeeklyEntry[] => {
-    const data: WeeklyEntry[] = [];
-
-    const weekStart = selectedDate.clone().startOf("isoWeek");
-    const weekEnd = selectedDate.clone().endOf("isoWeek");
+    const endDate = moment.utc().endOf("day");
+    const startDate = endDate.clone().subtract(13, "days").startOf("day");
 
     for (
-      let day = weekStart.clone();
-      day.isSameOrBefore(weekEnd);
+      let day = startDate.clone();
+      day.isSameOrBefore(endDate);
       day.add(1, "day")
     ) {
       const formattedDate = day.format("YYYY-MM-DD");
       const displayDate = day.format("MMM D");
 
-      const entry: WeeklyEntry = { day: displayDate };
+      const entry: DailyEntry = { day: displayDate };
 
       projects.forEach((project) => {
         entry[project.projectId] =
@@ -71,46 +65,23 @@ export function EmployeeProjectHours({
     return data;
   };
 
-  const weeklyData = generateWeeklyData();
-
-  const navigateWeek = (direction: "prev" | "next") => {
-    setSelectedDate((current) =>
-      direction === "prev"
-        ? current.clone().subtract(1, "week")
-        : current.clone().add(1, "week")
-    );
-  };
+  const dailyData = generatePast14DaysData();
 
   return (
     <Card className="bg-white/10 border-0">
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle className="text-xl font-semibold text-gradient">
-            My Project Hours
+            My Project Hours (Past 14 Days)
           </CardTitle>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => navigateWeek("prev")}
-              className="bg-white/50"
-            >
-              Previous Week
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigateWeek("next")}
-              className="bg-white/50"
-            >
-              Next Week
-            </Button>
-          </div>
+          {/* Removed navigation buttons */}
         </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData}>
+              <BarChart data={dailyData}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   className="stroke-gray-200"

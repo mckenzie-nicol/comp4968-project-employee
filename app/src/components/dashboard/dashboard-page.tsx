@@ -57,12 +57,11 @@ export interface ProjectDetails {
 }
 
 export interface ExtractedData {
-  totalHoursLastWeek: number;
+  totalHoursLast14Days: number;
   hoursDifference: number;
   activeProjectsCount: number;
   hoursBreakdown: HoursBreakdown;
   projects: ProjectDetails[];
-  lastWeekStart: moment.Moment; // Add this line
 }
 
 const getAllTimesheetsByWorkerId = async () => {
@@ -95,15 +94,11 @@ export function DashboardPage({
   const [activeView, setActiveView] = useState<
     "overview" | "allocation" | "reports"
   >("overview");
-  const [hoursLastWeek, setHoursLastWeek] = useState<number>(0);
-  const [hoursDifference, setHoursDifference] = useState<number>(0);
   const [activeProjects, setActiveProjects] = useState<number>(0);
   const [hoursBreakdown, setHoursBreakdown] = useState<HoursBreakdown>({});
   const [projectDetails, setProjectDetails] = useState<ProjectDetails[]>([]);
-
-  // State to hold currentWeekStart
-  const [currentWeekStart, setCurrentWeekStart] =
-    useState<moment.Moment | null>(null);
+  const [hoursLast14Days, setHoursLast14Days] = useState<number>(0);
+  const [hoursDifference, setHoursDifference] = useState<number>(0);
 
   const userId =
     sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
@@ -111,29 +106,26 @@ export function DashboardPage({
   const extractData = (apiResponse: ApiResponse): ExtractedData => {
     const projects = apiResponse.projects;
 
-    // Use a fixed current date for testing or actual current date
-    const currentDate = moment.utc("2024-12-07"); // For testing
-    // const currentDate = moment.utc(); // Use actual current date in production
+    // Use the actual current date
+    const currentDate = moment.utc().endOf("day");
 
-    const lastWeekStart = currentDate
+    const last14DaysStart = currentDate
       .clone()
-      .subtract(1, "weeks")
-      .startOf("isoWeek");
-    const lastWeekEnd = currentDate
-      .clone()
-      .subtract(1, "weeks")
-      .endOf("isoWeek");
-    const previousWeekStart = currentDate
-      .clone()
-      .subtract(2, "weeks")
-      .startOf("isoWeek");
-    const previousWeekEnd = currentDate
-      .clone()
-      .subtract(2, "weeks")
-      .endOf("isoWeek");
+      .subtract(13, "days")
+      .startOf("day");
+    const last14DaysEnd = currentDate;
 
-    let lastWeekHours = 0;
-    let previousWeekHours = 0;
+    const previous14DaysStart = last14DaysStart
+      .clone()
+      .subtract(14, "days")
+      .startOf("day");
+    const previous14DaysEnd = last14DaysStart
+      .clone()
+      .subtract(1, "days")
+      .endOf("day");
+
+    let totalHoursLast14Days = 0;
+    let totalHoursPrevious14Days = 0;
     const hoursBreakdown: HoursBreakdown = {}; // { day: { projectId: hours } }
     const activeProjectsSet = new Set<string>();
     const projectDetailsMap: { [projectId: string]: ProjectDetails } = {};
@@ -176,9 +168,9 @@ export function DashboardPage({
           const duration = moment.duration(endTime.diff(startTime)).asHours();
 
           if (
-            startTime.isBetween(lastWeekStart, lastWeekEnd, "seconds", "[]")
+            startTime.isBetween(last14DaysStart, last14DaysEnd, "seconds", "[]")
           ) {
-            lastWeekHours += duration;
+            totalHoursLast14Days += duration;
 
             // Breakdown by day and project
             const day = startTime.format("YYYY-MM-DD");
@@ -191,27 +183,26 @@ export function DashboardPage({
             hoursBreakdown[day][project.project_id] += duration;
           } else if (
             startTime.isBetween(
-              previousWeekStart,
-              previousWeekEnd,
+              previous14DaysStart,
+              previous14DaysEnd,
               "seconds",
               "[]"
             )
           ) {
-            previousWeekHours += duration;
+            totalHoursPrevious14Days += duration;
           }
         });
       });
     });
 
-    const hoursDifference = lastWeekHours - previousWeekHours;
+    const hoursDifference = totalHoursLast14Days - totalHoursPrevious14Days;
 
     return {
-      totalHoursLastWeek: lastWeekHours,
-      hoursDifference: hoursDifference,
+      totalHoursLast14Days,
+      hoursDifference,
       activeProjectsCount: activeProjectsSet.size,
       hoursBreakdown: hoursBreakdown,
       projects: Object.values(projectDetailsMap),
-      lastWeekStart: lastWeekStart.clone(), // Add this line
     };
   };
 
@@ -219,14 +210,11 @@ export function DashboardPage({
     const timesheets = await getAllTimesheetsByWorkerId();
     const extractedData = extractData(timesheets);
 
-    setHoursLastWeek(extractedData.totalHoursLastWeek);
-    setHoursDifference(extractedData.hoursDifference);
     setActiveProjects(extractedData.activeProjectsCount);
     setHoursBreakdown(extractedData.hoursBreakdown);
     setProjectDetails(extractedData.projects);
-
-    // Set currentWeekStart to lastWeekStart from extractData
-    setCurrentWeekStart(extractedData.lastWeekStart.clone()); // Update this line
+    setHoursLast14Days(extractedData.totalHoursLast14Days);
+    setHoursDifference(extractedData.hoursDifference);
   };
 
   useEffect(() => {
@@ -318,15 +306,15 @@ export function DashboardPage({
             <Card className="bg-white/10 border-0">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-gray-600">
-                  Hours Last Week
+                  Hours Last 14 Days
                 </CardTitle>
                 <Clock className="h-4 w-4 text-black" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{hoursLastWeek}</div>
+                <div className="text-2xl font-bold">{hoursLast14Days}</div>
                 <p className="text-xs text-gray-500">
                   {hoursDifference > 0 ? "+" : ""}
-                  {hoursDifference} from previous week
+                  {hoursDifference} from previous 14 days
                 </p>
               </CardContent>
             </Card>
@@ -345,13 +333,10 @@ export function DashboardPage({
             </Card>
           </div>
 
-          {currentWeekStart && (
-            <EmployeeProjectHours
-              hoursBreakdown={hoursBreakdown}
-              projects={projectDetails}
-              currentDate={currentWeekStart} // Pass the correct week start date
+          <EmployeeProjectHours
+            hoursBreakdown={hoursBreakdown}
+            projects={projectDetails}
             />
-          )}
         </div>
       ) : (
         <>

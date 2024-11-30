@@ -25,6 +25,10 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
 
   const userId = sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
 
+  const navigateToTimesheets = () => {
+    setShowTimesheetForm(true)
+  }
+
   if (showTimesheetForm) {
     return (
       <div className="p-6 mb-80">
@@ -45,9 +49,9 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
 
   return (
     <div className="p-6 space-y-6">
+      <UserNotification navigateToTimesheets={navigateToTimesheets}/>
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <UserNotification />
           <h1 className="text-3xl font-bold text-gradient">Dashboard</h1>
           {userRole === 'worker' && (
             <Button 

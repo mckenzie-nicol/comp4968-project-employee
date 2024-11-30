@@ -221,7 +221,7 @@ export function DashboardPage({
     if (userRole === "worker") {
       processData();
     }
-  }, []);
+  }, [showTimesheetForm]);
 
   if (showTimesheetForm) {
     return (

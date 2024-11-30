@@ -28,14 +28,14 @@ export function RecentTimesheets() {
     console.log("Fetching recent timesheets...");
     console.log("Manager ID:", managerId);
 
-    const projectMapping: Record<string, string> = {
-      "785aa885-1985-441e-8373-9cda9d617285": "Serverless Presentation",
-      "5af6e2e7-c724-4f11-86be-a1b2b70dc52e": "COMP4968",
-    };
+    // const projectMapping: Record<string, string> = {
+    //   "785aa885-1985-441e-8373-9cda9d617285": "Serverless Presentation",
+    //   "5af6e2e7-c724-4f11-86be-a1b2b70dc52e": "COMP4968",
+    // };
 
-    const employeeMapping: Record<string, string> = {
-      "5131efb8-4579-492d-97fd-49602e6ed513": "John Doe",
-    };
+    // const employeeMapping: Record<string, string> = {
+    //   "5131efb8-4579-492d-97fd-49602e6ed513": "John Doe",
+    // };
 
     try {
       setLoading(true);
@@ -67,8 +67,8 @@ export function RecentTimesheets() {
         date: `Week of ${new Date(item.start_date_of_the_week).toLocaleDateString()}`,
         status: item.status || "Pending",
         hours: item.hours || 40,
-        projects: [projectMapping[item.project_id as keyof typeof projectMapping] || `Unknown Project (${item.project_id})`],
-        employeeName: employeeMapping[item.employee_id as keyof typeof employeeMapping] || `Unknown Employee (${item.employee_id})`,
+        projects: [item.project_name],
+        employeeName: item.full_name || `Unknown Employee (${item.employee_id})`,
       }));
 
       console.log("Transformed Timesheets:", transformedTimesheets);
@@ -134,9 +134,9 @@ export function RecentTimesheets() {
                   {timesheet.projects.map((project) => (
                     <span
                       key={project}
-                      // className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
                     >
-                      {/* {project} */}
+                      {timesheet.date}
                     </span>
                   ))}
                 </div>

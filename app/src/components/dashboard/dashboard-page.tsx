@@ -25,7 +25,7 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
 
   if (showTimesheetForm) {
     return (
-      <div className="p-6">
+      <div className="p-6 mb-80">
         <div className="flex items-center gap-4 mb-6">
           <Button 
             variant="outline" 

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   startOfWeek,
   endOfWeek,
@@ -583,7 +583,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const isCurrentWeek = isBefore(currentWeekStart, addWeeks(currentWeek, 1));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 border border-gray-200 rounded-lg shadow-md p-6">
       <div className="flex justify-end mb-4">
         <div className="flex items-center space-x-2">
           <Button
@@ -612,7 +612,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       <Table>
         <TableCaption>Weekly Timesheet</TableCaption>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-gray-200">
             <TableHead>Project</TableHead>
             {days.map((day) => (
               <TableHead key={day} className="text-center">
@@ -626,7 +626,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
         </TableHeader>
         <TableBody>
           {timesheet.map((entry) => (
-            <TableRow key={entry.id}>
+            <TableRow key={entry.id} className="hover:bg-gray-100">
               <TableCell>{entry.project_name}</TableCell>
               {days.map((day) => (
                 <TableCell key={day}>
@@ -643,7 +643,21 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 {calculateTotalHours(entry.hours).toFixed(2)}
               </TableCell>
               <TableCell className="text-center">
-                {entry.status ? entry.status : ""}
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    entry.status === "pending"
+                      ? "bg-yellow-100 text-yellow-800" // Pending
+                      : entry.status === "approved"
+                      ? "bg-green-100 text-green-800" // Approved
+                      : entry.status === "rejected"
+                      ? "bg-red-100 text-red-800" // Rejected
+                      : "" // Fallback for unknown status
+                  }`}
+                >
+                  {entry.status
+                  ? entry.status.charAt(0).toUpperCase() + entry.status.slice(1)
+                  : ""}
+                </span>
               </TableCell>
               <TableCell>
                 <Button
@@ -661,7 +675,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
             </TableRow>
           ))}
         </TableBody>
-        <TableFooter>
+        <TableFooter className=" border-gray-300">
           <TableRow>
             <TableCell>Daily Total</TableCell>
             {days.map((day) => (

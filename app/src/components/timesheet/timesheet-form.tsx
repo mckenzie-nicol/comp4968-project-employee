@@ -612,7 +612,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       <Table>
         <TableCaption>Weekly Timesheet</TableCaption>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-gray-200">
             <TableHead>Project</TableHead>
             {days.map((day) => (
               <TableHead key={day} className="text-center">
@@ -675,7 +675,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
             </TableRow>
           ))}
         </TableBody>
-        <TableFooter>
+        <TableFooter className=" border-gray-300">
           <TableRow>
             <TableCell>Daily Total</TableCell>
             {days.map((day) => (

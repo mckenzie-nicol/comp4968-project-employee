@@ -19,6 +19,13 @@
     --input: 0 0% 90%;
     --ring: 0 0% 0%;
     --logo: #725CFF;
+
+    /* for project color */
+    --custom-red: #E9545b;
+    --custom-green: #45B7AF;
+    --custom-yellow: #F8CA00;
+    --custom-blue: #65C2DF;
+    --custom-purple: #A48AD5;
   }
 
   .dark {
@@ -61,22 +68,22 @@
   }
 
   .bg-custom-red {
-    background-color: #E9545b;
+    background-color: var(--custom-red);
     color: white;
   }
 
   .bg-custom-green {
-    background-color: #45B7AF;
+    background-color: var(--custom-green);
     color: white;
   }
 
   .bg-custom-yellow {
-    background-color: #F8CA00;
+    background-color: var(--custom-yellow);
     color: white;
   }
 
   .bg-custom-blue {
-    background-color: #65C2DF;
+    background-color: var(--custom-blue);
     color: white;
   }
 

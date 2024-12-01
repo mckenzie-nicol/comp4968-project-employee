@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Clock, Calendar, Users, PieChart, LogOut } from "lucide-react"
@@ -22,10 +22,12 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
   const [showTimesheetForm, setShowTimesheetForm] = useState(false)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [activeView, setActiveView] = useState<'overview' | 'allocation' | 'reports'>('overview')
+  const notificationDate = useRef<Date | null>(null)
 
   const userId = sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
 
-  const navigateToTimesheets = () => {
+  const navigateToTimesheets = (start_date_of_the_week: Date) => {
+    notificationDate.current = start_date_of_the_week
     setShowTimesheetForm(true)
   }
 
@@ -42,7 +44,7 @@ export function DashboardPage({ onSignOut, userRole = 'project_manager' }: Dashb
           </Button>
           <h1 className="text-3xl font-bold text-gradient">New Timesheet</h1>
         </div>
-        <TimesheetTable employee_id={userId}/>
+        <TimesheetTable employee_id={userId} notificationDate={notificationDate}/>
       </div>
     )
   }

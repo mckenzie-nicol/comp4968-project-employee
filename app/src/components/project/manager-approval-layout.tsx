@@ -267,7 +267,15 @@ type Project = {
   end_date: string | null;
 };
 
-function ManagerApprovalLayout({ pid }: { pid: string }) {
+type ManagerApprovalLayoutProps = {
+  pid: string;
+  notificationDate: Date | null;
+};
+
+function ManagerApprovalLayout({
+  pid,
+  notificationDate,
+}: ManagerApprovalLayoutProps) {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
@@ -305,6 +313,12 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
   const refetchData = () => {
     setRefetch((prev) => !prev);
   };
+
+  useEffect(() => {
+    if (notificationDate) {
+      setCurrentWeekStart(notificationDate);
+    }
+  }, []);
 
   // Fetch timesheet and records data of all employees for the current week
   useEffect(() => {

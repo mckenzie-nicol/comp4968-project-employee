@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ManagerApprovalLayout } from "@/components/project/manager-approval-layout";
 import refreshTokens from "@/actions/refresh-token";
 
@@ -29,7 +29,7 @@ const fetchProjectDetails = async () => {
     const response = await fetch(`${API_URL}/test/project/manager/details`, {
       method: "POST",
       headers: {
-        "Authorization": accessToken,
+        Authorization: accessToken,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ id: sessionStorage.getItem("userId") }),
@@ -60,12 +60,16 @@ export function ApproveTimesheets() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const navigate = useNavigate();
+  const { state } = useLocation();
+
+  console.log(state);
 
   useEffect(() => {
     const fetchData = async () => {
       const projectsData = await fetchProjectDetails();
       setProjects(projectsData);
     };
+    setSelectedProject(state?.projectId || null);
     fetchData();
   }, []);
 
@@ -103,7 +107,12 @@ export function ApproveTimesheets() {
             </SelectContent>
           </Select>
         </div>
-        {selectedProject && <ManagerApprovalLayout pid={selectedProject} />}
+        {selectedProject && (
+          <ManagerApprovalLayout
+            pid={selectedProject}
+            notificationDate={state?.notificationDate}
+          />
+        )}
       </CardContent>
     </Card>
   );

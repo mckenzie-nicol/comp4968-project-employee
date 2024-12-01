@@ -10,13 +10,13 @@ function App() {
   return (
     <ThemeProvider>
       <Router>
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex-grow flex-col">
         {/* Navbar */}
         <Navbar />
   
         {/* Main Content */}
-        <div className="flex-grow container h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Routes>
+          <div className="flex-grow container items-center justify-between px-4 sm:px-6 lg:px-8">
+            <Routes>
               <Route path="/" element={<Home />} />
               {/* timesheet route */}
               <Route path="/timesheet" element={<Timesheet />} />
@@ -25,9 +25,9 @@ function App() {
             </Routes>
           </div>
 
+        </div>
         {/* Footer */}
         <Footer />
-        </div>
     </Router>
     </ThemeProvider>
   );

@@ -19,11 +19,12 @@ export function Navbar() {
         </div>
 
         {/* just adding this for testing themes, you guys can find a more elegant place for it later*/}
-        <ThemeToggleButton />
+        
     
 
         {/* Action Buttons */}
         <div className="flex items-center gap-4">
+          <ThemeToggleButton />
           {/* <Button
             variant="outline"
             size="sm"

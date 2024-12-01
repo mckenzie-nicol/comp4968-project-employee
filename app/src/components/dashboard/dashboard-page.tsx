@@ -225,7 +225,7 @@ export function DashboardPage({
 
   if (showTimesheetForm) {
     return (
-      <div className="p-6 mb-80">
+      <div className="pt-6 mb-80">
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="outline"
@@ -242,7 +242,7 @@ export function DashboardPage({
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="pt-6 space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold text-gradient">Dashboard</h1>

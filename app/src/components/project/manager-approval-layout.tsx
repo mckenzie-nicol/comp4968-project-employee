@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   startOfWeek,
@@ -267,7 +267,15 @@ type Project = {
   end_date: string | null;
 };
 
-function ManagerApprovalLayout({ pid }: { pid: string }) {
+type ManagerApprovalLayoutProps = {
+  pid: string;
+  notificationDate: Date | null;
+};
+
+function ManagerApprovalLayout({
+  pid,
+  notificationDate,
+}: ManagerApprovalLayoutProps) {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
@@ -278,6 +286,7 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
   );
   const [refetch, setRefetch] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const notificationDateRef = useRef<Date | null>(notificationDate);
 
   /* Week selector functions and constants */
   const today = new Date();
@@ -306,16 +315,30 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
     setRefetch((prev) => !prev);
   };
 
+  useEffect(() => {
+    if (notificationDateRef.current) {
+      setCurrentWeekStart(notificationDateRef.current);
+    }
+  }, []);
+
   // Fetch timesheet and records data of all employees for the current week
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      const timesheetsData = await fetchTimesheetData(pid, currentWeekStart);
+      const timesheetsData = await fetchTimesheetData(
+        pid,
+        notificationDateRef.current ?? currentWeekStart
+      );
       const timesheetAndRecordsData = await fetchTimeRecordData(timesheetsData);
       const hoursData = await fetchTrackedHoursData(timesheetAndRecordsData);
       setTrackedHours(hoursData);
       setTimesheets(timesheetAndRecordsData.map(transformTimesheet));
-      setTimeout(() => setIsLoading(false), 500);
+      setIsLoading(false);
+
+      if (notificationDateRef.current === currentWeekStart) {
+        notificationDateRef.current = null;
+        window.history.replaceState(null, "", "/approve-timesheets");
+      }
     };
 
     fetchData();
@@ -355,6 +378,7 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
             variant="outline"
             size="icon"
             onClick={handlePreviousWeek}
+            disabled={isLoading}
             aria-label="Previous week"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -366,7 +390,7 @@ function ManagerApprovalLayout({ pid }: { pid: string }) {
             variant="outline"
             size="icon"
             onClick={handleNextWeek}
-            disabled={!isCurrentWeek}
+            disabled={!isCurrentWeek || isLoading}
             aria-label="Next week"
           >
             <ChevronRight className="h-4 w-4" />

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, PieChart, LogOut } from "lucide-react";
@@ -9,6 +9,7 @@ import { BurnDownChart } from "./burn-down-chart";
 import { ProjectReports } from "./project-reports";
 import { EmployeeProjectHours } from "./employee-project-hours";
 import { ProjectAllocation } from "./project-allocation";
+import { UserNotification } from "@/components/dashboard/user-notification";
 import CreateProject from "@/components/project/create-project";
 import refreshTokens from "@/actions/refresh-token";
 import moment from "moment";
@@ -99,6 +100,7 @@ export function DashboardPage({
   const [projectDetails, setProjectDetails] = useState<ProjectDetails[]>([]);
   const [hoursLast14Days, setHoursLast14Days] = useState<number>(0);
   const [hoursDifference, setHoursDifference] = useState<number>(0);
+  const notificationDate = useRef<Date | null>(null)
 
   const userId =
     sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
@@ -223,6 +225,11 @@ export function DashboardPage({
     }
   }, [showTimesheetForm]);
 
+  const navigateToTimesheets = (start_date_of_the_week: Date) => {
+    notificationDate.current = start_date_of_the_week
+    setShowTimesheetForm(true)
+  }
+
   if (showTimesheetForm) {
     return (
       <div className="pt-6 mb-80">
@@ -236,13 +243,14 @@ export function DashboardPage({
           </Button>
           {/* <h1 className="text-3xl font-bold text-foreground">New Timesheet</h1> */}
         </div>
-        <TimesheetTable employee_id={userId} />
+        <TimesheetTable employee_id={userId} notificationDate={notificationDate} />
       </div>
     );
   }
 
   return (
     <div className="pt-6 space-y-6">
+      <UserNotification navigateToTimesheets={navigateToTimesheets}/>
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>

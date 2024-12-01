@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button"
+import { fetchNotificationData } from "@/components/dashboard/user-notification";
 
 interface Timesheet {
   id: string;
@@ -18,7 +19,7 @@ export function RecentTimesheets() {
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [hasNotifications] = useState(true);
+  const [hasNotifications, setHasNotifications] = useState(false);
   const navigate = useNavigate();
 
   const API_URL = "https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com";
@@ -84,6 +85,13 @@ export function RecentTimesheets() {
 
   useEffect(() => {
     fetchRecentTimesheets();
+
+    // Fetch notifications to determine if bell is shown
+    async function fetchNotifications() {
+      const notificationsData = await fetchNotificationData();
+      setHasNotifications(notificationsData && notificationsData.length > 0);
+    }
+    fetchNotifications();
   }, []);
 
   const handleApproveClick = () => {

@@ -43,6 +43,7 @@ import refreshTokens from "@/actions/refresh-token";
 
 type TimesheetProps = {
   employee_id: string;
+  notificationDate: React.MutableRefObject<Date | null>;
 };
 
 type DayHours = {
@@ -353,7 +354,7 @@ const deleteTimesheetEntry = async (entryId: string): Promise<void> => {
   console.log("Deleted entry:", entryId);
 };
 
-export function TimesheetTable({ employee_id }: TimesheetProps) {
+export function TimesheetTable({ employee_id, notificationDate }: TimesheetProps) {
   const [timesheet, setTimesheet] = useState<TimesheetEntry[]>([]);
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -373,8 +374,14 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 });
 
   useEffect(() => {
+    if (notificationDate.current) {
+      setCurrentWeekStart(notificationDate.current);
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchTimesheetData(employee_id, currentWeekStart);
+      const data = await fetchTimesheetData(employee_id, notificationDate.current ?? currentWeekStart);
       const projectData = await fetchProjectData(employee_id);
       setTimesheet(data);
       setAvailableProjects(projectData);
@@ -388,7 +395,12 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       } else {
         setIsSubmitting(false);
       }
+
+      if (notificationDate.current === currentWeekStart) {
+        notificationDate.current = null;
+      }
     };
+
     fetchData();
   }, [currentWeekStart, employee_id]);
 

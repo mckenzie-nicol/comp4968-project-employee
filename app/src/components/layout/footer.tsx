@@ -6,7 +6,7 @@ export function Footer() {
       <div className="container py-4 px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4">
           <h3 className="text-2xl font-bold">
-            <span className="bg-clip-text">
+            <span className="bg-clip-text text-primary">
               TimeTrack
             </span>
           </h3>

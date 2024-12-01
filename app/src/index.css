@@ -82,6 +82,6 @@
   }
 
   body {
-    @apply text-foreground bg-background;
+    @apply text-foreground;
   }
 }

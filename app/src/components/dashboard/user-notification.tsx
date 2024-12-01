@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { TriangleAlert, MoveRight } from "lucide-react";
+import { Bell, MoveRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import refreshTokens from "@/actions/refresh-token";
 
@@ -124,7 +124,7 @@ function UserNotification({ navigateToTimesheets }: UserNotificationProps) {
         <Alert className="w-full">
           <AlertTitle className="font-bold">
             <div className="flex items-center gap-2">
-              <TriangleAlert className="text-yellow-400" />
+              <Bell className="text-red-500" />
               Timesheet Notification
             </div>
           </AlertTitle>
@@ -165,4 +165,4 @@ function UserNotification({ navigateToTimesheets }: UserNotificationProps) {
   );
 }
 
-export { UserNotification };
+export { UserNotification, fetchNotificationData };

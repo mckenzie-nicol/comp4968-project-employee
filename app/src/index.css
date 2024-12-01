@@ -63,22 +63,21 @@
   .bg-custom-red {
     background-color: #E9545b;
     color: white;
-    font-weight: 600;
-    padding: 0.5rem;
   }
 
   .bg-custom-green {
     background-color: #45B7AF;
     color: white;
-    font-weight: 600;
-    padding: 0.5rem;
   }
 
   .bg-custom-yellow {
     background-color: #F8CA00;
     color: white;
-    font-weight: 600;
-    padding: 0.5rem;
+  }
+
+  .bg-custom-blue {
+    background-color: #65C2DF;
+    color: white;
   }
 
   body {

@@ -648,11 +648,11 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
                     entry.status === "pending"
-                      ? "bg-custom-yellow" // Pending
+                      ? "bg-custom-yellow p-2 font-semibold" // Pending
                       : entry.status === "approved"
-                      ? "bg-custom-green" // Approved
+                      ? "bg-custom-green p-2 font-semibold" // Approved
                       : entry.status === "rejected"
-                      ? "bg-custom-red" // Rejected
+                      ? "bg-custom-red p-2 font-semibold" // Rejected
                       : "" // Fallback for unknown status
                   }`}
                 >

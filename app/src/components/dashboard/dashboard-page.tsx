@@ -256,7 +256,7 @@ export function DashboardPage({
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
           {userRole === "worker" && (
             <Button
-              className="bg-gradient-to-r from-grey-800 via-gray-800 to-black"
+              className="bg-primary hover:opacity-95"
               onClick={() => setShowTimesheetForm(true)}
             >
               New Timesheet

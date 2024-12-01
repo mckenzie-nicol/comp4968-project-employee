@@ -67,10 +67,10 @@ function Home() {
     <div className="min-h-[77vh] auth-container">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-          <h1 className="text-5xl font-bold mb-2 mt-8 text-gradient">
+          <h1 className="text-5xl font-bold mb-2 mt-8">
             Timesheet Management
           </h1>
-          <p className="text-lg text-gray-600 bg-clip-text">
+          <p className="text-lg text-gray-600 dark:text-secondary bg-clip-text">
             Manage your time, track your projects
           </p>
         </div>
@@ -85,16 +85,17 @@ function Home() {
           </div>
 
           <div className="mt-8 text-center">
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 mb-4 dark:text-secondary">
               {isSignIn ? "Don't have an account?" : "Already have an account?"}
             </p>
             <Button
               variant="outline"
               onClick={() => setIsSignIn(!isSignIn)}
-              className="min-w-[200px] bg-white/50 hover:bg-slate-800 transition-all duration-300"
+              className="min-w-[200px] bg-background hover:opacity-95 transition-all duration-300"
             >
               {isSignIn ? "Create account" : "Sign in"}
             </Button>
+            <br /><br />
             <Card className="bg-white/10 border-0">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-lg font-medium text-gray-600">

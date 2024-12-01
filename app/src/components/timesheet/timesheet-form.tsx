@@ -735,7 +735,7 @@ export function TimesheetTable({ employee_id, notificationDate }: TimesheetProps
         {isSubmitting ? (
           <Button
             onClick={handleSubmitForApproval}
-            className="border-black"
+            className="border-black hover:opacity-95"
           >
             <Check className="mr-2 h-4 w-4" /> Submit for Approval
           </Button>

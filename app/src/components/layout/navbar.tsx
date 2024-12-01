@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Clock, Menu, User } from "lucide-react";
+import ThemeToggleButton from "../ui/theme-toggler";
+
+
 
 export function Navbar() {
   return (
-    <header className="w-full bg-gray-900 text-white shadow-md">
+    <header className="w-full bg-background text-foreground border-b border-border">
       <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo and Branding */}
         <div className="flex items-center gap-3">
@@ -15,6 +18,8 @@ export function Navbar() {
           </span>
         </div>
 
+        {/* just adding this for testing themes, you guys can find a more elegant place for it later*/}
+        <ThemeToggleButton />
     
 
         {/* Action Buttons */}

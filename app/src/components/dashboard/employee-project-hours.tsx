@@ -68,10 +68,10 @@ export function EmployeeProjectHours({
   const dailyData = generatePast14DaysData();
 
   return (
-    <Card className="bg-white/10 border-0">
+    <Card className="bg-background border-0 dark:shadow-gray-950">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-xl font-semibold text-gradient">
+          <CardTitle className="text-xl font-semibold">
             My Project Hours (Past 14 Days)
           </CardTitle>
           {/* Removed navigation buttons */}

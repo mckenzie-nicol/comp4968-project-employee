@@ -13,7 +13,7 @@
     --secondary-foreground: #FFFFFF;
     --destructive: 0 0% 0%;
     --destructive-foreground: 0 0% 100%;
-    --accent: #e8e8e8;
+    --accent: #f2f2f2;
     --accent-foreground: #1E202B;
     --border: 0 0% 90%;
     --input: 0 0% 90%;
@@ -85,6 +85,11 @@
   .bg-custom-blue {
     background-color: var(--custom-blue);
     color: white;
+  }
+
+  .shadow-gray-950 {
+    --tw-shadow-color: #0c0c0d;
+    --tw-shadow: var(--tw-shadow-colored);
   }
 
   body {

@@ -113,7 +113,7 @@ export function SignInForm({ setIsAuthenticated }: SignInProps) {
   };
 
   return (
-    <Card className="w-full max-w-md bg-background border-0">
+    <Card className="w-full max-w-md bg-background border-0 dark:shadow-gray-950">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">
           Sign in

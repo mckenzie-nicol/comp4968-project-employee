@@ -6,7 +6,7 @@ import ThemeToggleButton from "../ui/theme-toggler";
 
 export function Navbar() {
   return (
-    <header className="w-full bg-background text-foreground border-b border-border">
+    <header className="w-full bg-background text-foreground border-b border-border dark:border-none">
       <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo and Branding */}
         <div className="flex items-center gap-3">

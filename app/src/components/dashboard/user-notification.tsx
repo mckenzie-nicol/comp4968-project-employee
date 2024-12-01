@@ -121,7 +121,7 @@ function UserNotification({ navigateToTimesheets }: UserNotificationProps) {
   return (
     <>
       {notifications && notifications.length > 0 && (
-        <Alert className="w-full">
+        <Alert className="w-full dark:border-none">
           <AlertTitle className="font-bold">
             <div className="flex items-center gap-2">
               <Bell className="text-red-500" />
@@ -135,7 +135,7 @@ function UserNotification({ navigateToTimesheets }: UserNotificationProps) {
               }. `}
               {role === "worker" ? (
                 <span
-                  className="inline-flex cursor-pointer items-center gap-1 font-medium hover:underline"
+                  className="inline-flex cursor-pointer items-center gap-1 font-medium hover:underline text-green-500"
                   onClick={() => handleNotificationWorker()}
                 >
                   Check now

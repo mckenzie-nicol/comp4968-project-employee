@@ -626,16 +626,16 @@ export function TimesheetTable({ employee_id, notificationDate }: TimesheetProps
       <Table>
         <TableCaption>Weekly Timesheet</TableCaption>
         <TableHeader>
-          <TableRow className="bg-accent dark:border-none">
-            <TableHead>Project</TableHead>
+          <TableRow className="bg-secondary dark:bg-accent dark:border-none">
+            <TableHead className="font-bold">Project</TableHead>
             {days.map((day) => (
-              <TableHead key={day} className="text-center">
+              <TableHead key={day} className="text-center font-bold">
                 {day}
               </TableHead>
             ))}
-            <TableHead>Total Hours</TableHead>
-            <TableHead className="text-center">Status</TableHead>
-            <TableHead className="w-[50px]">Actions</TableHead>
+            <TableHead className="font-bold">Total Hours</TableHead>
+            <TableHead className="text-center font-bold">Status</TableHead>
+            <TableHead className="w-[50px] font-bold">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

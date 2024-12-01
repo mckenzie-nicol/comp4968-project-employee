@@ -80,4 +80,8 @@
     font-weight: 600;
     padding: 0.5rem;
   }
+
+  body {
+    @apply text-foreground bg-background;
+  }
 }

@@ -357,18 +357,16 @@ function ManagerApprovalLayout({
   console.log(timesheets);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 rounded-lg shadow-md p-6 bg-background">
       <div className="flex justify-between mb-4">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-gradient">
-            {projectDetails?.name ?? ""}
-          </h1>
+          <h1 className="text-2xl font-bold">{projectDetails?.name ?? ""}</h1>
           {projectDetails && (
-            <h3 className="text-gradient">{`Start Date: ${
+            <p className="text-md">{`Start Date: ${
               projectDetails.start_date ?? "N/A"
             }, End Date: ${
               projectDetails.end_date ?? "N/A"
-            }, Estimated Hours: ${projectDetails.estimated_hours} Hours`}</h3>
+            }, Estimated Hours: ${projectDetails.estimated_hours} Hours`}</p>
           )}
         </div>
 
@@ -401,10 +399,10 @@ function ManagerApprovalLayout({
       {/* Tabs */}
       <Tabs defaultValue="timesheets" className="w-full">
         <TabsList className="w-full">
-          <TabsTrigger value="timesheets" className="hover:bg-gray-50 w-1/2">
+          <TabsTrigger value="timesheets" className="hover:bg-accent w-1/2">
             Timesheets
           </TabsTrigger>
-          <TabsTrigger value="approval" className="hover:bg-gray-50 w-1/2">
+          <TabsTrigger value="approval" className="hover:bg-accent w-1/2">
             Approval
           </TabsTrigger>
         </TabsList>

@@ -134,11 +134,11 @@ export function DashboardPage({
 
     // Predefined colors for projects
     const colorPalette = [
-      "#FF5733",
-      "#33FF57",
-      "#3357FF",
-      "#F333FF",
-      "#FF33A1",
+      "var(--custom-red)",
+      "var(--custom-blue)",
+      "var(--custom-yellow)",
+      "var(--custom-green)",
+      "var(--custom-purple)",
     ];
     let colorIndex = 0;
 

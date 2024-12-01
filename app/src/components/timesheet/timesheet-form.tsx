@@ -357,6 +357,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const [timesheet, setTimesheet] = useState<TimesheetEntry[]>([]);
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [isEntryDisabled, setIsEntryDisabled] = useState<boolean>(false);
   const [selectedCell, setSelectedCell] = useState<{
     entryId: string | null;
     day: keyof DayHours | null;
@@ -413,7 +414,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
     setEndTime(timeRecord?.end_time || "");
     const isDisabled =
       entry?.status === "pending" || entry?.status === "approved";
-    setIsSubmitting(isDisabled); // Reuse isSubmitting state to disable inputs
+    setIsEntryDisabled(isDisabled);
   };
 
   const handleSaveTime = async () => {
@@ -752,7 +753,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                   setStartTime(e.target.value)
                 }
                 className="col-span-3"
-                disabled={isSubmitting}
+                disabled={isEntryDisabled}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -767,12 +768,12 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                   setEndTime(e.target.value)
                 }
                 className="col-span-3"
-                disabled={isSubmitting}
+                disabled={isEntryDisabled}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSaveTime} disabled={isSubmitting}>
+            <Button onClick={handleSaveTime} disabled={isEntryDisabled}>
               Save
             </Button>
           </DialogFooter>

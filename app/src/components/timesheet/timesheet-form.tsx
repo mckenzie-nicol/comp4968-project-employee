@@ -624,7 +624,7 @@ export function TimesheetTable({ employee_id, notificationDate }: TimesheetProps
       <Table>
         <TableCaption>Weekly Timesheet</TableCaption>
         <TableHeader>
-          <TableRow className="bg-gray-200">
+          <TableRow className="bg-accent dark:border-none">
             <TableHead>Project</TableHead>
             {days.map((day) => (
               <TableHead key={day} className="text-center">
@@ -638,7 +638,7 @@ export function TimesheetTable({ employee_id, notificationDate }: TimesheetProps
         </TableHeader>
         <TableBody>
           {timesheet.map((entry) => (
-            <TableRow key={entry.id} className="hover:bg-gray-100">
+            <TableRow key={entry.id} className=" hover:bg-secondaryBackground dark:border-input">
               <TableCell>{entry.project_name}</TableCell>
               {days.map((day) => (
                 <TableCell key={day}>
@@ -687,7 +687,7 @@ export function TimesheetTable({ employee_id, notificationDate }: TimesheetProps
             </TableRow>
           ))}
         </TableBody>
-        <TableFooter className=" border-gray-300">
+        <TableFooter className=" border-gray-300 dark:border-input dark:border-t-2">
           <TableRow>
             <TableCell>Daily Total</TableCell>
             {days.map((day) => (

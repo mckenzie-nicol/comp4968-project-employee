@@ -77,14 +77,10 @@ export function ApproveTimesheets() {
     <Card className="bg-white/10 border-0 min-h-screen">
       <CardHeader>
         <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/")}
-            className="bg-white/50"
-          >
+          <Button variant="outline" onClick={() => navigate("/")}>
             Back to Dashboard
           </Button>
-          <CardTitle className="text-3xl font-bold text-gradient">
+          <CardTitle className="text-3xl font-bold">
             Approve Timesheets
           </CardTitle>
         </div>
@@ -98,7 +94,7 @@ export function ApproveTimesheets() {
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a project" />
             </SelectTrigger>
-            <SelectContent className="bg-white">
+            <SelectContent className="bg-secondary">
               {projects.map((project) => (
                 <SelectItem key={project.id} value={project.id}>
                   {project.name}

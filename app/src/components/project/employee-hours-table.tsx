@@ -47,7 +47,7 @@ const addOrUpdateTimeRecord = async (timeRecord: TimeRecord): Promise<void> => {
     const response = await fetch(`${API_URL}/test/timesheet/timerecord`, {
       method: "POST",
       headers: {
-        "Authorization": accessToken,
+        Authorization: accessToken,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(timeRecord),
@@ -140,7 +140,7 @@ function EmployeeHoursTable({
     <>
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-accent dark:border-none">
             <TableHead>Name</TableHead>
             {days.map((day) => (
               <TableHead key={day} className="text-center">
@@ -152,7 +152,10 @@ function EmployeeHoursTable({
         </TableHeader>
         <TableBody>
           {timesheets.map((entry) => (
-            <TableRow key={entry.id}>
+            <TableRow
+              key={entry.id}
+              className="hover:bg-secondaryBackground dark:border-input"
+            >
               <TableCell>{`${entry.first_name} ${entry.last_name}`}</TableCell>
               {days.map((day) => (
                 <TableCell key={day}>
@@ -174,7 +177,7 @@ function EmployeeHoursTable({
             </TableRow>
           ))}
         </TableBody>
-        <TableFooter>
+        <TableFooter className="border-gray-300 dark:border-input dark:border-t-2">
           <TableRow>
             <TableCell>Total Hours</TableCell>
             {days.map((day) => (

@@ -121,7 +121,7 @@ function ApprovalTable({
     <>
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-accent dark:border-none">
             <TableHead>Name</TableHead>
             <TableHead className="text-center">Hours To Add</TableHead>
             <TableHead className="text-center">Tracked Hours</TableHead>
@@ -135,7 +135,10 @@ function ApprovalTable({
         </TableHeader>
         <TableBody>
           {timesheets.map((entry, index) => (
-            <TableRow key={entry.id}>
+            <TableRow
+              key={entry.id}
+              className="hover:bg-secondaryBackground dark:border-input"
+            >
               <TableCell>{`${entry.first_name} ${entry.last_name}`}</TableCell>
               <TableCell className="text-center">
                 {entry.status !== "approved"
@@ -192,9 +195,9 @@ function ApprovalTable({
               </TableCell>
               <TableCell>
                 {entry.status === "approved" ? (
-                  <CircleCheckBig className="mx-auto" />
+                  <CircleCheckBig className="mx-auto text-[color:--custom-green]" />
                 ) : (
-                  <ClockAlert className="mx-auto" />
+                  <ClockAlert className="mx-auto text-[color:--custom-yellow]" />
                 )}
               </TableCell>
               <TableCell className="text-center">
@@ -214,6 +217,7 @@ function ApprovalTable({
                     onClick={() => handleApproveClick(entry.id, entry.status)}
                     disabled={isChangingStatus}
                     size="icon"
+                    className="hover:bg-secondary"
                   >
                     {entry.status === "approved" ? (
                       <Undo className="h-4 w-4" />

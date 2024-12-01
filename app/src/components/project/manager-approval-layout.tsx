@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   startOfWeek,
@@ -286,6 +286,7 @@ function ManagerApprovalLayout({
   );
   const [refetch, setRefetch] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const notificationDateRef = useRef<Date | null>(notificationDate);
 
   /* Week selector functions and constants */
   const today = new Date();
@@ -315,8 +316,8 @@ function ManagerApprovalLayout({
   };
 
   useEffect(() => {
-    if (notificationDate) {
-      setCurrentWeekStart(notificationDate);
+    if (notificationDateRef.current) {
+      setCurrentWeekStart(notificationDateRef.current);
     }
   }, []);
 
@@ -324,12 +325,20 @@ function ManagerApprovalLayout({
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      const timesheetsData = await fetchTimesheetData(pid, currentWeekStart);
+      const timesheetsData = await fetchTimesheetData(
+        pid,
+        notificationDateRef.current ?? currentWeekStart
+      );
       const timesheetAndRecordsData = await fetchTimeRecordData(timesheetsData);
       const hoursData = await fetchTrackedHoursData(timesheetAndRecordsData);
       setTrackedHours(hoursData);
       setTimesheets(timesheetAndRecordsData.map(transformTimesheet));
       setTimeout(() => setIsLoading(false), 500);
+
+      if (notificationDateRef.current === currentWeekStart) {
+        notificationDateRef.current = null;
+        window.history.replaceState(null, "", "/approve-timesheets");
+      }
     };
 
     fetchData();

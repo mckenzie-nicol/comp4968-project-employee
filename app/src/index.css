@@ -4,19 +4,38 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
-    --primary: 0 0% 0%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 0%;
+    --background: #FFFFFF;
+    --foreground: #1E202B;
+    --secondary-background: #F2F2F2; 
+    --primary: #333646;
+    --primary-foreground: #FFFFFF;
+    --secondary: #DBDBDC;
+    --secondary-foreground: #FFFFFF;
     --destructive: 0 0% 0%;
     --destructive-foreground: 0 0% 100%;
-    --accent: 0 0% 0%;
-    --accent-foreground: 0 0% 100%;
+    --accent: #e8e8e8;
+    --accent-foreground: #1E202B;
     --border: 0 0% 90%;
     --input: 0 0% 90%;
     --ring: 0 0% 0%;
+    --logo: #725CFF;
+  }
+
+  .dark {
+    --background: #28292B;
+    --foreground: #FFFFFF;
+    --secondary-background:#19191B;
+    --primary: #725CFF;
+    --primary-foreground: #FFFFFF;
+    --secondary: #878787;
+    --secondary-foreground: #FFFFFF;
+    --destructive: 0 0% 100%;
+    --destructive-foreground: 0 0% 10%;
+    --accent: #4E4F51;
+    --accent-foreground: #FFFFFF;
+    --border: 0 0% 0%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 100%;
   }
 }
 
@@ -39,5 +58,26 @@
 
   .bg-gradient-custom {
     @apply bg-gradient-to-br from-black/5 via-gray-500/5 to-black/5;
+  }
+
+  .bg-custom-red {
+    background-color: #E9545b;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem;
+  }
+
+  .bg-custom-green {
+    background-color: #45B7AF;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem;
+  }
+
+  .bg-custom-yellow {
+    background-color: #F8CA00;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem;
   }
 }

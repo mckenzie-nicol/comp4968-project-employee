@@ -1,32 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { Clock, Menu, User } from "lucide-react";
+import ThemeToggleButton from "../ui/theme-toggler";
+
+
 
 export function Navbar() {
   return (
-    <header className="w-full bg-gray-900 text-white shadow-md">
+    <header className="w-full bg-background text-foreground border-b border-border">
       <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo and Branding */}
         <div className="flex items-center gap-3">
-          <Clock className="h-6 w-6 text-indigo-400" aria-label="Clock Icon" />
+          <Clock className="h-6 w-6 text-logo" aria-label="Clock Icon" />
           <span className="text-xl font-bold">
-            <span className="bg-gradient-to-r from-indigo-400 to-purple-500 text-transparent bg-clip-text">
+            <span className="bg-clip-text text-primary">
               TimeTrack
             </span>
           </span>
         </div>
 
+        {/* just adding this for testing themes, you guys can find a more elegant place for it later*/}
+        
     
 
         {/* Action Buttons */}
         <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            className="hidden md:flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white"
-          >
-            <User className="h-4 w-4" />
-            <span>Account</span>
-          </Button>
+          <ThemeToggleButton />
 
           {/* Mobile Menu Toggle */}
           <Button

@@ -333,7 +333,7 @@ function ManagerApprovalLayout({
       const hoursData = await fetchTrackedHoursData(timesheetAndRecordsData);
       setTrackedHours(hoursData);
       setTimesheets(timesheetAndRecordsData.map(transformTimesheet));
-      setTimeout(() => setIsLoading(false), 500);
+      setIsLoading(false);
 
       if (notificationDateRef.current === currentWeekStart) {
         notificationDateRef.current = null;
@@ -378,6 +378,7 @@ function ManagerApprovalLayout({
             variant="outline"
             size="icon"
             onClick={handlePreviousWeek}
+            disabled={isLoading}
             aria-label="Previous week"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -389,7 +390,7 @@ function ManagerApprovalLayout({
             variant="outline"
             size="icon"
             onClick={handleNextWeek}
-            disabled={!isCurrentWeek}
+            disabled={!isCurrentWeek || isLoading}
             aria-label="Next week"
           >
             <ChevronRight className="h-4 w-4" />

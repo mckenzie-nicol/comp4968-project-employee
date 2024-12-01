@@ -374,6 +374,12 @@ export function TimesheetTable({ employee_id, notificationDate }: TimesheetProps
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 });
 
   useEffect(() => {
+    if (notificationDate.current) {
+      setCurrentWeekStart(notificationDate.current);
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       const data = await fetchTimesheetData(employee_id, notificationDate.current ?? currentWeekStart);
       const projectData = await fetchProjectData(employee_id);
@@ -394,10 +400,6 @@ export function TimesheetTable({ employee_id, notificationDate }: TimesheetProps
         notificationDate.current = null;
       }
     };
-
-    if (notificationDate.current) {
-      setCurrentWeekStart(notificationDate.current);
-    }
 
     fetchData();
   }, [currentWeekStart, employee_id]);

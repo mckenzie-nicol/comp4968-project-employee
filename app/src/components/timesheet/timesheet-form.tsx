@@ -614,7 +614,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
       <Table>
         <TableCaption>Weekly Timesheet</TableCaption>
         <TableHeader>
-          <TableRow className="bg-gray-200">
+          <TableRow className="bg-accent">
             <TableHead>Project</TableHead>
             {days.map((day) => (
               <TableHead key={day} className="text-center">
@@ -628,7 +628,7 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
         </TableHeader>
         <TableBody>
           {timesheet.map((entry) => (
-            <TableRow key={entry.id} className="hover:bg-gray-100">
+            <TableRow key={entry.id} className=" hover:bg-secondaryBackground">
               <TableCell>{entry.project_name}</TableCell>
               {days.map((day) => (
                 <TableCell key={day}>

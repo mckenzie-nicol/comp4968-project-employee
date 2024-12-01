@@ -10,9 +10,9 @@ export function Navbar() {
       <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo and Branding */}
         <div className="flex items-center gap-3">
-          <Clock className="h-6 w-6" aria-label="Clock Icon" />
+          <Clock className="h-6 w-6 text-logo" aria-label="Clock Icon" />
           <span className="text-xl font-bold">
-            <span className="bg-clip-text">
+            <span className="bg-clip-text text-primary">
               TimeTrack
             </span>
           </span>
@@ -25,14 +25,6 @@ export function Navbar() {
         {/* Action Buttons */}
         <div className="flex items-center gap-4">
           <ThemeToggleButton />
-          {/* <Button
-            variant="outline"
-            size="sm"
-            className="hidden md:flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white"
-          >
-            <User className="h-4 w-4" />
-            <span>Account</span>
-          </Button> */}
 
           {/* Mobile Menu Toggle */}
           <Button

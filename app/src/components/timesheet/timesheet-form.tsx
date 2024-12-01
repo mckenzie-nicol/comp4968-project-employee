@@ -583,8 +583,9 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
   const isCurrentWeek = isBefore(currentWeekStart, addWeeks(currentWeek, 1));
 
   return (
-    <div className="space-y-4 border border-gray-200 rounded-lg shadow-md p-6">
-      <div className="flex justify-end mb-4">
+    <div className="space-y-4 rounded-lg shadow-md p-6 bg-background">
+      <div className="flex justify-between mb-4 items-baseline">
+        <h1 className="font-bold">Timesheet</h1>
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
@@ -646,11 +647,11 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
                     entry.status === "pending"
-                      ? "bg-yellow-100 text-yellow-800" // Pending
+                      ? "bg-custom-yellow" // Pending
                       : entry.status === "approved"
-                      ? "bg-green-100 text-green-800" // Approved
+                      ? "bg-custom-green" // Approved
                       : entry.status === "rejected"
-                      ? "bg-red-100 text-red-800" // Rejected
+                      ? "bg-custom-red" // Rejected
                       : "" // Fallback for unknown status
                   }`}
                 >
@@ -721,7 +722,6 @@ export function TimesheetTable({ employee_id }: TimesheetProps) {
         {isSubmitting ? (
           <Button
             onClick={handleSubmitForApproval}
-            variant="outline"
             className="border-black"
           >
             <Check className="mr-2 h-4 w-4" /> Submit for Approval

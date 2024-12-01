@@ -228,13 +228,13 @@ export function DashboardPage({
       <div className="pt-6 mb-80">
         <div className="flex items-center gap-4 mb-6">
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={() => setShowTimesheetForm(false)}
-            className="bg-white/50"
+            className="hover:bg-accent"
           >
             Back to Dashboard
           </Button>
-          <h1 className="text-3xl font-bold text-gradient">New Timesheet</h1>
+          {/* <h1 className="text-3xl font-bold text-foreground">New Timesheet</h1> */}
         </div>
         <TimesheetTable employee_id={userId} />
       </div>
@@ -245,7 +245,7 @@ export function DashboardPage({
     <div className="pt-6 space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold text-gradient">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
           {userRole === "worker" && (
             <Button
               className="bg-gradient-to-r from-grey-800 via-gray-800 to-black"

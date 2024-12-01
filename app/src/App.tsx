@@ -10,7 +10,7 @@ function App() {
   return (
     <ThemeProvider>
       <Router>
-        <div className="min-h-screen flex-grow flex-col">
+        <div className="min-h-screen flex-grow flex-col bg-secondaryBackground">
         {/* Navbar */}
         <Navbar />
   

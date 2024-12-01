@@ -13,7 +13,7 @@ function App() {
         <Navbar />
 
         {/* Main Content */}
-        <div className="flex-grow">
+        <div className="flex-grow container h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           <Routes>
             <Route path="/" element={<Home />} />
             {/* timesheet route */}

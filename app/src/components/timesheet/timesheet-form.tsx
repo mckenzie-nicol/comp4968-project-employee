@@ -388,6 +388,10 @@ export function TimesheetTable({ employee_id, notificationDate }: TimesheetProps
       } else {
         setIsSubmitting(false);
       }
+
+      if (notificationDate.current === currentWeekStart) {
+        notificationDate.current = null;
+      }
     };
 
     if (notificationDate.current) {
@@ -571,12 +575,10 @@ export function TimesheetTable({ employee_id, notificationDate }: TimesheetProps
   };
 
   const handlePreviousWeek = () => {
-    notificationDate.current = null;
     setCurrentWeekStart((prevWeekStart) => addWeeks(prevWeekStart, -1));
   };
 
   const handleNextWeek = () => {
-    notificationDate.current = null;
     const nextWeek = addWeeks(currentWeekStart, 1);
     if (isBefore(nextWeek, addWeeks(currentWeek, 1))) {
       setCurrentWeekStart(nextWeek);

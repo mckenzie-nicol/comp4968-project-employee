@@ -11,8 +11,8 @@
     --primary-foreground: #FFFFFF;
     --secondary: #DBDBDC;
     --secondary-foreground: #FFFFFF;
-    --destructive: 0 0% 0%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: #E9545b;
+    --destructive-foreground: #FFFFFF;
     --accent: #f2f2f2;
     --accent-foreground: #1E202B;
     --border: 0 0% 90%;
@@ -40,8 +40,8 @@
     --primary-foreground: #FFFFFF;
     --secondary: #878787;
     --secondary-foreground: #FFFFFF;
-    --destructive: 0 0% 100%;
-    --destructive-foreground: 0 0% 10%;
+    --destructive: #E9545b;
+    --destructive-foreground: #FFFFFF;
     --accent: #4E4F51;
     --accent-foreground: #FFFFFF;
     --border: 0 0% 0%;

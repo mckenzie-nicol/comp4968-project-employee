@@ -241,7 +241,7 @@ function Admin({ onSignOut }: AdminProps) {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Email..."
                       required
-                      className="backdrop-blur-sm bg-white/50 border-gray-200"
+                      className="backdrop-blur-sm"
                     />
                   </div>
                   <div className="flex-col space-y-3">
@@ -269,7 +269,7 @@ function Admin({ onSignOut }: AdminProps) {
                   <DialogFooter>
                     <Button
                       type="submit"
-                      className="bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity"
+                      className="bg-primary hover:opacity-90"
                       onClick={() => {}}
                     >
                       Add Member
@@ -280,6 +280,7 @@ function Admin({ onSignOut }: AdminProps) {
                           setEmail("");
                           setRole("");
                         }}
+                        className="bg-secondary hover:opacity-90"
                       >
                         Cancel
                       </Button>

@@ -75,12 +75,12 @@ const PersonList = ({ organizationId, title, employees, setEmployees }: PersonLi
 
   return (
     <>
-      <Card className="m-4 p-4">
+      <Card className="m-4 p-4 bg-background dark:border-none dark:shadow-gray-950">
         <h1 className="text-xl font-bold mb-4">{title}</h1>
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="dark:border-gray-600">
                 <TableHead>First Name</TableHead>
                 <TableHead>Last Name</TableHead>
                 <TableHead>Email</TableHead>
@@ -88,7 +88,7 @@ const PersonList = ({ organizationId, title, employees, setEmployees }: PersonLi
             </TableHeader>
             <TableBody>
               {employees.map((employee) => (
-                  <TableRow key={employee.id}>
+                  <TableRow key={employee.id} className="dark:border-gray-600">
                     <TableCell>{employee.first_name}</TableCell>
                     <TableCell>{employee.last_name}</TableCell>
                     <TableCell>{employee.email}</TableCell>

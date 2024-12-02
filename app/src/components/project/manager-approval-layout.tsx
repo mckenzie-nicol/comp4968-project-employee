@@ -31,9 +31,9 @@ const Loading = () => {
   return (
     <div className="flex justify-center items-center h-[500px]">
       <div className="space-y-2">
-        <Skeleton className="h-4 w-[250px]" />
-        <Skeleton className="h-4 w-[250px]" />
-        <Skeleton className="h-4 w-[250px]" />
+        <Skeleton className="h-4 w-[250px] bg-secondary" />
+        <Skeleton className="h-4 w-[250px] bg-secondary" />
+        <Skeleton className="h-4 w-[250px] bg-secondary" />
       </div>
     </div>
   );
@@ -362,7 +362,7 @@ function ManagerApprovalLayout({
         <div className="space-y-2">
           <h1 className="text-2xl font-bold">{projectDetails?.name ?? ""}</h1>
           {projectDetails && (
-            <p className="text-md">{`Start Date: ${
+            <p className="text-base">{`Start Date: ${
               projectDetails.start_date ?? "N/A"
             }, End Date: ${
               projectDetails.end_date ?? "N/A"

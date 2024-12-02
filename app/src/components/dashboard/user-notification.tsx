@@ -135,7 +135,7 @@ function UserNotification({ navigateToTimesheets }: UserNotificationProps) {
               }. `}
               {role === "worker" ? (
                 <span
-                  className="inline-flex cursor-pointer items-center gap-1 font-medium hover:underline text-green-500"
+                  className="inline-flex cursor-pointer items-center gap-1 font-black hover:underline"
                   onClick={() => handleNotificationWorker()}
                 >
                   Check now
@@ -144,7 +144,7 @@ function UserNotification({ navigateToTimesheets }: UserNotificationProps) {
               ) : (
                 <Link
                   to="/approve-timesheets"
-                  className="inline-flex items-center gap-1 font-medium hover:underline"
+                  className="inline-flex items-center gap-1 font-black hover:underline"
                   state={{
                     projectId: notifications[0].project_id,
                     notificationDate: utcToLocalPreserveTime(

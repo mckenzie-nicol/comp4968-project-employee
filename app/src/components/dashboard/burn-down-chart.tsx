@@ -29,9 +29,9 @@ interface BurnDownChartProps {
 export function BurnDownChart({ project }: BurnDownChartProps) {
   if (!project) {
     return (
-      <Card className="bg-white/10 border-4">
+      <Card className="bg-background dark:border-none dark:shadow-gray-950">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold text-gradient">
+          <CardTitle className="text-xl font-semibold">
             Project Burn Down
           </CardTitle>
         </CardHeader>
@@ -46,9 +46,9 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
 
   if (!project.end_date) {
     return (
-      <Card className="bg-white/10 border-4">
+      <Card className="bg-background dark:border-none dark:shadow-gray-950">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold text-gradient">
+          <CardTitle className="text-xl font-semibold">
             {project.name} - Burn Down
           </CardTitle>
         </CardHeader>
@@ -111,9 +111,9 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
   const data = generateChartData();
 
   return (
-    <Card className="bg-white/10 border-4">
+    <Card className="bg-background dark:border-none dark:shadow-gray-950">
       <CardHeader>
-        <CardTitle className="text-xl font-semibold text-gradient">
+        <CardTitle className="text-xl font-semibold">
           {project.name} - Burn Down
         </CardTitle>
       </CardHeader>
@@ -145,21 +145,21 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  backgroundColor: "rgba(255, 255, 255, 0.5)",
                   border: "1px solid #ccc",
                 }}
               />
               <Line
                 type="monotone"
                 dataKey="estimatedCumulative"
-                stroke="#0000FF"
+                stroke="var(--line-estimated)"
                 strokeWidth={2}
                 name="Estimated Hours"
               />
               <Line
                 type="monotone"
                 dataKey="approvedCumulative"
-                stroke="#FF0000"
+                stroke="var(--line-approved)"
                 strokeWidth={2}
                 name="Approved Hours"
               />
@@ -168,7 +168,7 @@ export function BurnDownChart({ project }: BurnDownChartProps) {
         </div>
 
         <div className="mt-6">
-          <h4 className="font-semibold text-sm mb-2 text-gray-600">
+          <h4 className="font-semibold text-sm mb-2 ">
             Project Metrics:
           </h4>
           <div className="grid grid-cols-2 gap-4 text-sm">

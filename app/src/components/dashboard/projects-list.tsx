@@ -94,9 +94,9 @@ export function ProjectsList({
   }, []);
 
   return (
-    <Card className="bg-white/10 border-4">
+    <Card className="bg-background dark:border-none dark:shadow-gray-950">
       <CardHeader>
-        <CardTitle className="text-xl font-semibold text-gradient">
+        <CardTitle className="text-xl font-semibold">
           Active Projects
         </CardTitle>
       </CardHeader>
@@ -107,40 +107,40 @@ export function ProjectsList({
               key={project.id}
               className={`flex items-center justify-between p-4 rounded-lg transition-colors cursor-pointer ${
                 selectedProjectId === project.id
-                  ? "bg-black/10 hover:bg-black/15"
-                  : "bg-white/5 hover:bg-white/10"
+                  ? "bg-accent hover:opacity-90"
+                  : "hover:bg-accent"
               }`}
               onClick={() => onProjectSelect(project)}
             >
               <div>
                 <h3
                   className={`font-medium ${
-                    project.overEstimated ? "text-gray-800" : "text-gray-800"
+                    project.overEstimated ? "" : ""  // ??? what is this for
                   }`}
                 >
                   {project.name}
                 </h3>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-600 dark:text-secondary">
                     Estimated Hours: {project.estimated_hours}
                   </span>
-                  <span className="text-sm text-gray-400">•</span>
+                  <span className="text-sm text-gray-600 dark:text-secondary">•</span>
                   <span
                     className={`text-sm ${
-                      project.overEstimated ? "text-gray-800" : "text-gray-500"
+                      project.overEstimated ? "text-gray-800 dark:text-secondary" : "text-gray-600 dark:text-secondary"
                     }`}
                   >
                     Approved Hours: {project.approved_hours}
                   </span>
-                  <span className="text-sm text-gray-400">•</span>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-600 dark:text-secondary">•</span>
+                  <span className="text-sm text-gray-600 dark:text-secondary">
                     Start Date:{" "}
                     {new Date(project.start_date).toLocaleDateString()}
                   </span>
                   {project.end_date && (
                     <>
-                      <span className="text-sm text-gray-400">•</span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-600 dark:text-secondary">•</span>
+                      <span className="text-sm text-gray-600 dark:text-secondary">
                         End Date:{" "}
                         {new Date(project.end_date).toLocaleDateString()}
                       </span>
@@ -148,7 +148,7 @@ export function ProjectsList({
                   )}
                 </div>
                 <div className="flex items-center gap-4 mt-2">
-                  <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-32 h-2 progress-timeline rounded-full overflow-hidden">
                     <div
                       className="h-full"
                       style={{
@@ -161,7 +161,7 @@ export function ProjectsList({
                   </div>
                   <span
                     className={`text-sm font-medium ${
-                      project.overEstimated ? "text-red-600" : "text-gray-600"
+                      project.overEstimated ? "text-red-600" : "text-600 dark:text-secondary"
                     }`}
                   >
                     {project.progress}%
@@ -178,7 +178,7 @@ export function ProjectsList({
         </div>
         <div className="mt-8">
           <CardHeader>
-            <CardTitle className="text-xl font-semibold text-gradient">
+            <CardTitle className="text-xl font-semibold">
               Estimated Hours Distribution:
             </CardTitle>
           </CardHeader>

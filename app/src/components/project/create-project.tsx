@@ -184,7 +184,7 @@ export default function CreateProject() {
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger>
-          <Button>Create Project</Button>
+          <Button className="hover:opacity-90">Create Project</Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>

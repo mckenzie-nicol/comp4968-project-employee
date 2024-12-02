@@ -267,14 +267,14 @@ export function DashboardPage({
               <Button
                 variant={activeView === 'overview' ? 'default' : 'outline'}
                 onClick={() => setActiveView('overview')}
-                className={activeView === 'overview' ? 'bg-black' : 'bg-white/50'}
+                className={activeView === 'overview' ? 'bg-secondary' : 'bg-secondaryBackground'}
               >
                 Overview
               </Button>
               <Button
                 variant={activeView === 'reports' ? 'default' : 'outline'}
                 onClick={() => setActiveView('reports')}
-                className={activeView === 'reports' ? 'bg-black' : 'bg-white/50'}
+                className={activeView === 'reports' ? 'bg-secondary' : 'bg-secondaryBackground'}
               >
                 Reports
               </Button>
@@ -282,14 +282,14 @@ export function DashboardPage({
               <Button
                 variant={activeView === 'allocation' ? 'default' : 'outline'}
                 onClick={() => setActiveView('allocation')}
-                className={activeView === 'allocation' ? 'bg-black' : 'bg-white/50'}
+                className={activeView === 'allocation' ? 'bg-secondary' : 'bg-secondaryBackground'}
               >
                 Project Allocation
               </Button>
               <CreateProject />
               <Button
                 onClick={() => window.location.href = "/approve-timesheets"}
-                className="flex items-center gap-2 bg-black px-4 py-2 rounded-md hover:bg-gray-200 transition"
+                className="flex items-center gap-2 bg-custom-green hover:opacity-90"
               >
                 Approve Timesheets
               </Button>

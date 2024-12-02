@@ -101,15 +101,15 @@ export function RecentTimesheets() {
   const bellIconStyle = hasNotifications ? "text-red-500" : "text-gray-500";
 
   return (
-    <Card className="bg-white/10 border-4">
+    <Card className="bg-background dark:border-none dark:shadow-gray-950">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-xl font-semibold text-gradient">
+          <CardTitle className="text-xl font-semibold">
             Recent Timesheets
           </CardTitle>
           <Button
             onClick={handleApproveClick}
-            className="flex items-center gap-2 bg-black px-4 py-2 rounded-md hover:bg-gray-200 transition"
+            className="flex items-center gap-2 bg-primary px-4 py-2 rounded-md hover:opacity-90"
           >
             <Bell className={`h-6 w-6 ${bellIconStyle}`} />
             <span>Approve Timesheets</span>
@@ -124,33 +124,37 @@ export function RecentTimesheets() {
             {timesheets.map((timesheet) => (
               <div
                 key={timesheet.id}
-                className="flex flex-col p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-gray-300 shadow-sm"
+                className="flex flex-col p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-gray-300 shadow-sm dark:border-none"
               >
                 <div className="flex justify-between items-center">
-                  <h3 className="font-medium text-gray-800">{timesheet.projects[0]}</h3>
+                  <h3 className="font-medium ">{timesheet.projects[0]}</h3>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      timesheet.status === "Approved"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-200 text-gray-800"
+                      timesheet.status === "approved"
+                        ? "bg-custom-green p-2 font-semibold"
+                        : timesheet.status === "rejected"
+                        ? "bg-custom-red p-2 font-semibold"
+                        : timesheet.status === "pending"
+                        ? "bg-custom-yellow p-2 font-semibold"
+                        : ""
                     }`}
                   >
-                    {timesheet.status}
+                    {timesheet.status.charAt(0).toUpperCase() + timesheet.status.slice(1)}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {timesheet.projects.map((project) => (
                     <span
                       key={project}
-                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary text-gray-800"
                     >
                       {timesheet.date}
                     </span>
                   ))}
                 </div>
-                <p className="text-sm text-gray-500 mt-1">Employee: {timesheet.employeeName}</p>
+                <p className="text-sm dark:text-secondary mt-1">Employee: {timesheet.employeeName}</p>
                 <div className="flex justify-between items-center mt-2">
-                  <span className="text-sm font-medium text-gray-600">
+                  <span className="text-sm font-medium dark:text-secondary">
                     {timesheet.hours} hours
                   </span>
                 </div>

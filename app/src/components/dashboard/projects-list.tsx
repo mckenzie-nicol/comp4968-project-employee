@@ -155,14 +155,14 @@ export function ProjectsList({
                   )}
                 </div>
                 <div className="flex items-center gap-4 mt-2">
-                  <div className="w-32 h-2 progress-timeline rounded-full overflow-hidden">
+                  <div className="w-32 h-2 bg-gray-200 dark:bg-secondaryBackground rounded-full overflow-hidden">
                     <div
                       className="h-full"
                       style={{
                         width: `${Math.min(project.progress, 100)}%`,
                         backgroundColor: project.overEstimated
                           ? "#DC2626"
-                          : "#2D3748",
+                          : "var(--progress)",
                       }}
                     />
                   </div>

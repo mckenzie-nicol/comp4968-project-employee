@@ -186,7 +186,7 @@ export default function CreateProject() {
         <DialogTrigger>
           <Button className="hover:opacity-90">Create Project</Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="dark:border-gray-700">
           <DialogHeader>
             <DialogTitle className="mb-4">Creating a project...</DialogTitle>
             <DialogDescription className="mx-4">
@@ -203,7 +203,7 @@ export default function CreateProject() {
                     }
                     placeholder="Project name..."
                     required
-                    className="backdrop-blur-sm bg-white/50 border-gray-200"
+                    className="backdrop-blur-sm"
                   />
                 </div>
                 <div className="flex-col">
@@ -217,7 +217,7 @@ export default function CreateProject() {
                     }
                     placeholder="0"
                     required
-                    className="backdrop-blur-sm bg-white/50 border-gray-200"
+                    className="backdrop-blur-sm"
                   />
                 </div>
               </div>

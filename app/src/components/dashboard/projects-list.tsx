@@ -122,7 +122,7 @@ export function ProjectsList({
               <div>
                 <h3
                   className={`font-medium ${
-                    project.overEstimated ? "text-red-600" : "text-gray-800"
+                    project.overEstimated ? "text-red-600" : ""
                   }`}
                 >
                   {project.name}

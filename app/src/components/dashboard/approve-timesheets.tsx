@@ -74,10 +74,10 @@ export function ApproveTimesheets() {
   }, []);
 
   return (
-    <Card className="bg-white/10 border-0 min-h-screen">
+    <Card className="border-0 min-h-screen">
       <CardHeader>
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="outline" onClick={() => navigate("/")}>
+          <Button className="bg-background" variant="outline" onClick={() => navigate("/")}>
             Back to Dashboard
           </Button>
           <CardTitle className="text-3xl font-bold">
@@ -91,7 +91,7 @@ export function ApproveTimesheets() {
             value={selectedProject || ""}
             onValueChange={setSelectedProject}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full dark:bg-secondary">
               <SelectValue placeholder="Select a project" />
             </SelectTrigger>
             <SelectContent className="bg-secondary">

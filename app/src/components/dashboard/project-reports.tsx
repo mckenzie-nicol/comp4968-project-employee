@@ -81,7 +81,7 @@ export function ProjectReports() {
   }, []);
 
   const getCompletionColor = (actual: number, estimated: number) => {
-    return actual > estimated ? '#ef4444' : '#000000';
+    return actual > estimated ? '#ef4444' : '#45B7AF';
   };
 
   const getProgressBarColor = (actual: number, estimated: number) => {
@@ -91,9 +91,9 @@ export function ProjectReports() {
   };
 
   return (
-    <Card className="bg-white/10 border-0 min-w-screen flex flex-col h-full ">
+    <Card className="bg-background border-0 min-w-screen flex flex-col h-full dark:shadow-gray-950">
       <CardHeader>
-        <CardTitle className="text-xl font-semibold text-gradient">
+        <CardTitle className="text-xl font-semibold">
           Project Hours Overview
         </CardTitle>
       </CardHeader>
@@ -130,7 +130,7 @@ export function ProjectReports() {
               <Bar 
                 dataKey="estimatedHours" 
                 name="Estimated Hours"
-                fill="#000000" 
+                fill="var(--custom-blue)" 
                 opacity={0.8}
               />
               <Bar 
@@ -148,7 +148,7 @@ export function ProjectReports() {
               <Bar 
                 dataKey="remainingHours" 
                 name="Remaining Hours"
-                fill="#cccccc"
+                fill="var(--custom-yellow)"
                 opacity={0.8}
               />
             </BarChart>

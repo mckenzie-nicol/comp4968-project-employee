@@ -160,43 +160,43 @@ export function ProjectAllocation() {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-4xl font-bold mb-10 text-center text-gray-800">
+      <h1 className="text-4xl font-bold mb-10 text-center">
         Project Allocations
       </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {projects.map((project) => (
           <Card
             key={project.id}
-            className="bg-white shadow-lg rounded-lg overflow-hidden transform hover:-translate-y-1 hover:shadow-2xl transition duration-300"
+            className="bg-background shadow-lg rounded-lg overflow-hidden transform hover:-translate-y-1 hover:shadow-2xl transition duration-300 dark:border-none dark:shadow-gray-950"
           >
-            <CardHeader className="bg-slate-700 text-white p-6">
+            <CardHeader className="bg-primary text-white p-6">
               <CardTitle className="text-2xl font-bold">
                 {project.name}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
-                <div className="flex items-center text-gray-700">
+                <div className="flex items-center">
                   <CalendarIcon className="h-6 w-6 mr-2 text-blue-500" />
                   <span>
                     <strong>Start Date:</strong>{" "}
                     {formatDate(project.start_date || "")}
                   </span>
                 </div>
-                <div className="flex items-center text-gray-700">
+                <div className="flex items-center">
                   <CalendarIcon className="h-6 w-6 mr-2 text-purple-500" />
                   <span>
                     <strong>End Date:</strong>{" "}
                     {formatDate(project.end_date || "")}
                   </span>
                 </div>
-                <div className="flex items-center text-gray-700">
+                <div className="flex items-center ">
                   <span className="font-medium">Estimated Hours:</span>
                   <span className="ml-2">
                     {project.estimated_hours || "N/A"}
                   </span>
                 </div>
-                <div className="flex items-center text-gray-700">
+                <div className="flex items-center ">
                   <span className="font-medium">Approved Hours:</span>
                   <span className="ml-2">{project.approved_hours || 0}</span>
                 </div>
@@ -207,7 +207,7 @@ export function ProjectAllocation() {
                       {project.workers.map((worker) => (
                         <li key={worker.id} className="flex items-center">
                           <UsersIcon className="h-6 w-6 mr-2 text-green-500" />
-                          <span className="text-gray-800">
+                          <span className="">
                             {worker.first_name} {worker.last_name} (
                             {worker.email})
                           </span>

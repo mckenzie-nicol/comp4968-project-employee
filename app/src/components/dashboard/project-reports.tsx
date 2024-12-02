@@ -81,13 +81,13 @@ export function ProjectReports() {
   }, []);
 
   const getCompletionColor = (actual: number, estimated: number) => {
-    return actual > estimated ? '#ef4444' : '#45B7AF';
+    return actual > estimated ? '#ef4444' : 'var(--custom-purple)';
   };
 
   const getProgressBarColor = (actual: number, estimated: number) => {
     return actual > estimated 
       ? 'bg-gradient-to-r from-red-600 to-red-800'
-      : 'bg-gradient-to-r from-black to-gray-800';
+      : 'progress-bar';
   };
 
   return (
@@ -122,7 +122,7 @@ export function ProjectReports() {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.5)',
                   border: '1px solid #ccc'
                 }}
               />
@@ -167,27 +167,27 @@ export function ProjectReports() {
               >
                 <div className="flex justify-between items-center">
                   <h3 className="font-medium">{report.projectName}</h3>
-                  <span className={`text-sm ${isOverallocated ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
+                  <span className={`text-sm ${isOverallocated ? 'text-red-500 font-semibold' : ''}`}>
                     {Math.round(completion)}% of Hour Budget
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
-                    <div className="text-gray-500">Estimated</div>
+                    <div className="text-gray-500 dark:text-secondary">Estimated</div>
                     <div className="font-medium">{report.estimatedHours}h</div>
                   </div>
                   <div>
-                    <div className="text-gray-500">Actual</div>
+                    <div className="text-gray-500 dark:text-secondary">Actual</div>
                     <div className={`font-medium ${isOverallocated ? 'text-red-500' : ''}`}>
                       {report.actualHours}h
                     </div>
                   </div>
                   <div>
-                    <div className="text-gray-500">Remaining</div>
+                    <div className="text-gray-500 dark:text-secondary">Remaining</div>
                     <div className="font-medium">{report.remainingHours}h</div>
                   </div>
                 </div>
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-gray-200 dark:bg-secondaryBackground rounded-full overflow-hidden">
                   <div
                     className={`h-full ${getProgressBarColor(report.actualHours, report.estimatedHours)}`}
                     style={{ 

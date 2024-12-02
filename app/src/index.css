@@ -22,6 +22,7 @@
     --progress: #F8CA00;
     --line-approved:#45B7AF;
     --line-estimated:#F8CA00;
+    --progress-bar: #A48AD5;
 
     /* for project color */
     --custom-red: #E9545b;
@@ -49,6 +50,7 @@
     --progress: #E7f54a;
     --line-approved:#725CFF;
     --line-estimated:#E7f54a;
+    --progress-bar: #725CFF;
   }
 }
 
@@ -100,6 +102,10 @@
 
   .progress-timeline {
     background-color: var(--progress);
+  }
+
+  .progress-bar {
+    background-color: var(--progress-bar);
   }
 
   body {

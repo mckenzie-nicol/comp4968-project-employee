@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Clock, Menu, User } from "lucide-react";
+import { Clock, Menu } from "lucide-react";
 import ThemeToggleButton from "../ui/theme-toggler";
 
 

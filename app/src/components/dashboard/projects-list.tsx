@@ -134,7 +134,7 @@ export function ProjectsList({
                   <span className="text-sm text-gray-600 dark:text-secondary">•</span>
                   <span
                     className={`text-sm ${
-                      project.overEstimated ? "text-red-600" : "text-gray-500"
+                      project.overEstimated ? "text-red-600" : "text-gray-500 dark:text-secondary"
                     }`}
                   >
                     Approved Hours: {project.approved_hours}

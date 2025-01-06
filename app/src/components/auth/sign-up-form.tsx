@@ -10,96 +10,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FaArrowLeft } from "react-icons/fa";
-
-const handleRegisterUser = async (
-  email: string,
-  password: string,
-  name: string
-) => {
-  if (!email || !password || !name) {
-    return {
-      error: "Error, missing requirements. Must have email, password and name.",
-    };
-  }
-  const body = {
-    body: {
-      email: email,
-      password: password,
-      name: name,
-    },
-  };
-  const response = await fetch(
-    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/auth/register`,
-    {
-      method: "POST",
-      body: JSON.stringify(body),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-  try {
-    const data = await response.json();
-    if (response.ok) {
-      window.alert(
-        "User signed up! Check your email for verification before signing in."
-      );
-      console.log("Sign Up successful:", data);
-      return { success: true, data };
-    } else {
-      console.error("Sign Up failed:", data);
-      return { success: false, error: data.message || "Failed to sign in." };
-    }
-  } catch (error) {
-    console.error("Error during sign-up:", error);
-    return { success: false, error: "An error occurred. Please try again." };
-  }
-};
-
-const handleOrganizationSubmit = async (
-  organizationName: string,
-  email: string,
-  password: string,
-  name: string
-) => {
-  if (!organizationName || !email || !password || !name) {
-    return {
-      error: "Error, missing required fields.",
-    };
-  }
-  const body = {
-    body: {
-      organizationName: organizationName,
-      email: email,
-      password: password,
-      name: name,
-    },
-  };
-  const response = await fetch(
-    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/auth/register`,
-    {
-      method: "POST",
-      body: JSON.stringify(body),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-  try {
-    const data = await response.json();
-    if (response.ok) {
-      window.alert("Organization and user signed up! Check your email for verification before signing in.")
-      console.log("Sign Up successful:", data);
-      return { success: true, data };
-    } else {
-      console.error("Sign Up failed:", data);
-      return { success: false, error: data.message || "Failed to sign in." };
-    }
-  } catch (error) {
-    console.error("Error during sign-up:", error);
-    return { success: false, error: "An error occurred. Please try again." };
-  }
-};
+import { mockUsers } from "@/mockData/users";
+// If you want localStorage, import:
+// import { getLocalUsers, setLocalUsers } from "@/utils/localStorageUtils";
 
 interface SignUpProps {
   setHidden: (hidden: boolean) => void;
@@ -117,128 +30,175 @@ export function SignUpForm({ setHidden }: SignUpProps) {
     useState<string>("");
   const [error, setError] = useState<string>("");
 
-  const handleCheckAvailability = async (organizationName: string) => {
-    const response = await fetch(`${organizationName}`);
-    const result = await response.json();
-    setCheckAvailabilityResponse(result);
+  // If you'd like to "check" org names, you can do so here. This is a mock.
+  const handleCheckAvailability = (orgName: string) => {
+    // Mock logic: always available
+    setCheckAvailabilityResponse(`"${orgName}" is available.`);
   };
 
-  const onOrganizationSubmit = async (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault(); // Prevent default form submission behavior
-    const result = await handleOrganizationSubmit(
-      organizationName,
+  function handleRegisterUser(
+    email: string,
+    password: string,
+    name: string,
+    role: "admin" | "worker" | "project_manager",
+    orgId?: string
+  ) {
+    // If localStorage:
+    // let storedUsers = getLocalUsers();
+    const storedUsers = mockUsers; // in-memory
+
+    if (storedUsers.some((u) => u.email === email)) {
+      return {
+        success: false,
+        error: "A user with that email already exists.",
+      };
+    }
+
+    const newUser = {
       email,
       password,
-      `${firstName} ${lastName}`
+      name,
+      role,
+      organizationId: orgId,
+    };
+    storedUsers.push(newUser);
+
+    // If localStorage:
+    // setLocalUsers(storedUsers);
+
+    return { success: true, data: newUser };
+  }
+
+  const onOrganizationSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    // We'll mock creation of a new org with ID "org-2"
+    const result = handleRegisterUser(
+      email,
+      password,
+      `${firstName} ${lastName}`,
+      "admin",
+      "org-2"
     );
 
     if (result.success) {
-      setError(""); // Clear error on success
+      setError("");
+      alert(
+        "Organization and user signed up! (Mock). Check your 'email' for verification."
+      );
       setHidden(true);
     } else {
-      setError(result.error); // Show error message
+      setError(result.error || "");
     }
   };
 
-  const onUserSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); // Prevent default form submission behavior
-    const result = await handleRegisterUser(
+  const onUserSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    // We'll sign them up as a "worker" with no org or a default.
+    const result = handleRegisterUser(
       email,
       password,
-      `${firstName} ${lastName}`
+      `${firstName} ${lastName}`,
+      "worker"
     );
 
     if (result.success) {
-      setError(""); // Clear error on success
+      setError("");
+      alert("User signed up! (Mock). Check your 'email' for verification.");
       setHidden(true);
     } else {
-      setError(result.error); // Show error message
+      setError(result.error || "");
     }
   };
 
   return (
-    <>
-      <Card className="w-full max-w-md bg-white/10 border-0">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-gradient">
-            Create an account
-          </CardTitle>
-          <CardDescription className="text-gray-500">
-            Are you signing up as an Organization? Or as an Employee?
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-center space-x-6 mb-4">
-            <Button
-              className={`${isOrganization ? "bg-slate-800" : "bg-slate-400"}`}
-              onClick={() => setIsOrganization(true)}
-            >
-              Organization
-            </Button>
-            <Button
-              className={`${isOrganization ? "bg-slate-400" : "bg-slate-800"}`}
-              onClick={() => {
-                setIsOrganization(false);
-                setIsSettingAdmin(false);
-              }}
-            >
-              Employee
-            </Button>
-          </div>
+    <Card className="w-full max-w-md bg-white/10 border-0">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl font-bold text-gradient">
+          Create an account
+        </CardTitle>
+        <CardDescription className="text-gray-500">
+          Are you signing up as an Organization? Or as an Employee?
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-center space-x-6 mb-4">
+          <Button
+            className={`${isOrganization ? "bg-slate-800" : "bg-slate-400"}`}
+            onClick={() => setIsOrganization(true)}
+          >
+            Organization
+          </Button>
+          <Button
+            className={`${isOrganization ? "bg-slate-400" : "bg-slate-800"}`}
+            onClick={() => {
+              setIsOrganization(false);
+              setIsSettingAdmin(false);
+            }}
+          >
+            Employee
+          </Button>
+        </div>
+
+        {/* ORGANIZATION FORM */}
+        {isOrganization && (
           <form onSubmit={onOrganizationSubmit}>
-            {isOrganization && !isSettingAdmin && (
-              <div className="">
+            {!isSettingAdmin && (
+              <>
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-gray-700">
+                  <Label htmlFor="organizationName" className="text-gray-700">
                     Organization Name
                   </Label>
                   <Input
                     id="organizationName"
-                    placeholder="Company Name..."
+                    placeholder="ABC Corp..."
                     value={organizationName}
                     onChange={(e) => setOrganizationName(e.target.value)}
                     required
                     className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
                   />
-                  <div className="space-y-6">
-                    <div className="flex justify-between">
-                      <Button
-                        onClick={() =>
-                          handleCheckAvailability(organizationName)
-                        }
-                      >
-                        Check Availability
-                      </Button>
-                      <div id="availabilityResponse">
-                        {checkAvailabilityResponse}
-                      </div>
-                    </div>
-                    <div className="flex justify-center">
-                      <Button onClick={() => setIsSettingAdmin(true)}>
-                        Continue
-                      </Button>
+                </div>
+                <div className="space-y-6 mt-4">
+                  <div className="flex justify-between">
+                    <Button
+                      type="button"
+                      onClick={() => handleCheckAvailability(organizationName)}
+                    >
+                      Check Availability
+                    </Button>
+                    <div id="availabilityResponse">
+                      {checkAvailabilityResponse}
                     </div>
                   </div>
+                  <div className="flex justify-center">
+                    <Button
+                      type="button"
+                      onClick={() => setIsSettingAdmin(true)}
+                    >
+                      Continue
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
-            {isOrganization && isSettingAdmin && (
+
+            {isSettingAdmin && (
               <>
                 <div className="space-y-2">
                   <Button
+                    type="button"
                     className="bg-slate-800"
                     onClick={() => setIsSettingAdmin(false)}
                   >
-                    <FaArrowLeft></FaArrowLeft>
+                    <FaArrowLeft />
                     Back
                   </Button>
                   <CardDescription className="mb-2">
                     This account will serve as the{" "}
-                    <strong>sole admin/owner</strong>, responsible for managing
-                    employee access, roles, and permissions within the company.
+                    <strong>sole admin/owner</strong>.
                   </CardDescription>
+
                   <Label htmlFor="firstName" className="text-gray-700">
                     Organization Owner First Name
                   </Label>
@@ -262,7 +222,7 @@ export function SignUpForm({ setHidden }: SignUpProps) {
                     className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 mt-4">
                   <Label htmlFor="email" className="text-gray-700">
                     Organization Owner Email
                   </Label>
@@ -276,7 +236,7 @@ export function SignUpForm({ setHidden }: SignUpProps) {
                     className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 mt-4">
                   <Label htmlFor="password" className="text-gray-700">
                     Password
                   </Label>
@@ -290,6 +250,7 @@ export function SignUpForm({ setHidden }: SignUpProps) {
                     className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
                   />
                 </div>
+                {error && <div className="text-red-500 text-sm">{error}</div>}
                 <Button
                   type="submit"
                   className="bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity mt-4"
@@ -299,75 +260,75 @@ export function SignUpForm({ setHidden }: SignUpProps) {
               </>
             )}
           </form>
+        )}
+
+        {/* EMPLOYEE FORM */}
+        {!isOrganization && (
           <form onSubmit={onUserSubmit}>
-            {!isOrganization && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-gray-700">
-                    First Name
-                  </Label>
-                  <Input
-                    id="firstName"
-                    placeholder="Employee Name..."
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                    className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-gray-700">
-                    Last Name
-                  </Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Employee Name..."
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                    className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-700">
-                    Employee Email
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="owner@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-700">
-                    Password
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity mt-4"
-                >
-                  Create account
-                </Button>
-              </>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="firstName" className="text-gray-700">
+                First Name
+              </Label>
+              <Input
+                id="firstName"
+                placeholder="Employee First Name..."
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
+              />
+            </div>
+            <div className="space-y-2 mt-4">
+              <Label htmlFor="lastName" className="text-gray-700">
+                Last Name
+              </Label>
+              <Input
+                id="lastName"
+                placeholder="Employee Last Name..."
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
+              />
+            </div>
+            <div className="space-y-2 mt-4">
+              <Label htmlFor="email" className="text-gray-700">
+                Employee Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="employee@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
+              />
+            </div>
+            <div className="space-y-2 mt-4">
+              <Label htmlFor="password" className="text-gray-700">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="backdrop-blur-sm bg-white/50 border-gray-200 focus:border-black focus:ring-black"
+              />
+            </div>
+            {error && <div className="text-red-500 text-sm">{error}</div>}
+            <Button
+              type="submit"
+              className="bg-gradient-to-r from-black via-gray-800 to-black hover:opacity-90 transition-opacity mt-4"
+            >
+              Create account
+            </Button>
           </form>
-          {error && <div>{error}</div>}
-        </CardContent>
-      </Card>
-    </>
+        )}
+      </CardContent>
+    </Card>
   );
 }

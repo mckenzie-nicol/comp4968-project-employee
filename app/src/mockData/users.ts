@@ -1,4 +1,5 @@
 // src/mockData/users.ts
+
 export interface User {
   email: string;
   password: string;
@@ -10,58 +11,58 @@ export interface User {
 // Example mock data for demonstration
 export const mockUsers: User[] = [
   {
-    email: "ksulli@example.ca",
+    email: "alice@company.com",
     password: "Password123@",
-    name: "Kate",
+    name: "Alice",
     role: "admin",
     organizationId: "org-1",
   },
   {
-    email: "rhedi@example.ca",
+    email: "bob@company.com",
     password: "Password123@",
-    name: "Reza",
+    name: "Bob",
     role: "project_manager",
     organizationId: "org-1",
   },
   {
-    email: "isuzuuu@example.ca",
-    password: "Password123@",
-    name: "Grace",
-    role: "project_manager",
-    organizationId: "org-1",
-  },
-  {
-    email: "mnico@example.ca",
-    password: "Password123@",
-    name: "Mckenzie",
-    role: "worker",
-    organizationId: "org-1",
-  },
-  {
-    email: "czha@example.ca",
+    email: "charlie@company.com",
     password: "Password123@",
     name: "Charlie",
+    role: "project_manager",
+    organizationId: "org-1",
+  },
+  {
+    email: "devon@company.com",
+    password: "Password123@",
+    name: "Devon",
     role: "worker",
     organizationId: "org-1",
   },
   {
-    email: "ccha@example.ca",
+    email: "emily@company.com",
     password: "Password123@",
-    name: "Colin",
+    name: "Emily",
     role: "worker",
     organizationId: "org-1",
   },
   {
-    email: "jcur@example.ca",
+    email: "frank@company.com",
     password: "Password123@",
-    name: "Jake",
+    name: "Frank",
     role: "worker",
     organizationId: "org-1",
   },
   {
-    email: "mhoooo@example.ca",
+    email: "gina@company.com",
     password: "Password123@",
-    name: "Marco",
+    name: "Gina",
+    role: "worker",
+    organizationId: "org-1",
+  },
+  {
+    email: "harry@company.com",
+    password: "Password123@",
+    name: "Harry",
     role: "worker",
     organizationId: "org-1",
   },

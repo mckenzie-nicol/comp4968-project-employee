@@ -27,7 +27,6 @@ function Home() {
   };
 
   useEffect(() => {
-    // Check if user is "signed in" based on sessionStorage
     if (
       sessionStorage.getItem("accessToken") &&
       sessionStorage.getItem("refreshToken") &&
@@ -35,8 +34,6 @@ function Home() {
     ) {
       setIsAuthenticated(true);
     }
-
-    // If authenticated, check role and org
     if (isAuthenticated && sessionStorage.getItem("organizationId")) {
       switch (sessionStorage.getItem("role")) {
         case "worker":
@@ -73,7 +70,6 @@ function Home() {
       />
     );
   }
-
   return (
     <div className="min-h-[77vh] auth-container">
       <div className="container mx-auto px-4 py-8">
@@ -116,14 +112,14 @@ function Home() {
                 <div className="text-left">
                   <h3 className="mb-2">All passwords: Password123@</h3>
                   <ul>
-                    <li>Kate - ksullivan33@my.bcit.ca - Admin</li>
-                    <li>Reza - rhedieloo@my.bcit.ca - PM</li>
-                    <li>Grace - isu4@my.bcit.ca - PM</li>
-                    <li>Mckenzie - mnicol11@my.bcit.ca - Worker</li>
-                    <li>Charlie - czhang177@my.bcit.ca - Worker</li>
-                    <li>Colin - cchan535@my.bcit.ca - Worker</li>
-                    <li>Jake - jcurrie42@my.bcit.ca - Worker</li>
-                    <li>Marco - mho122@my.bcit.ca - Worker</li>
+                    <li>Alice - alice@company.com - Admin</li>
+                    <li>Bob - bob@company.com - Project Manager</li>
+                    <li>Charlie - charlie@company.com - Project Manager</li>
+                    <li>Devon - devon@company.com - Worker</li>
+                    <li>Emily - emily@company.com - Worker</li>
+                    <li>Frank - frank@company.com - Worker</li>
+                    <li>Gina - gina@company.com - Worker</li>
+                    <li>Harry - harry@company.com - Worker</li>
                   </ul>
                 </div>
               </CardContent>

@@ -1,3 +1,5 @@
+// src/components/auth/sign-in-form.tsx
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,90 +11,43 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-const handleSignIn = async (email: string, password: string) => {
-
-  
-
-  if (!email || !password) {
-    return {
-      error: "Error, missing requirements. Must have email and password.",
-    };
-  }
-  const body = {
-    body: {
-      username: email,
-      password: password,
-    },
-  };
-
-  try {
-    const response = await fetch(
-      `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/auth/login`,
-      {
-        method: "POST",
-        body: JSON.stringify(body),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const data = await response.json();
-    const parseBody = JSON.parse(data.body);
-    console.log(parseBody);
-    if (response.ok) {
-      sessionStorage.setItem("accessToken", parseBody.tokens.accessToken);
-      sessionStorage.setItem("refreshToken", parseBody.tokens.refreshToken);
-      sessionStorage.setItem('tokenExpiry', (Date.now() + parseBody.tokens.expiresIn * 1000).toString());
-      sessionStorage.setItem("userId", parseBody.user.Username);
-      console.log("Login successful:", data);
-
-      const accessToken = sessionStorage.getItem("accessToken") || "";
-
-      try {
-        const body = {
-            userId: parseBody.user.Username,
-        };
-        const response = await fetch(
-          `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/organizations`,
-          {
-            method: "POST",
-            body: JSON.stringify(body),
-            headers: {
-              "Authorization": accessToken,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        const data = await response.json();
-        console.log(data);
-        if (!data.error) {
-          sessionStorage.setItem("organizationId", data.organizationId);
-          sessionStorage.setItem("role", data.role);
-        } 
-      } catch (error) {
-        console.error("User not connected to organization:", error);
-        return {
-          success: false,
-          error: "An error occurred. Please try again.",
-        };
-      }
-
-      return { success: true, data };
-    } else {
-      console.error("Login failed:", data);
-      return { success: false, error: data.message || "Failed to sign in." };
-    }
-  } catch (error) {
-    console.error("Error during sign-in:", error);
-    return { success: false, error: "An error occurred. Please try again." };
-  }
-};
+import { mockUsers } from "@/mockData/users";
+// If using localStorage, you could do:
+// import { getLocalUsers } from "@/utils/localStorageUtils";
 
 interface SignInProps {
   setIsAuthenticated: (state: boolean) => void;
+}
+
+function handleSignIn(email: string, password: string) {
+  // const storedUsers = getLocalUsers(); // localStorage
+  const storedUsers = mockUsers; // in-memory
+
+  const foundUser = storedUsers.find(
+    (u) => u.email === email && u.password === password
+  );
+
+  if (!foundUser) {
+    return {
+      success: false,
+      error: "Invalid email or password.",
+    };
+  }
+
+  // Mock tokens
+  sessionStorage.setItem("accessToken", "MOCK_ACCESS_TOKEN");
+  sessionStorage.setItem("refreshToken", "MOCK_REFRESH_TOKEN");
+  sessionStorage.setItem("userId", foundUser.email);
+
+  if (foundUser.organizationId) {
+    sessionStorage.setItem("organizationId", foundUser.organizationId);
+  }
+  sessionStorage.setItem("role", foundUser.role);
+
+  return {
+    success: true,
+    data: foundUser,
+  };
 }
 
 export function SignInForm({ setIsAuthenticated }: SignInProps) {
@@ -100,24 +55,22 @@ export function SignInForm({ setIsAuthenticated }: SignInProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); // Prevent default form submission behavior
-    const result = await handleSignIn(email, password);
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const result = handleSignIn(email, password);
 
     if (result.success) {
-      setError(""); // Clear error on success
+      setError("");
       setIsAuthenticated(true);
     } else {
-      setError(result.error); // Show error message
+      setError(result.error || "");
     }
   };
 
   return (
     <Card className="w-full max-w-md bg-background border-0 dark:shadow-gray-950">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">
-          Sign in
-        </CardTitle>
+        <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
         <CardDescription className="text-gray-500 dark:text-secondary">
           Enter your email and password to access your account
         </CardDescription>
@@ -125,9 +78,7 @@ export function SignInForm({ setIsAuthenticated }: SignInProps) {
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="">
-              Email
-            </Label>
+            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
@@ -139,9 +90,7 @@ export function SignInForm({ setIsAuthenticated }: SignInProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="">
-              Password
-            </Label>
+            <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
@@ -152,10 +101,7 @@ export function SignInForm({ setIsAuthenticated }: SignInProps) {
             />
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
-          <Button
-            type="submit"
-            className="w-full bg-primary hover:opacity-95"
-          >
+          <Button type="submit" className="w-full bg-primary hover:opacity-95">
             Sign in
           </Button>
         </form>

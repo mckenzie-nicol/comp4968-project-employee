@@ -86,6 +86,30 @@ function Home() {
           </div>
         </CardContent>
       </Card>
+      <br />
+      <br />
+      <Card className="bg-white/10 border-0">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-lg font-medium text-gray-600">
+            Sign In Credentials
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-left">
+            <h3 className="mb-2">All passwords: Password123@</h3>
+            <ul>
+              <li>Alice - alice@company.com - Admin</li>
+              <li>Bob - bob@company.com - Project Manager</li>
+              <li>Charlie - charlie@company.com - Project Manager</li>
+              <li>Devon - devon@company.com - Worker</li>
+              <li>Emily - emily@company.com - Worker</li>
+              <li>Frank - frank@company.com - Worker</li>
+              <li>Gina - gina@company.com - Worker</li>
+              <li>Harry - harry@company.com - Worker</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

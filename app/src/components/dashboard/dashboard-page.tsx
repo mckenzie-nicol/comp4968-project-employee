@@ -12,12 +12,16 @@ import { EmployeeProjectHours } from "./employee-project-hours";
 import { ProjectAllocation } from "./project-allocation";
 import { UserNotification } from "@/components/dashboard/user-notification";
 import CreateProject from "@/components/project/create-project";
-// import refreshTokens from "@/actions/refresh-token"; // Removed
 import moment from "moment";
 
-// Local mock data
+// ---- Import your local mock data
 import { mockProjects } from "@/mockData/projects";
+import { mockTimeRecords } from "@/mockData/time_record";
+import { mockTimesheets } from "@/mockData/timesheets";
 
+// ----------------------------------
+// Types
+// ----------------------------------
 export interface TimeRecord {
   id: string;
   timesheet_id: string;
@@ -40,7 +44,6 @@ export interface ProjectData {
   timesheets: Timesheet[];
 }
 
-// This is what we used to get from the API
 export interface ApiResponse {
   projects: ProjectData[];
 }
@@ -65,16 +68,64 @@ export interface ExtractedData {
   projects: ProjectDetails[];
 }
 
-// Instead of fetching from an API, let's just return local data
-const getAllTimesheetsByWorkerId = async () => {
-  // For the sake of example, we assume "charlie@acme.com" is the worker
-  // We'll just return mockProjects but filter out timesheets or do nothing
-  const data: ApiResponse = {
-    projects: mockProjects,
-  };
-  return data;
+// ----------------------------------
+// Local-Only Data Builder
+// ----------------------------------
+/**
+ * Build an ApiResponse object from local mock data.
+ * If `workerId` is provided, we only include timesheets
+ * where timesheet.employee_id === workerId.
+ */
+const buildLocalApiResponse = (workerId?: string): ApiResponse => {
+  // Convert our local mock data into the shape: { projects: ProjectData[] }
+  const localProjects: ProjectData[] = mockProjects.map((proj) => {
+    // Gather timesheets for this project
+    const theseTimesheets = mockTimesheets
+      .filter((ts: { project_id: string; employee_id: string; }) => {
+        // Must match the project ID
+        const belongsToProject = ts.project_id === proj.id;
+        // If workerId is given, also ensure timesheet's employee_id matches
+        const belongsToWorker = workerId ? ts.employee_id === workerId : true;
+        return belongsToProject && belongsToWorker;
+      })
+      .map((ts: { id: string; submission_date: any; status: any; }) => ({
+        timesheet_id: ts.id,
+        submission_date: ts.submission_date,
+        status: ts.status ?? "pending",
+        // Now gather all time records for this timesheet
+        time_records: mockTimeRecords
+          .filter((tr) => tr.timesheet_id === ts.id)
+          .map((tr) => ({
+            id: tr.id,
+            timesheet_id: tr.timesheet_id,
+            date: tr.date,
+            day: tr.day,
+            start_time: tr.start_time ?? "",
+            end_time: tr.end_time ?? "",
+          })),
+      }));
+
+    return {
+      project_id: proj.id,
+      project_name: proj.name,
+      timesheets: theseTimesheets,
+    };
+  });
+
+  return { projects: localProjects };
 };
 
+// Instead of fetching from an API, let's just return local data
+// filtered by the current user (worker) if needed.
+const getAllTimesheetsByWorkerId = async (
+  workerId?: string
+): Promise<ApiResponse> => {
+  return buildLocalApiResponse(workerId);
+};
+
+// ----------------------------------
+// Props & Component
+// ----------------------------------
 interface DashboardPageProps {
   onSignOut?: () => void;
   userRole?: "worker" | "project_manager";
@@ -98,11 +149,13 @@ export function DashboardPage({
   // We'll keep a ref for the selected date in a notification
   const notificationDate = useRef<Date | null>(null);
 
-  // We no longer rely on sessionStorage for userId. Use a constant or prop:
-  const userId = "charlie@acme.com";
+  // For demonstration, let's say this "charlie@company.com" is the worker
+  // to show timesheets. If user is PM, we won't filter by worker.
+  const workerId = userRole === "worker" ? "charlie@company.com" : undefined;
 
+  // -- Data extraction (like your old code)
   const extractData = (apiResponse: ApiResponse): ExtractedData => {
-    const projects = apiResponse.projects;
+    const { projects } = apiResponse;
     const currentDate = moment.utc().endOf("day");
 
     const last14DaysStart = currentDate
@@ -125,6 +178,7 @@ export function DashboardPage({
     const activeProjectsSet = new Set<string>();
     const projectMap: Record<string, ProjectDetails> = {};
 
+    // Colors for charts
     const colorPalette = [
       "var(--custom-red)",
       "var(--custom-blue)",
@@ -195,9 +249,9 @@ export function DashboardPage({
     };
   };
 
+  // -- Worker-only data load
   const processData = async () => {
-    // Worker only: load the timesheets and run extraction
-    const data = await getAllTimesheetsByWorkerId();
+    const data = await getAllTimesheetsByWorkerId(workerId);
     const extractedData = extractData(data);
 
     setActiveProjects(extractedData.activeProjectsCount);
@@ -209,16 +263,17 @@ export function DashboardPage({
 
   useEffect(() => {
     if (userRole === "worker") {
-      // only gather timesheet data if user is worker
       processData();
     }
   }, [showTimesheetForm, userRole]);
 
+  // -- Notification navigation
   const navigateToTimesheets = (startDate: Date) => {
     notificationDate.current = startDate;
     setShowTimesheetForm(true);
   };
 
+  // -- Timesheet creation form toggle
   if (showTimesheetForm) {
     return (
       <div className="pt-6 mb-80">
@@ -226,29 +281,32 @@ export function DashboardPage({
           <Button
             variant="secondary"
             onClick={() => setShowTimesheetForm(false)}
-            className="hover:bg-accent"
           >
             Back to Dashboard
           </Button>
         </div>
-        {/* Pass in userId and notificationDate, 
-            TimesheetTable can be a local form w/o API calls */}
+        {/* 
+          TimesheetTable is your local form. 
+          Pass in worker's "email" if needed, plus the date ref 
+        */}
         <TimesheetTable
-          employee_id={userId}
+          employee_id={workerId || ""}
           notificationDate={notificationDate}
         />
       </div>
     );
   }
 
+  // -- Main Render
   return (
     <div className="pt-6 space-y-6">
-      {/* You can comment out or remove UserNotification if it tries to fetch data. */}
+      {/* If your UserNotification tries to fetch from an API, adapt it similarly to local data. */}
       <UserNotification navigateToTimesheets={navigateToTimesheets} />
 
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold">Dashboard</h1>
+
           {userRole === "worker" && (
             <Button
               className="bg-primary"
@@ -257,6 +315,7 @@ export function DashboardPage({
               New Timesheet
             </Button>
           )}
+
           {userRole === "project_manager" && (
             <div className="flex gap-2">
               <Button
@@ -327,6 +386,7 @@ export function DashboardPage({
             </Card>
           </div>
 
+          {/* If you have a chart for the worker’s project hours over 14 days */}
           <EmployeeProjectHours
             hoursBreakdown={hoursBreakdown}
             projects={projectDetails}
@@ -337,12 +397,16 @@ export function DashboardPage({
           {activeView === "overview" && (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Project listing + selection */}
                 <ProjectsList
                   onProjectSelect={setSelectedProject}
                   selectedProjectId={selectedProject?.id ?? null}
                 />
+
+                {/* Chart for selected project */}
                 <BurnDownChart project={selectedProject} />
               </div>
+              {/* Possibly a “RecentTimesheets” for PM? */}
               <RecentTimesheets />
             </>
           )}

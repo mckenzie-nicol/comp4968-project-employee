@@ -1,25 +1,30 @@
-// src/mockData/projects.ts
-// Each project can have an array of timesheets.
+// src/mockData/project.ts
 
-export interface MockProject {
-  project_id: string;
-  project_name: string;
-  timesheets: Timesheet[];
+export interface Project {
+  id: string;                 // e.g. "proj-internal-web-app"
+  name: string;
+  project_manager_id: string; // In this mock, store the PM's email
+  start_date: string;         // e.g. "2025-01-15T09:00:00Z"
+  estimated_hours: number;
+  end_date: string;           // e.g. "2025-04-15T17:00:00Z"
 }
 
-import { Timesheet } from "@/components/dashboard/dashboard-page";
-import { mockTimesheets } from "./timesheets";
-
-// Example: one project with the same timesheets
-export const mockProjects: MockProject[] = [
+// We'll create two projects, managed by Bob and Charlie
+export const mockProjects: Project[] = [
   {
-    project_id: "proj-1",
-    project_name: "Internal Web App",
-    timesheets: mockTimesheets, 
+    id: "proj-internal-web-app",
+    name: "Internal Web App",
+    project_manager_id: "bob@company.com", // Bob is a PM
+    start_date: "2025-01-15T09:00:00Z",
+    estimated_hours: 300,
+    end_date: "2025-04-15T17:00:00Z",
   },
   {
-    project_id: "proj-2",
-    project_name: "Client Integration",
-    timesheets: [], // no timesheets yet
+    id: "proj-mobile-integration",
+    name: "Mobile Integration",
+    project_manager_id: "charlie@company.com", // Charlie is a PM
+    start_date: "2025-02-01T09:00:00Z",
+    estimated_hours: 200,
+    end_date: "2025-05-01T17:00:00Z",
   },
 ];

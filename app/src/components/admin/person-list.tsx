@@ -18,121 +18,96 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "../ui/dialog";
+
 import { PersonProps } from "@/pages/admin";
-import refreshTokens from "@/actions/refresh-token";
+
+// We'll access the same mock data to "remove" the user from the org
+import { mockUsers } from "@/mockData/users";
+// If using localStorage, import getLocalUsers/setLocalUsers similarly
 
 interface PersonListProps {
   title: string;
-  organizationId: string,
-  employees: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    role: string;
-  }[];
+  organizationId: string;
+  employees: PersonProps[];
   setEmployees: (employees: PersonProps[]) => void;
 }
 
-const handleRemoveUserFromOrg = async (
-  organizationId: string,
-  userName: string
-) => {
-  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
-  if (Date.now() > tokenExpiry) {
-    await refreshTokens();
-  }
-  const accessToken = sessionStorage.getItem("accessToken") || "";
-  if (!userName) {
-    return {
-      error: "Error, missing requirements. Must have userId and role.",
-    };
-  }
-  const body = {
-    users: [
-      {
-        user_name: userName,
-      },
-    ],
-  };
-  const response = await fetch(
-    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/organizations/${organizationId}/users`,
-    {
-      method: "DELETE",
-      body: JSON.stringify(body),
-      headers: {
-        "Authorization": accessToken,
-        "Content-Type": "application/json",
-      },
+const PersonList = ({
+  organizationId,
+  title,
+  employees,
+  setEmployees,
+}: PersonListProps) => {
+  // "Remove from org" simply sets user.organizationId to undefined (or ""), then
+  // filters them out from the local list
+  const handleRemoveUserFromOrg = (userId: string) => {
+    const user = mockUsers.find((u) => u.email === userId);
+    if (user) {
+      user.organizationId = undefined; // or ""
+      // Maybe reset their role to "worker" or do nothing
+      // user.role = "worker";
     }
-  );
-
-  console.log(response);
-};
-
-const PersonList = ({ organizationId, title, employees, setEmployees }: PersonListProps ) => {
-
+    // Then remove them from local state
+    setEmployees(employees.filter((emp) => emp.id !== userId));
+  };
 
   return (
-    <>
-      <Card className="m-4 p-4 bg-background dark:border-none dark:shadow-gray-950">
-        <h1 className="text-xl font-bold mb-4">{title}</h1>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow className="dark:border-gray-600">
-                <TableHead>First Name</TableHead>
-                <TableHead>Last Name</TableHead>
-                <TableHead>Email</TableHead>
+    <Card className="m-4 p-4 bg-background dark:border-none dark:shadow-gray-950">
+      <h1 className="text-xl font-bold mb-4">{title}</h1>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow className="dark:border-gray-600">
+              <TableHead>First Name</TableHead>
+              <TableHead>Last Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {employees.map((employee) => (
+              <TableRow key={employee.id} className="dark:border-gray-600">
+                <TableCell>{employee.first_name}</TableCell>
+                <TableCell>{employee.last_name}</TableCell>
+                <TableCell>{employee.email}</TableCell>
+                <TableCell className="text-right">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="destructive">Remove</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Remove Member</DialogTitle>
+                      </DialogHeader>
+                      <DialogDescription>
+                        Are you sure you want to remove{" "}
+                        <strong>
+                          {employee.first_name} {employee.last_name}
+                        </strong>{" "}
+                        from your organization?
+                      </DialogDescription>
+                      <DialogFooter>
+                        <Button
+                          variant="destructive"
+                          onClick={() => {
+                            handleRemoveUserFromOrg(employee.id);
+                          }}
+                        >
+                          Remove
+                        </Button>
+                        <DialogClose asChild>
+                          <Button variant={"outline"}>Cancel</Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {employees.map((employee) => (
-                  <TableRow key={employee.id} className="dark:border-gray-600">
-                    <TableCell>{employee.first_name}</TableCell>
-                    <TableCell>{employee.last_name}</TableCell>
-                    <TableCell>{employee.email}</TableCell>
-                    <TableCell className="text-right">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="destructive">Remove</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Remove Member</DialogTitle>
-                          </DialogHeader>
-                          <DialogDescription>
-                            Are you sure you want to remove{" "}
-                            <strong>
-                              {employee.first_name} {employee.last_name}
-                            </strong>{" "}
-                            from your organization?
-                          </DialogDescription>
-                          <DialogFooter>
-                            <Button
-                              variant="destructive"
-                              onClick={() => {
-                                handleRemoveUserFromOrg(organizationId, employee.id);
-                                setEmployees(employees.filter((emp) => emp.id !== employee.id)
-                                );
-                              }}
-                            >
-                              Remove
-                            </Button>
-                            <DialogClose asChild>
-                              <Button variant={"outline"}>Cancel</Button>
-                            </DialogClose>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </TableCell>
-                  </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 };
 

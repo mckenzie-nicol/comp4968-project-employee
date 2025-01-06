@@ -50,18 +50,7 @@ function Admin({ onSignOut }: AdminProps) {
   const [response, setResponse] = useState("");
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  const navigate = useNavigate();
   const organizationId = sessionStorage.getItem("organizationId") || "";
-  const userRole = sessionStorage.getItem("role");
-
-  // 1) If not an admin or no org ID, redirect (like your old code).
-  useEffect(() => {
-    // If you want to ensure only Admin can see this
-    if (userRole !== "admin" || !organizationId) {
-      navigate("/");
-      return;
-    }
-  }, [userRole, organizationId, navigate]);
 
   // 2) On load (and whenever `isOpen` changes), load local org name and separate users
   useEffect(() => {

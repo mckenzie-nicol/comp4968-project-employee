@@ -1,3 +1,4 @@
+// src/components/dashboard/dashboard-page.tsx
 import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,27 +12,25 @@ import { EmployeeProjectHours } from "./employee-project-hours";
 import { ProjectAllocation } from "./project-allocation";
 import { UserNotification } from "@/components/dashboard/user-notification";
 import CreateProject from "@/components/project/create-project";
-import refreshTokens from "@/actions/refresh-token";
+// import refreshTokens from "@/actions/refresh-token"; // Removed
 import moment from "moment";
 
-interface DashboardPageProps {
-  onSignOut?: () => void;
-  userRole?: "worker" | "project_manager";
-}
+// Local mock data
+import { mockProjects } from "@/mockData/projects";
 
 export interface TimeRecord {
   id: string;
   timesheet_id: string;
-  date: string; // ISO string, e.g., "2024-11-25T00:00:00.000Z"
-  day: string; // e.g., "Monday"
-  start_time: string; // Time string, e.g., "08:00"
-  end_time: string; // Time string, e.g., "17:00"
+  date: string;
+  day: string;
+  start_time: string;
+  end_time: string;
 }
 
 export interface Timesheet {
   timesheet_id: string;
-  submission_date: string; // ISO string, e.g., "2024-11-30T00:00:00.000Z"
-  status: string; // Example: 'approved'
+  submission_date: string;
+  status: string;
   time_records: TimeRecord[];
 }
 
@@ -41,13 +40,14 @@ export interface ProjectData {
   timesheets: Timesheet[];
 }
 
+// This is what we used to get from the API
 export interface ApiResponse {
   projects: ProjectData[];
 }
 
 export interface HoursBreakdown {
   [day: string]: {
-    [projectId: string]: number; // Hours worked
+    [projectId: string]: number;
   };
 }
 
@@ -65,26 +65,20 @@ export interface ExtractedData {
   projects: ProjectDetails[];
 }
 
+// Instead of fetching from an API, let's just return local data
 const getAllTimesheetsByWorkerId = async () => {
-  const tokenExpiry = parseInt(sessionStorage.getItem("tokenExpiry") || "0");
-  if (Date.now() > tokenExpiry) {
-    await refreshTokens();
-  }
-  const workerId = sessionStorage.getItem("userId");
-  const accessToken = sessionStorage.getItem("accessToken") || "";
-  const response = await fetch(
-    `https://ifyxhjgdgl.execute-api.us-west-2.amazonaws.com/test/dashboard/worker?worker_id=${workerId}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: accessToken,
-        "Content-Type": "application/json",
-      },
-    }
-  );
-  const data = await response.json();
+  // For the sake of example, we assume "charlie@acme.com" is the worker
+  // We'll just return mockProjects but filter out timesheets or do nothing
+  const data: ApiResponse = {
+    projects: mockProjects,
+  };
   return data;
 };
+
+interface DashboardPageProps {
+  onSignOut?: () => void;
+  userRole?: "worker" | "project_manager";
+}
 
 export function DashboardPage({
   onSignOut,
@@ -100,15 +94,15 @@ export function DashboardPage({
   const [projectDetails, setProjectDetails] = useState<ProjectDetails[]>([]);
   const [hoursLast14Days, setHoursLast14Days] = useState<number>(0);
   const [hoursDifference, setHoursDifference] = useState<number>(0);
-  const notificationDate = useRef<Date | null>(null)
 
-  const userId =
-    sessionStorage.getItem("userId") ?? "5131efb8-4579-492d-97fd-49602e6ed513";
+  // We'll keep a ref for the selected date in a notification
+  const notificationDate = useRef<Date | null>(null);
+
+  // We no longer rely on sessionStorage for userId. Use a constant or prop:
+  const userId = "charlie@acme.com";
 
   const extractData = (apiResponse: ApiResponse): ExtractedData => {
     const projects = apiResponse.projects;
-
-    // Use the actual current date
     const currentDate = moment.utc().endOf("day");
 
     const last14DaysStart = currentDate
@@ -116,7 +110,6 @@ export function DashboardPage({
       .subtract(13, "days")
       .startOf("day");
     const last14DaysEnd = currentDate;
-
     const previous14DaysStart = last14DaysStart
       .clone()
       .subtract(14, "days")
@@ -128,11 +121,10 @@ export function DashboardPage({
 
     let totalHoursLast14Days = 0;
     let totalHoursPrevious14Days = 0;
-    const hoursBreakdown: HoursBreakdown = {}; // { day: { projectId: hours } }
+    const hoursMap: HoursBreakdown = {};
     const activeProjectsSet = new Set<string>();
-    const projectDetailsMap: { [projectId: string]: ProjectDetails } = {};
+    const projectMap: Record<string, ProjectDetails> = {};
 
-    // Predefined colors for projects
     const colorPalette = [
       "var(--custom-red)",
       "var(--custom-blue)",
@@ -142,22 +134,20 @@ export function DashboardPage({
     ];
     let colorIndex = 0;
 
-    projects.forEach((project) => {
-      activeProjectsSet.add(project.project_id);
+    projects.forEach((proj) => {
+      activeProjectsSet.add(proj.project_id);
 
-      // Add project details
-      if (!projectDetailsMap[project.project_id]) {
-        projectDetailsMap[project.project_id] = {
-          projectId: project.project_id,
-          projectName: project.project_name,
+      if (!projectMap[proj.project_id]) {
+        projectMap[proj.project_id] = {
+          projectId: proj.project_id,
+          projectName: proj.project_name,
           color: colorPalette[colorIndex % colorPalette.length],
         };
         colorIndex++;
       }
 
-      project.timesheets.forEach((timesheet) => {
-        timesheet.time_records.forEach((record) => {
-          // Use UTC to parse dates and times
+      proj.timesheets.forEach((ts) => {
+        ts.time_records.forEach((record) => {
           const date = moment.utc(record.date).format("YYYY-MM-DD");
           const startTime = moment.utc(
             `${date} ${record.start_time}`,
@@ -173,16 +163,13 @@ export function DashboardPage({
             startTime.isBetween(last14DaysStart, last14DaysEnd, "seconds", "[]")
           ) {
             totalHoursLast14Days += duration;
-
-            // Breakdown by day and project
-            const day = startTime.format("YYYY-MM-DD");
-            if (!hoursBreakdown[day]) {
-              hoursBreakdown[day] = {};
+            if (!hoursMap[date]) {
+              hoursMap[date] = {};
             }
-            if (!hoursBreakdown[day][project.project_id]) {
-              hoursBreakdown[day][project.project_id] = 0;
+            if (!hoursMap[date][proj.project_id]) {
+              hoursMap[date][proj.project_id] = 0;
             }
-            hoursBreakdown[day][project.project_id] += duration;
+            hoursMap[date][proj.project_id] += duration;
           } else if (
             startTime.isBetween(
               previous14DaysStart,
@@ -197,20 +184,21 @@ export function DashboardPage({
       });
     });
 
-    const hoursDifference = totalHoursLast14Days - totalHoursPrevious14Days;
+    const hoursDiff = totalHoursLast14Days - totalHoursPrevious14Days;
 
     return {
       totalHoursLast14Days,
-      hoursDifference,
+      hoursDifference: hoursDiff,
       activeProjectsCount: activeProjectsSet.size,
-      hoursBreakdown: hoursBreakdown,
-      projects: Object.values(projectDetailsMap),
+      hoursBreakdown: hoursMap,
+      projects: Object.values(projectMap),
     };
   };
 
   const processData = async () => {
-    const timesheets = await getAllTimesheetsByWorkerId();
-    const extractedData = extractData(timesheets);
+    // Worker only: load the timesheets and run extraction
+    const data = await getAllTimesheetsByWorkerId();
+    const extractedData = extractData(data);
 
     setActiveProjects(extractedData.activeProjectsCount);
     setHoursBreakdown(extractedData.hoursBreakdown);
@@ -221,14 +209,15 @@ export function DashboardPage({
 
   useEffect(() => {
     if (userRole === "worker") {
+      // only gather timesheet data if user is worker
       processData();
     }
-  }, [showTimesheetForm]);
+  }, [showTimesheetForm, userRole]);
 
-  const navigateToTimesheets = (start_date_of_the_week: Date) => {
-    notificationDate.current = start_date_of_the_week
-    setShowTimesheetForm(true)
-  }
+  const navigateToTimesheets = (startDate: Date) => {
+    notificationDate.current = startDate;
+    setShowTimesheetForm(true);
+  };
 
   if (showTimesheetForm) {
     return (
@@ -241,55 +230,57 @@ export function DashboardPage({
           >
             Back to Dashboard
           </Button>
-          {/* <h1 className="text-3xl font-bold text-foreground">New Timesheet</h1> */}
         </div>
-        <TimesheetTable employee_id={userId} notificationDate={notificationDate} />
+        {/* Pass in userId and notificationDate, 
+            TimesheetTable can be a local form w/o API calls */}
+        <TimesheetTable
+          employee_id={userId}
+          notificationDate={notificationDate}
+        />
       </div>
     );
   }
 
   return (
     <div className="pt-6 space-y-6">
-      <UserNotification navigateToTimesheets={navigateToTimesheets}/>
+      {/* You can comment out or remove UserNotification if it tries to fetch data. */}
+      <UserNotification navigateToTimesheets={navigateToTimesheets} />
+
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
           {userRole === "worker" && (
             <Button
-              className="bg-primary hover:opacity-95"
+              className="bg-primary"
               onClick={() => setShowTimesheetForm(true)}
             >
               New Timesheet
             </Button>
           )}
-          {userRole === 'project_manager' && (
+          {userRole === "project_manager" && (
             <div className="flex gap-2">
               <Button
-                variant={activeView === 'overview' ? 'default' : 'outline'}
-                onClick={() => setActiveView('overview')}
-                className={activeView === 'overview' ? 'bg-secondary' : 'bg-secondaryBackground'}
+                variant={activeView === "overview" ? "default" : "outline"}
+                onClick={() => setActiveView("overview")}
               >
                 Overview
               </Button>
               <Button
-                variant={activeView === 'reports' ? 'default' : 'outline'}
-                onClick={() => setActiveView('reports')}
-                className={activeView === 'reports' ? 'bg-secondary' : 'bg-secondaryBackground'}
+                variant={activeView === "reports" ? "default" : "outline"}
+                onClick={() => setActiveView("reports")}
               >
                 Reports
               </Button>
-              
               <Button
-                variant={activeView === 'allocation' ? 'default' : 'outline'}
-                onClick={() => setActiveView('allocation')}
-                className={activeView === 'allocation' ? 'bg-secondary' : 'bg-secondaryBackground'}
+                variant={activeView === "allocation" ? "default" : "outline"}
+                onClick={() => setActiveView("allocation")}
               >
                 Project Allocation
               </Button>
               <CreateProject />
               <Button
-                onClick={() => window.location.href = "/approve-timesheets"}
-                className="flex items-center gap-2 bg-custom-green hover:opacity-90"
+                onClick={() => (window.location.href = "/approve-timesheets")}
+                className="bg-custom-green"
               >
                 Approve Timesheets
               </Button>
@@ -297,11 +288,7 @@ export function DashboardPage({
           )}
         </div>
 
-        <Button
-          variant="outline"
-          onClick={onSignOut}
-          className="bg-background"
-        >
+        <Button variant="outline" onClick={onSignOut}>
           <LogOut className="w-4 h-4 mr-2" />
           Sign out
         </Button>
@@ -310,33 +297,32 @@ export function DashboardPage({
       {userRole === "worker" ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* ... Cards ... */}
-            <Card className="bg-background border-0 dark:shadow-gray-950">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-secondary">
+            <Card>
+              <CardHeader className="flex items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">
                   Hours Last 14 Days
                 </CardTitle>
-                <Clock className="h-4 w-4 =" />
+                <Clock className="h-4 w-4" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{hoursLast14Days}</div>
-                <p className="text-xs text-gray-500 dark:text-secondary dark:opacity-60">
+                <p className="text-xs text-gray-500">
                   {hoursDifference > 0 ? "+" : ""}
                   {hoursDifference} from previous 14 days
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-background border-0 dark:shadow-gray-950">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-secondary">
+            <Card>
+              <CardHeader className="flex items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">
                   Active Projects
                 </CardTitle>
-                <PieChart className="h-4 w-4 " />
+                <PieChart className="h-4 w-4" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{activeProjects}</div>
-                <p className="text-xs text-gray-500 dark:text-secondary dark:opacity-60">Currently assigned</p>
+                <p className="text-xs text-gray-500">Currently assigned</p>
               </CardContent>
             </Card>
           </div>
@@ -344,7 +330,7 @@ export function DashboardPage({
           <EmployeeProjectHours
             hoursBreakdown={hoursBreakdown}
             projects={projectDetails}
-            />
+          />
         </div>
       ) : (
         <>
@@ -362,7 +348,6 @@ export function DashboardPage({
           )}
 
           {activeView === "reports" && <ProjectReports />}
-
           {activeView === "allocation" && <ProjectAllocation />}
         </>
       )}

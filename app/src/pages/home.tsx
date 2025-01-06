@@ -1,132 +1,91 @@
 // src/pages/Home.tsx
-
-import { SignInForm } from "@/components/auth/sign-in-form";
-import { SignUpForm } from "@/components/auth/sign-up-form";
-import { DashboardPage } from "@/components/dashboard/dashboard-page";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import OrgNotConnected from "./org-not-connected";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import Admin from "./admin";
+import { mockUsers } from "@/mockData/users";
+import { DashboardPage } from "@/components/dashboard/dashboard-page"; // or wherever your DashboardPage is
+import Admin from "./admin"; // if you have an admin page
+// SignIn / SignUp forms if you have them, or keep it all in one.
 
 function Home() {
-  const [isSignIn, setIsSignIn] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthorizedRole, setIsAuthorizedRole] = useState<
+  const [userRole, setUserRole] = useState<
     "admin" | "worker" | "project_manager" | null
   >(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSignOut = () => {
-    sessionStorage.removeItem("accessToken");
-    sessionStorage.removeItem("refreshToken");
-    sessionStorage.removeItem("userId");
-    sessionStorage.removeItem("organizationId");
-    sessionStorage.removeItem("role");
-    setIsAuthenticated(false);
-    setIsAuthorizedRole(null);
+  const handleSignIn = () => {
+    // Look up user in mock data
+    const foundUser = mockUsers.find(
+      (u) => u.email === email && u.password === password
+    );
+    if (!foundUser) {
+      setError("Invalid credentials");
+      return;
+    }
+    setIsAuthenticated(true);
+    setUserRole(foundUser.role);
   };
 
-  useEffect(() => {
-    if (
-      sessionStorage.getItem("accessToken") &&
-      sessionStorage.getItem("refreshToken") &&
-      sessionStorage.getItem("userId")
-    ) {
-      setIsAuthenticated(true);
-    }
-    if (isAuthenticated && sessionStorage.getItem("organizationId")) {
-      switch (sessionStorage.getItem("role")) {
-        case "worker":
-        case "project_manager":
-        case "admin":
-          setIsAuthorizedRole(
-            sessionStorage.getItem("role") as
-              | "admin"
-              | "worker"
-              | "project_manager"
-              | null
-          );
-          break;
-        default:
-          break;
-      }
-    }
-  }, [isAuthenticated, isAuthorizedRole]);
+  const handleSignOut = () => {
+    setIsAuthenticated(false);
+    setUserRole(null);
+    setEmail("");
+    setPassword("");
+    setError("");
+  };
 
-  if (
-    isAuthenticated &&
-    (isAuthorizedRole === "worker" || isAuthorizedRole === "project_manager")
-  ) {
-    return (
-      <DashboardPage onSignOut={handleSignOut} userRole={isAuthorizedRole} />
-    );
-  } else if (isAuthenticated && isAuthorizedRole === "admin") {
-    return <Admin onSignOut={handleSignOut} />;
-  } else if (isAuthenticated && !sessionStorage.getItem("organizationId")) {
-    return (
-      <OrgNotConnected
-        onSignOut={handleSignOut}
-        setIsAuthorizedRole={setIsAuthorizedRole}
-      />
-    );
+  // Once authenticated, show Dashboard or Admin
+  if (isAuthenticated) {
+    if (userRole === "admin") {
+      return <Admin onSignOut={handleSignOut} />;
+    } else {
+      // worker or PM
+      return (
+        <DashboardPage
+          onSignOut={handleSignOut}
+          userRole={userRole || "worker"}
+        />
+      );
+    }
   }
+
+  // Otherwise, show sign-in form
   return (
-    <div className="min-h-[77vh] auth-container">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8 text-center">
-          <h1 className="text-5xl font-bold mb-2 mt-8">Timesheet Management</h1>
-          <p className="text-lg text-gray-600 dark:text-secondary bg-clip-text">
-            Manage your time, track your projects
-          </p>
-        </div>
-
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-40rem)]">
-          <div className="form-container glass-effect p-1 rounded-xl card-glow">
-            {isSignIn ? (
-              <SignInForm setIsAuthenticated={setIsAuthenticated} />
-            ) : (
-              <SignUpForm setHidden={setIsSignIn} />
-            )}
-          </div>
-
-          <div className="mt-8 text-center">
-            <p className="text-gray-600 mb-4 dark:text-secondary">
-              {isSignIn ? "Don't have an account?" : "Already have an account?"}
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => setIsSignIn(!isSignIn)}
-              className="min-w-[200px] bg-background hover:opacity-95 transition-all duration-300"
-            >
-              {isSignIn ? "Create account" : "Sign in"}
+    <div className="min-h-screen flex justify-center items-center">
+      <Card className="w-full max-w-sm bg-white/10 border-0">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold">Sign In (Local)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <label>Email</label>
+              <input
+                className="border w-full p-2 rounded"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label>Password</label>
+              <input
+                className="border w-full p-2 rounded"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            {error && <div className="text-red-500">{error}</div>}
+            <Button onClick={handleSignIn} className="w-full">
+              Sign In
             </Button>
-            <br />
-            <br />
-            <Card className="bg-white/10 border-0">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg font-medium text-gray-600">
-                  Sign In Credentials
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-left">
-                  <h3 className="mb-2">All passwords: Password123@</h3>
-                  <ul>
-                    <li>Alice - alice@company.com - Admin</li>
-                    <li>Bob - bob@company.com - Project Manager</li>
-                    <li>Charlie - charlie@company.com - Project Manager</li>
-                    <li>Devon - devon@company.com - Worker</li>
-                    <li>Emily - emily@company.com - Worker</li>
-                    <li>Frank - frank@company.com - Worker</li>
-                    <li>Gina - gina@company.com - Worker</li>
-                    <li>Harry - harry@company.com - Worker</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

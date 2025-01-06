@@ -19,7 +19,6 @@ import {
   SelectGroup,
   SelectItem,
 } from "@/components/ui/select";
-import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 
 // ---- LOCAL ONLY: no refreshTokens import needed ----

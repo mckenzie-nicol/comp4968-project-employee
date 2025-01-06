@@ -33,7 +33,7 @@ interface PersonListProps {
 }
 
 const PersonList = ({
-  organizationId,
+  // organizationId,
   title,
   employees,
   setEmployees,

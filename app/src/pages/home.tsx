@@ -1,3 +1,5 @@
+// src/pages/Home.tsx
+
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { SignUpForm } from "@/components/auth/sign-up-form";
 import { DashboardPage } from "@/components/dashboard/dashboard-page";
@@ -25,6 +27,7 @@ function Home() {
   };
 
   useEffect(() => {
+    // Check if user is "signed in" based on sessionStorage
     if (
       sessionStorage.getItem("accessToken") &&
       sessionStorage.getItem("refreshToken") &&
@@ -32,6 +35,8 @@ function Home() {
     ) {
       setIsAuthenticated(true);
     }
+
+    // If authenticated, check role and org
     if (isAuthenticated && sessionStorage.getItem("organizationId")) {
       switch (sessionStorage.getItem("role")) {
         case "worker":
@@ -51,25 +56,29 @@ function Home() {
     }
   }, [isAuthenticated, isAuthorizedRole]);
 
-  if (isAuthenticated && isAuthorizedRole === 'worker' || isAuthorizedRole === 'project_manager') {
+  if (
+    isAuthenticated &&
+    (isAuthorizedRole === "worker" || isAuthorizedRole === "project_manager")
+  ) {
     return (
-      <DashboardPage
-        onSignOut={handleSignOut}
-        userRole={isAuthorizedRole}
-      />
+      <DashboardPage onSignOut={handleSignOut} userRole={isAuthorizedRole} />
     );
-  } else if (isAuthenticated && isAuthorizedRole === 'admin') {
+  } else if (isAuthenticated && isAuthorizedRole === "admin") {
     return <Admin onSignOut={handleSignOut} />;
   } else if (isAuthenticated && !sessionStorage.getItem("organizationId")) {
-    return <OrgNotConnected onSignOut={handleSignOut} setIsAuthorizedRole={setIsAuthorizedRole} />;
+    return (
+      <OrgNotConnected
+        onSignOut={handleSignOut}
+        setIsAuthorizedRole={setIsAuthorizedRole}
+      />
+    );
   }
+
   return (
     <div className="min-h-[77vh] auth-container">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-          <h1 className="text-5xl font-bold mb-2 mt-8">
-            Timesheet Management
-          </h1>
+          <h1 className="text-5xl font-bold mb-2 mt-8">Timesheet Management</h1>
           <p className="text-lg text-gray-600 dark:text-secondary bg-clip-text">
             Manage your time, track your projects
           </p>
@@ -95,7 +104,8 @@ function Home() {
             >
               {isSignIn ? "Create account" : "Sign in"}
             </Button>
-            <br /><br />
+            <br />
+            <br />
             <Card className="bg-white/10 border-0">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-lg font-medium text-gray-600">
@@ -105,7 +115,7 @@ function Home() {
               <CardContent>
                 <div className="text-left">
                   <h3 className="mb-2">All passwords: Password123@</h3>
-                  <ul className="">
+                  <ul>
                     <li>Kate - ksullivan33@my.bcit.ca - Admin</li>
                     <li>Reza - rhedieloo@my.bcit.ca - PM</li>
                     <li>Grace - isu4@my.bcit.ca - PM</li>
